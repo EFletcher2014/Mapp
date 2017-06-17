@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SIP</string>
+    <string name="site_number">Site#</string>
+    <string name="unit_number">SIP</string>
+</resources>
