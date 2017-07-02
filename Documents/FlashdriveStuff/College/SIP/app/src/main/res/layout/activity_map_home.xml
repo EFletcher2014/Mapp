@@ -26,13 +26,22 @@
     <TextView android:text="@string/level_number" android:layout_width="wrap_content"
         android:layout_height="wrap_content" android:layout_gravity="center"/>
 
-    <!--an imageView which will show the selected image of the unit. Need to replace the above textview with this while running-->
+    <!--an imageView which will show the selected image of the unit.-->
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="wrap_content"
         android:layout_weight="2"
         android:id="@+id/unitImgView"
         android:src="@drawable/image_prompt"/>
+
+    <!--a button which will take the user to the select on image activity. Need to figure out how to get back****-->
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:id="@+id/select_on_image_button"
+        android:hint="@string/button_hint"
+        android:layout_gravity="center_horizontal"/>
 
     <!--a title textbox saying "unit description"-->
     <TextView android:text="Unit Description:" android:layout_width="wrap_content"
@@ -46,5 +55,12 @@
         android:hint="Describe your unit here. Include a description of soil texture and color, depth, and features and artifacts."
         android:gravity="center"
         android:layout_weight="1"/>
+
+    <Button android:id="@+id/mainsave"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:hint="@string/savecontent"
+        android:clickable="true"
+        android:layout_gravity="center_horizontal"/>
 
 </LinearLayout>
