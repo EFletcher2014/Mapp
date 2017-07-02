@@ -24,7 +24,7 @@ public class MapHome extends AppCompatActivity {
     private String userName = "root";
     private String password = "";
     private String dbms = "mysql";
-    private String serverName = "10.0.2.2";
+    private String serverName = "10.0.2.2";//"192.168.1.187"; //"184.53.49.56";
     private String portNumber = "3306";
     private String dbName = "mapp";
     private String data = "";
@@ -83,24 +83,21 @@ public class MapHome extends AppCompatActivity {
         }
     }
     public void connect() throws ClassNotFoundException, SQLException{
-        DriverManager.getDriver("jdbc:mysql://10.0.2.2:3306/mapp");
+        //DriverManager.getDriver("jdbc:mysql://10.0.2.2:3306/mapp");
         System.out.println("Got Driver...");
-        Connection conn = DriverManager.getConnection("jdbc:mysql://10.0.2.2:3306/mapp", "root", "");//getConnection();
+        Connection conn = /*DriverManager.getConnection("jdbc:mysql://10.0.2.2:3306/mapp", "root", "");*/ getConnection();
         Statement stmt = null;
         String query = "Select * From mapp.units";
         System.out.println("Querying server...");
         try {
             stmt = conn.createStatement();
-            /*ResultSet rs = stmt.executeQuery(query);
+            ResultSet rs = stmt.executeQuery(query);
             System.out.println(query);
             while (rs.next()){
-                if(rs.getString("siteName").equals("20BE23"));
-                {
-                    System.out.println("worked");
-                }
+                System.out.println(rs.getString("siteName"));
             }
-            System.out.println(data);*/
-            stmt.executeUpdate("INSERT INTO mapp.units " + "VALUES(0, '21BE23', 5, 5, 'IMAGE', 'DESCRIPTION HERE', '2017-06-28 11:29:33')");
+            System.out.println(data);
+            //stmt.executeUpdate("INSERT INTO mapp.units " + "VALUES(0, '21BE23', 5, 5, 'IMAGE', 'DESCRIPTION HERE', '2017-06-28 11:29:33')");
         } catch (SQLException ex) {
             System.out.println("**********no luck");
         } finally {
@@ -125,7 +122,7 @@ public class MapHome extends AppCompatActivity {
             conn = DriverManager.getConnection(
                     "jdbc:" + this.dbms + "://" +
                             this.serverName +
-                            ":" + this.portNumber + "/",
+                            ":" + this.portNumber + "/" + this.dbName,
                     connectionProps);
         } else if (this.dbms.equals("derby")) {
             conn = DriverManager.getConnection(
