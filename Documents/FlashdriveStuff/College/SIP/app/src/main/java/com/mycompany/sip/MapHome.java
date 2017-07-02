@@ -21,6 +21,8 @@ import java.util.Properties;
 
 public class MapHome extends AppCompatActivity {
     private static int SELECT_PICTURE = 1;
+  
+    private Uri selectedImageUri = null;
     private String userName = "root";
     private String password = "";
     private String dbms = "mysql";
@@ -46,6 +48,15 @@ public class MapHome extends AppCompatActivity {
             }
         });
 
+        final Button toSelectOnImageActivity = (Button) findViewById(R.id.select_on_image_button);
+        toSelectOnImageActivity.setOnClickListener(new View.OnClickListener() {
+              @Override
+              public void onClick(View view) {
+                  //Move to select on image activity
+                  Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
+                  startActivity(selectActivityIntent);
+              }
+       });
         final Button saveButton = (Button) findViewById(R.id.mainsave);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,7 +84,7 @@ public class MapHome extends AppCompatActivity {
      public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
-                Uri selectedImageUri = data.getData();
+                selectedImageUri = data.getData();
                 System.out.println("selectedImageUri is" + selectedImageUri);
 
                 //MEDIA GALLERY
