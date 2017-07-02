@@ -56,4 +56,11 @@
         android:gravity="center"
         android:layout_weight="1"/>
 
+    <Button android:id="@+id/mainsave"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:hint="@string/savecontent"
+        android:clickable="true"
+        android:layout_gravity="center_horizontal"/>
+
 </LinearLayout>
