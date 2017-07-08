@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,7 +18,9 @@ import android.widget.TextView;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.*;
-import java.util.Properties;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Date;
 
 public class MapHome extends AppCompatActivity {
     private static int SELECT_PICTURE = 1;
@@ -29,7 +32,12 @@ public class MapHome extends AppCompatActivity {
     private String serverName = "10.0.2.2";//"192.168.1.187"; //"184.53.49.56";
     private String portNumber = "3306";
     private String dbName = "mapp";
-    private String data = "";
+    private String siteName = "22BE23";
+    private int unitNumber = 5;
+    private int levelNumber = 5;
+    private String imageReference = "IMAGE";
+    private String description = "DESCRIPTION HERE";
+    private String dateTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -85,6 +93,7 @@ public class MapHome extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_PICTURE) {
                 selectedImageUri = data.getData();
+                imageReference = selectedImageUri.toString();
                 System.out.println("selectedImageUri is" + selectedImageUri);
 
                 //MEDIA GALLERY
@@ -94,22 +103,32 @@ public class MapHome extends AppCompatActivity {
         }
     }
     public void connect() throws ClassNotFoundException, SQLException{
-        //DriverManager.getDriver("jdbc:mysql://10.0.2.2:3306/mapp");
-        System.out.println("Got Driver...");
         Connection conn = /*DriverManager.getConnection("jdbc:mysql://10.0.2.2:3306/mapp", "root", "");*/ getConnection();
         Statement stmt = null;
-        String query = "Select * From mapp.units";
-        System.out.println("Querying server...");
+        Date date = new Date();
+        Timestamp ts = new Timestamp(date.getTime());
+        SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
+        dateTime = format.format(ts);
+        EditText desc = (EditText) findViewById(R.id.unit_description);
+        description = desc.getText().toString();
+
+        //also get picture link from user
+        String query = "SELECT PrimaryKey FROM units WHERE siteName='" + siteName + "' AND unitNumber=" + unitNumber + " AND levelNumber=" + levelNumber;
+        System.out.println("Querying server..." + query);
         try {
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             System.out.println(query);
-            while (rs.next()){
-                System.out.println(rs.getString("siteName"));
+            if(rs.next()){
+                System.out.println("worked to here");
+                int pk=rs.getInt(1);
+                stmt.executeUpdate("UPDATE mapp.units SET imageReference ='" + imageReference + "', description='" + description + "', dateTime='" + dateTime + "' WHERE PrimaryKey=" + pk );//Still need to find out how to actually update it
             }
-            System.out.println(data);
-            //stmt.executeUpdate("INSERT INTO mapp.units " + "VALUES(0, '21BE23', 5, 5, 'IMAGE', 'DESCRIPTION HERE', '2017-06-28 11:29:33')");
+            else {
+                stmt.executeUpdate("INSERT INTO mapp.units (siteName, unitNumber, levelNumber, imageReference, description, dateTime) VALUES ('" + siteName + "', " + unitNumber + ", " + levelNumber + ", '" + imageReference + "', '" + description + "', '" + dateTime + "')");
+            }
         } catch (SQLException ex) {
+            System.err.println(ex);
             System.out.println("**********no luck");
         } finally {
             if (stmt != null) {stmt.close();}
