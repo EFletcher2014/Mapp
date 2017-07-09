@@ -6,5 +6,5 @@
     <string name="button_hint">Click here to map artifacts/features on image</string>
     <string name="title_activity_select">selectActivity</string>
     <string name="savecontent">Click here to save your work</string>
-    <string name="button_hint">Click here to select an image of your unit</string>
+    <string name="photo_button_hint">Click here to select an image of your unit</string>
 </resources>
