@@ -1,5 +1,6 @@
 package com.mycompany.sip;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -21,22 +22,30 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import org.json.*;
 
 public class MapHome extends AppCompatActivity {
     private static int SELECT_PICTURE = 1;
+    JSONParser jsonParser = new JSONParser();
+
+    // url to create new product
+    private static String url_update_product = "http://192.168.2.4:3306/mapp/android_connect/update_unit.php"; //http://192.168.2.4:3306/mapp/android_connect/update_unit.php"; //"http://192.168.2.4:3306/api.mapp.info/mapp/android_connect/update_unit.php"; //
+
+    // JSON Node names
+    private static final String TAG_SUCCESS = "success";
   
     private Uri selectedImageUri = null;
     private String userName = "root";
     private String password = "";
     private String dbms = "mysql";
-    private String serverName = "10.0.2.2";//"192.168.1.187"; //"184.53.49.56";
+    private String serverName = "192.168.2.4";//"192.168.1.187"; //"184.53.49.56";
     private String portNumber = "3306";
     private String dbName = "mapp";
     private String siteName = "22BE23";
     private int unitNumber = 5;
     private int levelNumber = 5;
     private String imageReference = "IMAGE";
-    private String description = "DESCRIPTION HERE";
+    private String description = "DESCRIPTION HERE2";
     private String dateTime;
 
     @Override
@@ -74,8 +83,10 @@ public class MapHome extends AppCompatActivity {
                         //Connect to server
                         System.out.println("Connecting to server...");
                         try {
-                            Class.forName("com.mysql.jdbc.Driver");
-                            connect();
+                            queryServer();
+
+                            //Class.forName("com.mysql.jdbc.Driver");
+                            //connect();
                         }
                         catch (ClassNotFoundException | SQLException ex)
                         {
@@ -102,6 +113,44 @@ public class MapHome extends AppCompatActivity {
             }
         }
     }
+    public void queryServer() throws ClassNotFoundException, SQLException{
+        //get info from app
+        Date date = new Date();
+        Timestamp ts = new Timestamp(date.getTime());
+        SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
+        dateTime = format.format(ts);
+        EditText desc = (EditText) findViewById(R.id.unit_description);
+        description = desc.getText().toString();
+
+        //update server
+        HashMap params = new HashMap();
+        params.put("siteName", siteName);
+        params.put("unitNumber", unitNumber);
+        params.put("levelNumber", levelNumber);
+        params.put("imageReference", imageReference);
+        params.put("description", description);
+        params.put("dateTime", dateTime);
+
+        JSONObject json = jsonParser.makeHttpRequest(url_update_product,
+                "POST", params);
+        System.out.println("posted");
+
+        // check json success tag
+        try {
+            int success = json.getInt(TAG_SUCCESS);
+
+            if (success == 1) {
+                // successfully updated
+                System.out.println("success!");
+            } else {
+                // failed to update product
+                System.out.println("fail");
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void connect() throws ClassNotFoundException, SQLException{
         Connection conn = /*DriverManager.getConnection("jdbc:mysql://10.0.2.2:3306/mapp", "root", "");*/ getConnection();
         Statement stmt = null;
