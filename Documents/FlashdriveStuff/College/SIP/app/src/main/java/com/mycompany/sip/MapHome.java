@@ -10,11 +10,13 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -29,7 +31,7 @@ public class MapHome extends AppCompatActivity {
     JSONParser jsonParser = new JSONParser();
 
     // url to create new product
-    private static String url_update_product = "http://192.168.2.4:3306/mapp/android_connect/update_unit.php"; //http://192.168.2.4:3306/mapp/android_connect/update_unit.php"; //"http://192.168.2.4:3306/api.mapp.info/mapp/android_connect/update_unit.php"; //
+    private static String url_update_product = "http://192.168.2.7:3306/mapp/android_connect/update_unit.php"; //http://192.168.2.4:3306/mapp/android_connect/update_unit.php"; //"http://192.168.2.4:3306/api.mapp.info/mapp/android_connect/update_unit.php"; //
 
     // JSON Node names
     private static final String TAG_SUCCESS = "success";
@@ -38,10 +40,11 @@ public class MapHome extends AppCompatActivity {
     private String userName = "root";
     private String password = "";
     private String dbms = "mysql";
-    private String serverName = "192.168.2.4";//"192.168.1.187"; //"184.53.49.56";
+    private String serverName = "192.168.2.7";//"192.168.1.187"; //"184.53.49.56";
     private String portNumber = "3306";
     private String dbName = "mapp";
     private String siteName = "22BE23";
+    private int pk = 1;
     private int unitNumber = 5;
     private int levelNumber = 5;
     private String imageReference = "IMAGE";
@@ -50,6 +53,9 @@ public class MapHome extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
+        //tried to make a new titlebar, didn't work, said I couldn't have two
+        //requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
+        //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mytitle);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_home);
 
@@ -124,9 +130,7 @@ public class MapHome extends AppCompatActivity {
 
         //update server
         HashMap params = new HashMap();
-        params.put("siteName", siteName);
-        params.put("unitNumber", unitNumber);
-        params.put("levelNumber", levelNumber);
+        params.put("primaryKey", pk);
         params.put("imageReference", imageReference);
         params.put("description", description);
         params.put("dateTime", dateTime);
