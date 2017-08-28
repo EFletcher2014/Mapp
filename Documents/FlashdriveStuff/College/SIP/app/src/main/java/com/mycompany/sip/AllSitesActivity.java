@@ -19,6 +19,7 @@ package com.mycompany.sip;
         import android.view.View;
         import android.widget.AdapterView;
         import android.widget.AdapterView.OnItemClickListener;
+        import android.widget.Button;
         import android.widget.ListAdapter;
         import android.widget.ListView;
         import android.widget.SimpleAdapter;
@@ -27,6 +28,8 @@ package com.mycompany.sip;
 public class AllSitesActivity extends ListActivity {
         // Progress Dialog
         private ProgressDialog pDialog;
+        boolean test=true;
+        String[] testSites = {"Fort St. Joseph", "Lyne Site", "Fort Michilimackinac"};
 
         // Creating JSON Parser object
         JSONParser jParser = new JSONParser();
@@ -38,6 +41,7 @@ public class AllSitesActivity extends ListActivity {
         private static String url_all_sites = "https://api.androidhive.info/android_connect/get_all_sites.php";
 
         // JSON Node names
+        //TODO: figure out what these do
         private static final String TAG_SUCCESS = "success";
         private static final String TAG_SITES = "sites";
         private static final String TAG_PID = "pid";
@@ -49,38 +53,85 @@ public class AllSitesActivity extends ListActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
+            //TODO: insert layout
                 setContentView(R.layout.activity_get_all_sites);
 
                 // Hashmap for ListView
                 sitesList = new ArrayList<HashMap<String, String>>();
 
                 // Loading sites in Background Thread
+            if(!test) {
                 new LoadAllSites().execute();
+            }
+            else
+            {
+                // looping through All sites
+                for (int i = 0; i < 3; i++) {
+
+                    String name = testSites[i];
+
+                    // creating new HashMap
+                    HashMap<String, String> testMap = new HashMap<String, String>();
+
+                    // adding each child node to HashMap key => value
+                    testMap.put(TAG_PID, i + "");
+                    testMap.put(TAG_NAME, name);
+
+                    // adding HashList to ArrayList
+                    sitesList.add(testMap);
+                    System.out.println(sitesList);
+                }
+                ListAdapter adapter = new SimpleAdapter(
+                        AllSitesActivity.this, sitesList,
+                        R.layout.list_item, new String[] { TAG_PID,
+                        TAG_NAME},
+                        new int[] { R.id.pid, R.id.name });
+                // updating listview
+                setListAdapter(adapter);
+            }
 
                 // Get listview
                 ListView lv = getListView();
 
-                // on seleting single product
-                // launching Edit Product Screen
+                // on selecting single site
+                // launching Edit site Screen
                 lv.setOnItemClickListener(new OnItemClickListener() {
 
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view,
                                                 int position, long id) {
                                 // getting values from selected ListItem
+                            //TODO: also get site#--add another invisible TextView (like/replacePID)
+                                String name = ((TextView) view.findViewById(R.id.name)).getText().toString();
                                 String pid = ((TextView) view.findViewById(R.id.pid)).getText()
                                         .toString();
 
                                 // Starting new intent
                                 Intent in = new Intent(getApplicationContext(),
-                                        GetAllUnits.class);
+                                        AllUnitsActivity.class);
                                 // sending pid to next activity
                                 in.putExtra(TAG_PID, pid);
+                                in.putExtra(TAG_NAME, name);
 
                                 // starting new activity and expecting some response back
                                 startActivityForResult(in, 100);
                         }
                 });
+
+                //on clicking new site button
+                //launching new site activity
+                Button newSite = (Button) findViewById(R.id.newSiteBtn);
+                newSite.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View view) {
+                        // Launch Add New product Activity
+                        Intent i = new Intent(getApplicationContext(),
+                                NewSiteActivity.class);
+                        // Closing all previous activities
+                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(i);
+                    }
+            });
 
         }
 
@@ -144,14 +195,14 @@ public class AllSitesActivity extends ListActivity {
                                                 JSONObject c = sites.getJSONObject(i);
 
                                                 // Storing each json item in variable
-                                                String id = c.getString(TAG_PID);
+                                                String pid = c.getString(TAG_PID);
                                                 String name = c.getString(TAG_NAME);
 
                                                 // creating new HashMap
                                                 HashMap<String, String> map = new HashMap<String, String>();
 
                                                 // adding each child node to HashMap key => value
-                                                map.put(TAG_PID, id);
+                                                map.put(TAG_PID, pid);
                                                 map.put(TAG_NAME, name);
 
                                                 // adding HashList to ArrayList

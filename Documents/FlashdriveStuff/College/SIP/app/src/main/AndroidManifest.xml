@@ -14,22 +14,28 @@
         <activity
             android:name=".MapHome"
             android:windowSoftInputMode="stateHidden" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".selectActivity"
             android:label="@string/title_activity_select"
             android:windowSoftInputMode="stateHidden" >
         </activity>
-        <activity android:name=".getAllSites" >
+        <activity android:name=".AllSitesActivity" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
-        <activity android:name=".GetAllUnits" >
+        <activity android:name=".AllUnitsActivity" >
         </activity>
         <activity android:name=".NewSiteActivity" >
+        </activity>
+        <activity android:name=".NewUnitActivity" >
+        </activity>
+        <activity android:name=".AllLevelsActivity" >
+        </activity>
+        <activity android:name=".NewLevelActivity" >
         </activity>
     </application>
 

@@ -5,34 +5,34 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <!-- Name Label -->
+    <!-- Coordinates Label -->
     <TextView android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Site Name"
+        android:text="Datum Coordinate"
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
         android:paddingTop="10dip"
         android:textSize="17dip"/>
 
-    <!-- Input Name -->
-    <EditText android:id="@+id/inputName"
+    <!-- Input Coordinates -->
+    <EditText android:id="@+id/inputCoords"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dip"
         android:layout_marginBottom="15dip"
         android:singleLine="true"/>
 
-    <!-- Description Label -->
+    <!-- Excavators Label -->
     <TextView android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Description"
+        android:text="Excavators"
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
         android:paddingTop="10dip"
         android:textSize="17dip"/>
 
-    <!-- Input description -->
-    <EditText android:id="@+id/inputDesc"
+    <!-- Input excavators -->
+    <EditText android:id="@+id/inputExcs"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dip"
@@ -42,16 +42,16 @@
 
 
 
-    <!-- DateFound Label -->
+    <!-- DateOpened Label -->
     <TextView android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Date discovered"
+        android:text="Date opened"
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
         android:paddingTop="10dip"
         android:textSize="17dip"/>
 
-    <!-- Input DateFound -->
+    <!-- Input DateOpened -->
     <EditText android:id="@+id/inputDate"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -61,27 +61,44 @@
 
 
 
-    <!-- SiteNumber Label -->
+    <!-- Reasoning Label -->
     <TextView android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Site Number"
+        android:text="Reason for opening"
         android:paddingLeft="10dip"
         android:paddingRight="10dip"
         android:paddingTop="10dip"
         android:textSize="17dip"/>
 
-    <!-- Input Site Number -->
-    <EditText android:id="@+id/inputNumb"
+    <!-- Input Reason -->
+    <EditText android:id="@+id/inputReas"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_margin="5dip"
         android:layout_marginBottom="15dip"
         android:singleLine="true"/>
 
-    <!-- Button Create Site -->
-    <Button android:id="@+id/btnCreateSite"
+    <!-- Dimensions Label -->
+    <TextView android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Dimensions"
+        android:paddingLeft="10dip"
+        android:paddingRight="10dip"
+        android:paddingTop="10dip"
+        android:textSize="17dip"/>
+
+    <!-- Input Dimensions -->
+    <EditText android:id="@+id/inputDims"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Create Site"/>
+        android:layout_margin="5dip"
+        android:layout_marginBottom="15dip"
+        android:singleLine="true"/>
+
+    <!-- Button Create Unit -->
+    <Button android:id="@+id/btnCreateUnit"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Unit"/>
 
 </LinearLayout>

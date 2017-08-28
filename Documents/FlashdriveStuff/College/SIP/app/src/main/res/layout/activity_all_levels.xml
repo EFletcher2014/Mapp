@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/siteName"
+        android:id="@+id/siteNameUnitNumber"
         android:textSize="32dp"
         android:gravity="center"/>
 
@@ -24,7 +24,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/newUnitBtn"
-        android:text="Create New Unit"/>
+        android:id="@+id/newLevelBtn"
+        android:text="Create New Level"/>
 
 </LinearLayout>

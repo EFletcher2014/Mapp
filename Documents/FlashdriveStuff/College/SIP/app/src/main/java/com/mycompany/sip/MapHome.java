@@ -45,8 +45,9 @@ public class MapHome extends AppCompatActivity {
     private String dbName = "mapp";
     private String siteName = "22BE23";
     private int pk = 1;
-    private int unitNumber = 5;
+    private String unitNumber = "";
     private int levelNumber = 5;
+    private String levelDepth = "";
     private String imageReference = "IMAGE";
     private String description = "DESCRIPTION HERE2";
     private String dateTime;
@@ -58,6 +59,18 @@ public class MapHome extends AppCompatActivity {
         //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mytitle);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_home);
+
+        //added by Emily Fletcher 8/27/17
+        Intent openIntent = getIntent();
+        siteName = openIntent.getStringExtra("siteName");
+        unitNumber = openIntent.getStringExtra("unitNumber");
+        levelDepth = openIntent.getStringExtra("depth");
+        TextView siteNameText = (TextView) findViewById(R.id.SiteNameLevel);
+        siteNameText.setText(siteName);
+        TextView unitNumberText = (TextView) findViewById(R.id.UnitNumberLevel);
+        unitNumberText.setText(unitNumber);
+        TextView depth = (TextView) findViewById(R.id.levelDepth);
+        depth.setText(levelDepth);
 
         final ImageView unitImage = (ImageView) findViewById(R.id.unitImgView);
         unitImage.setOnClickListener(new View.OnClickListener() {

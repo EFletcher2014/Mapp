@@ -12,7 +12,7 @@
         style="@style/AppTheme"
         android:orientation="vertical" tools:context=".MapHome">
 
-        <TextView android:text="Project Name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" />
+        <TextView android:text="Project Name" android:id="@+id/SiteNameLevel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" />
 
         <!--want these to be on the same line, at the top-->
         <LinearLayout
@@ -20,15 +20,21 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal" tools:context=".MapHome">
             <TextView android:text="@string/site_number" android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:gravity="left" android:layout_gravity="left" android:layout_weight="1"/>
-            <TextView android:text="@string/unit_number" android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:gravity="right" android:layout_gravity="right"
+                android:layout_height="wrap_content" android:gravity="left" android:layout_gravity="start" android:layout_weight="1"/>
+            <TextView android:id="@+id/UnitNumberLevel" android:text="@string/unit_number" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:gravity="right" android:layout_gravity="end"
                 android:layout_weight="1"/>
         </LinearLayout>
 
-        <!--a dynamically-changed (??) textbox with the unit's level-->
-        <TextView android:text="@string/level_number" android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_gravity="center"/>
+        <LinearLayout
+            xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" tools:context=".MapHome">
+            <!--a dynamically-changed (??) textbox with the unit's level-->
+            <TextView android:id="@+id/levelNumber" android:text="@string/level_number" android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:gravity="center" android:layout_gravity="start" android:layout_weight="1"/>
+            <TextView android:id="@+id/levelDepth" android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center" android:layout_gravity="end" android:layout_weight="1"/>
+        </LinearLayout>
 
         <!--an imageView which will show the selected image of the unit.-->
         <ImageView

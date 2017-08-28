@@ -6,6 +6,7 @@ import java.util.HashMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -29,6 +31,8 @@ public class AllUnitsActivity extends ListActivity {
     JSONParser jParser = new JSONParser();
 
     ArrayList<HashMap<String, String>> unitsList;
+    boolean test=true;
+    String[] testUnits = {"N24W11", "N23E9", "N24W6"};
 
     // url to get all sites list
     //TODO: Get real URL
@@ -38,7 +42,8 @@ public class AllUnitsActivity extends ListActivity {
     private static final String TAG_SUCCESS = "success";
     private static final String TAG_UNITS = "units";
     private static final String TAG_PID = "pid";
-    private static final String TAG_NAME = "name";
+    private static final String TAG_NAME = "datum";
+    private static String siteName="";
 
     // sites JSONArray
     JSONArray sites = null;
@@ -46,13 +51,46 @@ public class AllUnitsActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_get_all_sites);
+        setContentView(R.layout.activity_get_all_units);
+
+        //added by Emily Fletcher 8/27/17
+        Intent openIntent = getIntent();
+        siteName = openIntent.getStringExtra("name");
+        TextView siteNameText = (TextView) findViewById(R.id.siteName);
+        siteNameText.setText(siteName + " Units");
 
         // Hashmap for ListView
         unitsList = new ArrayList<HashMap<String, String>>();
 
-        // Loading sites in Background Thread
-        new LoadAllUnits().execute();
+        if(!test) {
+            // Loading sites in Background Thread
+            new LoadAllUnits().execute();
+        }
+        else {
+            // looping through All units
+            for (int i = 0; i < 3; i++) {
+
+                String datum = testUnits[i];
+
+                // creating new HashMap
+                HashMap<String, String> testMap = new HashMap<String, String>();
+
+                // adding each child node to HashMap key => value
+                testMap.put(TAG_PID, i + "");
+                testMap.put(TAG_NAME, datum);
+
+                // adding HashList to ArrayList
+                unitsList.add(testMap);
+                System.out.println(unitsList);
+            }
+            ListAdapter adapter = new SimpleAdapter(
+                    AllUnitsActivity.this, unitsList,
+                    R.layout.list_item, new String[] { TAG_PID,
+                    TAG_NAME},
+                    new int[] { R.id.pid, R.id.name });
+            // updating listview
+            setListAdapter(adapter);
+        }
 
         // Get listview
         ListView lv = getListView();
@@ -67,15 +105,33 @@ public class AllUnitsActivity extends ListActivity {
                 // getting values from selected ListItem
                 String pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
+                String datum = ((TextView) view.findViewById(R.id.name)).getText().toString();
 
                 // Starting new intent
                 Intent in = new Intent(getApplicationContext(),
-                        GetAllLevels.class);
+                        AllLevelsActivity.class);
                 // sending pid to next activity
                 in.putExtra(TAG_PID, pid);
+                in.putExtra("name", siteName);
+                in.putExtra(TAG_NAME, datum);
 
                 // starting new activity and expecting some response back
                 startActivityForResult(in, 100);
+            }
+        });
+
+        //on clicking new unit button
+        //launching new unit activity
+        Button newUnit = (Button) findViewById(R.id.newUnitBtn);
+        newUnit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Launch Add New product Activity
+                Intent i = new Intent(getApplicationContext(),
+                        NewUnitActivity.class);
+                // Closing all previous activities
+                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(i);
             }
         });
 
