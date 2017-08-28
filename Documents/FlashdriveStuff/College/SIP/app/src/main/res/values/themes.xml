@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--from https://stackoverflow.com/questions/2251714/set-title-background-color-->
+<resources>
+    <style name="customTheme" parent="android:Theme">
+        <item name="android:windowTitleBackgroundStyle">@style/WindowTitleBackground</item>
+    </style>
+</resources>
