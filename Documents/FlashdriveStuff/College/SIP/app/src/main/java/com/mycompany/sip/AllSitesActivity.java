@@ -15,6 +15,8 @@ package com.mycompany.sip;
         import android.content.Intent;
         import android.os.AsyncTask;
         import android.os.Bundle;
+        import android.support.design.widget.FloatingActionButton;
+        import android.support.v7.app.AppCompatActivity;
         import android.util.Log;
         import android.view.View;
         import android.widget.AdapterView;
@@ -29,7 +31,7 @@ public class AllSitesActivity extends ListActivity {
         // Progress Dialog
         private ProgressDialog pDialog;
         boolean test=true;
-        String[] testSites = {"Fort St. Joseph", "Lyne Site", "Fort Michilimackinac"};
+        String[] testSites = {"Fort St. Joseph", "Lyne Site", "Fort Michilimackinac", "Fort Mackinac", "Site A", "Fletcher Site", "Jamestown", "White City", "Chichen Itza", "Dan", "foobar", "Copenhagen", "test site", "goldfish crackers", "Kampsville Gardens", "horrible reviews", "yahoo", "teotihuacan", "n0", "yes"};
 
         // Creating JSON Parser object
         JSONParser jParser = new JSONParser();
@@ -66,7 +68,7 @@ public class AllSitesActivity extends ListActivity {
             else
             {
                 // looping through All sites
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < 20; i++) {
 
                     String name = testSites[i];
 
@@ -120,7 +122,7 @@ public class AllSitesActivity extends ListActivity {
 
                 //on clicking new site button
                 //launching new site activity
-                Button newSite = (Button) findViewById(R.id.newSiteBtn);
+                /*FloatingAction*/Button newSite = (/*FloatingAction*/Button) findViewById(R.id.newSiteBtn);
                 newSite.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View view) {

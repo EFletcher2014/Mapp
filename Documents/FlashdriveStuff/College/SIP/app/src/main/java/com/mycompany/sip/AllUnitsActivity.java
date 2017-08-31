@@ -129,6 +129,7 @@ public class AllUnitsActivity extends ListActivity {
                 // Launch Add New product Activity
                 Intent i = new Intent(getApplicationContext(),
                         NewUnitActivity.class);
+                i.putExtra("name", siteName);
                 // Closing all previous activities
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);

@@ -1,16 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
-    <!-- Main ListView
-         Always give id value as list(@android:id/list)
-        TODO: is this gonna cause problems?
-    -->
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"/>
+
+        <!-- Added by Emily Fletcher 8/28/17-->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sites"
+            android:textSize="32dp"
+            android:gravity="center"/>
+
+        <!-- Main ListView
+             Always give id value as list(@android:id/list)
+            TODO: is this gonna cause problems?
+        -->
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"/>
+
+    <!--TODO: decide if this should be a FAB or just a regular button. For now, a FAB does the same thing as a regular one
+    since I can't get the FAB to be on top for some reason. Also, add a search feature?-->
+    <!--
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/newSiteBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_margin="16dp"
+        android:src="@drawable/plus"
+        app:backgroundTint="@color/colorPrimaryDark"/>
+       -->
 
     <Button
         android:layout_width="match_parent"
@@ -18,4 +42,4 @@
         android:id="@+id/newSiteBtn"
         android:text="Create New Site"/>
 
-</LinearLayout>
+    </LinearLayout>
