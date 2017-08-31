@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class NewUnitActivity extends Activity {
 
@@ -40,6 +41,7 @@ public class NewUnitActivity extends Activity {
     EditText inputDate;
     EditText inputReas;
     EditText inputDims;
+    String siteName;
     //TODO: might be better to have a layout where the user is forced to input all four coordinates manually
 
     //TODO: get actual URL
@@ -53,6 +55,13 @@ public class NewUnitActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_unit);
+
+        //added by Emily Fletcher 8/28/17
+        Intent openIntent = getIntent();
+        siteName = openIntent.getStringExtra("name");
+        TextView siteNameText = (TextView) findViewById(R.id.newUnitTitle);
+        siteNameText.setText("Add a new unit to " + siteName);
+
 
         // Edit Text
         //TODO: will inputDate in two different activities be alright?

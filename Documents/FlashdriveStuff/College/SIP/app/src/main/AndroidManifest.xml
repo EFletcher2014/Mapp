@@ -31,11 +31,15 @@
         </activity>
         <activity android:name=".NewSiteActivity" >
         </activity>
-        <activity android:name=".NewUnitActivity" >
+        <activity
+            android:name=".NewUnitActivity"
+            android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity android:name=".AllLevelsActivity" >
         </activity>
         <activity android:name=".NewLevelActivity" >
+        </activity>
+        <activity android:name=".AllArtifactsActivity" >
         </activity>
     </application>
 

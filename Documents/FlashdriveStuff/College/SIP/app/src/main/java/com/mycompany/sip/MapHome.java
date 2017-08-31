@@ -46,7 +46,7 @@ public class MapHome extends AppCompatActivity {
     private String siteName = "22BE23";
     private int pk = 1;
     private String unitNumber = "";
-    private int levelNumber = 5;
+    private String levelNumber = "5";
     private String levelDepth = "";
     private String imageReference = "IMAGE";
     private String description = "DESCRIPTION HERE2";
@@ -69,6 +69,9 @@ public class MapHome extends AppCompatActivity {
         siteNameText.setText(siteName);
         TextView unitNumberText = (TextView) findViewById(R.id.UnitNumberLevel);
         unitNumberText.setText(unitNumber);
+
+        //TODO: Figure out what to do if no depth is given, i.e. a new level is created and the user has to input depth
+        //Should that be an edittext? can I dynamically make it one?
         TextView depth = (TextView) findViewById(R.id.levelDepth);
         depth.setText(levelDepth);
 
@@ -81,6 +84,19 @@ public class MapHome extends AppCompatActivity {
                 pictureIntent.setType("image/*");
                 pictureIntent.setAction(Intent.ACTION_GET_CONTENT);
                 startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
+            }
+        });
+
+        final Button toAddArtifactActivity = (Button) findViewById(R.id.toAddArtifactsActivity);
+        toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Move to select on image activity
+                Intent artifactActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), AllArtifactsActivity.class);
+                artifactActivityIntent.putExtra("name", siteName);
+                artifactActivityIntent.putExtra("datum", unitNumber);
+                artifactActivityIntent.putExtra("depth", levelDepth);
+                startActivity(artifactActivityIntent);
             }
         });
 
