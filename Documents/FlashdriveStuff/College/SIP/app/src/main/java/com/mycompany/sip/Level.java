@@ -1,27 +1,41 @@
 package com.mycompany.sip;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Emily Fletcher on 8/30/2017.
- * Model Object for levels
+ * Model Object for levels made parcelable 9/2/17
  */
-public class Level {
+public class Level implements Parcelable {
     private int number;
     private double begDepth;
     private double endDepth;
-    private Site site;
+    private Site site; //TODO: do I need a site since it's listed in the unit that this level has?
     private Unit unit;
     private String dateStarted;
     private String excavationMethod;
 
     public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM)
     {
-        number=n;
-        begDepth=bD;
-        endDepth=eD;
-        site=s;
-        unit=u;
-        dateStarted=date;
-        excavationMethod=excM;
+        this.number=n;
+        this.begDepth=bD;
+        this.endDepth=eD;
+        this.site=s;
+        this.unit=u;
+        this.dateStarted=date;
+        this.excavationMethod=excM;
+    }
+
+    public Level(Parcel in)
+    {
+        this.number=in.readInt();
+        this.begDepth=in.readDouble();
+        this.endDepth=in.readDouble();
+        this.site=in.readParcelable(null);
+        this.unit=in.readParcelable(null);
+        this.dateStarted=in.readString();
+        this.excavationMethod=in.readString();
     }
 
     public int getNumber()
@@ -89,5 +103,36 @@ public class Level {
     {
         excavationMethod=ex;
     }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeInt(number);
+        dest.writeDouble(begDepth);
+        dest.writeDouble(endDepth);
+        dest.writeParcelable(site, flags);
+        dest.writeParcelable(unit, flags);
+        dest.writeString(dateStarted);
+        dest.writeString(excavationMethod);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Parcelable.Creator<Level> CREATOR = new Parcelable.Creator<Level>() {
+
+        public Level createFromParcel(Parcel in) {
+            return new Level(in);
+        }
+
+        public Level[] newArray(int size) {
+            return new Level[size];
+        }
+    };
+
+
+    //TODO: override .equals()
 
 }

@@ -31,9 +31,6 @@ public class AllLevelsActivity extends ListActivity {
 
     ArrayList<HashMap<String, String>> levelsList;
 
-    boolean test=true;
-    String[] testLevels = {"10-15cmbd", "15-20cmbd", "20-25cmbd"};
-
     // url to get all levels list
     //TODO: Get real URL
     private static String url_all_levels = "https://api.androidhive.info/android_connect/get_all_levels.php";
@@ -44,7 +41,15 @@ public class AllLevelsActivity extends ListActivity {
     private static final String TAG_UNITS = "units";
     private static final String TAG_PID = "pid";
     private static final String TAG_NAME = "name";
-    private static String siteName = "";
+    private static Site site;
+    private static Unit unit;
+
+
+
+    boolean test=true;
+    Level[] testLevels = {new Level(1, 10.0, 15.0, site, unit, "11/03/1996", "shovel skimmed"),
+            new Level(2, 15.0, 20.0, site, unit, "07/22/17", "troweling"),
+            new Level(3, 20.0, 25.0, site, unit, "08/2/17", "backhoe")};
 
     // levels JSONArray
     JSONArray levels = null;
@@ -59,10 +64,10 @@ public class AllLevelsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        siteName = openIntent.getStringExtra("name");
-        final String unitNumber = openIntent.getStringExtra("datum");
+        site = openIntent.getParcelableExtra("name");
+        unit = openIntent.getParcelableExtra("datum");
         TextView titleText = (TextView) findViewById(R.id.siteNameUnitNumber);
-        String title = siteName + " " + unitNumber + " Levels";
+        String title = site.getName() + " " + unit.getDatum() + " Levels";
         titleText.setText(title);
 
         if(!test) {
@@ -74,7 +79,7 @@ public class AllLevelsActivity extends ListActivity {
             // looping through All levels
             for (int i = 0; i < 3; i++) {
 
-                String depth = testLevels[i];
+                String depth = testLevels[i].getDepth();
 
                 // creating new HashMap
                 HashMap<String, String> testMap = new HashMap<String, String>();
@@ -119,9 +124,9 @@ public class AllLevelsActivity extends ListActivity {
                         MapHome.class);
                 // sending pid to next activity
                 in.putExtra(TAG_PID, pid);
-                in.putExtra("depth", depth);
-                in.putExtra("unitNumber", unitNumber);
-                in.putExtra("siteName", siteName);
+                in.putExtra("depth", testLevels[Integer.parseInt(pid)]);
+                in.putExtra("unitNumber", unit);
+                in.putExtra("siteName", site);
 
                 // starting new activity and expecting some response back
                 startActivityForResult(in, 100);
@@ -137,8 +142,8 @@ public class AllLevelsActivity extends ListActivity {
                 // Launch Add New product Activity
                 Intent i = new Intent(getApplicationContext(),
                         MapHome.class);
-                i.putExtra("siteName", siteName);
-                i.putExtra("unitNumber", unitNumber);
+                i.putExtra("siteName", site);
+                i.putExtra("unitNumber", unit);
                 // Closing all previous activities
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);

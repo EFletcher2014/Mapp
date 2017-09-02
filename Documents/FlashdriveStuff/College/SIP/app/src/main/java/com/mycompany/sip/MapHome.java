@@ -43,14 +43,18 @@ public class MapHome extends AppCompatActivity {
     private String serverName = "192.168.2.7";//"192.168.1.187"; //"184.53.49.56";
     private String portNumber = "3306";
     private String dbName = "mapp";
-    private String siteName = "22BE23";
+    private String siteName;
+    private String siteNumber;
     private int pk = 1;
     private String unitNumber = "";
-    private String levelNumber = "5";
-    private String levelDepth = "";
+    private String levelNumber;
+    private String levelDepth;
     private String imageReference = "IMAGE";
     private String description = "DESCRIPTION HERE2";
     private String dateTime;
+    private Site site;
+    private Unit unit;
+    private Level level;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -62,18 +66,35 @@ public class MapHome extends AppCompatActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        siteName = openIntent.getStringExtra("siteName");
-        unitNumber = openIntent.getStringExtra("unitNumber");
-        levelDepth = openIntent.getStringExtra("depth");
+        site = openIntent.getParcelableExtra("siteName");
+        siteName=site.getName();
+        siteNumber=site.getNumber();
+        unit = openIntent.getParcelableExtra("unitNumber");
+        unitNumber=unit.getDatum();
+        level = openIntent.getParcelableExtra("depth");
+        if(level!=null) {
+            levelNumber = level.getNumber() + "";
+            levelDepth = level.getDepth();
+        }
+        else
+        {
+            //TODO: these vvvvvvv
+            //Query server for new level number
+            //make edittext for depth
+        }
         TextView siteNameText = (TextView) findViewById(R.id.SiteNameLevel);
-        siteNameText.setText(siteName);
+        siteNameText.setText("Site: " + siteName);
+        TextView siteNumberText = (TextView) findViewById(R.id.siteNumLevel);
+        siteNumberText.setText("Site Number: " + siteNumber);
         TextView unitNumberText = (TextView) findViewById(R.id.UnitNumberLevel);
-        unitNumberText.setText(unitNumber);
+        unitNumberText.setText("Unit: " + unitNumber);
+        TextView levelNumberText = (TextView) findViewById(R.id.levelNumber);
+        levelNumberText.setText("Level " + levelNumber);
+        TextView levelDepthText = (TextView) findViewById(R.id.levelDepth);
+        levelDepthText.setText("Depth: " + levelDepth);
 
         //TODO: Figure out what to do if no depth is given, i.e. a new level is created and the user has to input depth
         //Should that be an edittext? can I dynamically make it one?
-        TextView depth = (TextView) findViewById(R.id.levelDepth);
-        depth.setText(levelDepth);
 
         final ImageView unitImage = (ImageView) findViewById(R.id.unitImgView);
         unitImage.setOnClickListener(new View.OnClickListener() {
@@ -87,15 +108,16 @@ public class MapHome extends AppCompatActivity {
             }
         });
 
+        //TODO: Throw error if user tries to click these buttons before saving the level
         final Button toAddArtifactActivity = (Button) findViewById(R.id.toAddArtifactsActivity);
         toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //Move to select on image activity
                 Intent artifactActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), AllArtifactsActivity.class);
-                artifactActivityIntent.putExtra("name", siteName);
-                artifactActivityIntent.putExtra("datum", unitNumber);
-                artifactActivityIntent.putExtra("depth", levelDepth);
+                artifactActivityIntent.putExtra("name", site);
+                artifactActivityIntent.putExtra("datum", unit);
+                artifactActivityIntent.putExtra("depth", level);
                 startActivity(artifactActivityIntent);
             }
         });

@@ -1,10 +1,13 @@
 package com.mycompany.sip;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by Emily Fletcher on 8/30/2017.
  * Model Object for Units
  */
-public class Unit {
+public class Unit implements Parcelable {
 
     private String datum;
     private String dateOpened;
@@ -16,14 +19,25 @@ public class Unit {
 
     public Unit(String dat, String date, String nsDim, String ewDim, Site st, String exc, String reas)
     {
-        datum=dat;
-        dateOpened=date;
-        nsDimension=nsDim;
-        ewDimension=ewDim;
-        site=st;
-        excavators=exc;
-        reasonForOpening=reas;
+        this.datum=dat;
+        this.dateOpened=date;
+        this.nsDimension=nsDim;
+        this.ewDimension=ewDim;
+        this.site=st;
+        this.excavators=exc;
+        this.reasonForOpening=reas;
 
+    }
+
+    public Unit(Parcel in)
+    {
+        this.datum=in.readString();
+        this.dateOpened=in.readString();
+        this.nsDimension=in.readString();
+        this.ewDimension=in.readString();
+        this.site=in.readParcelable(null);
+        this.excavators=in.readString();
+        this.reasonForOpening=in.readString();
     }
 
     public String getDatum()
@@ -97,4 +111,33 @@ public class Unit {
         reasonForOpening=r;
     }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags)
+    {
+        dest.writeString(datum);
+        dest.writeString(dateOpened);
+        dest.writeString(nsDimension);
+        dest.writeString(ewDimension);
+        dest.writeParcelable(site, flags);
+        dest.writeString(excavators);
+        dest.writeString(reasonForOpening);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    public static final Parcelable.Creator<Unit> CREATOR = new Parcelable.Creator<Unit>() {
+
+        public Unit createFromParcel(Parcel in) {
+            return new Unit(in);
+        }
+
+        public Unit[] newArray(int size) {
+            return new Unit[size];
+        }
+    };
+
+    //TODO: override .equals()
 }

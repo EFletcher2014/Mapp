@@ -1,25 +1,27 @@
 package com.mycompany.sip;
 
+import android.os.Parcelable;
+
 /**
  * Created by Emily Fletcher on 8/30/2017.
  * Model Object for Artifacts
  */
-public class Artifact {
+public class Artifact{
 
     private Site site;
     private Unit unit;
     private Level level;
-    private String catalogNumber; //TODO: should this go with site?
-    private int accessionNumber;
+    private String accessionNumber; //TODO: should this go with site?
+    private int catalogNumber;
     private String contents;
 
-    public Artifact(Site s, Unit u, Level l, String cat, int acc, String con)
+    public Artifact(Site s, Unit u, Level l, String acc, int cat, String con)
     {
         site=s;
         unit=u;
         level=l;
-        catalogNumber=cat;
         accessionNumber=acc;
+        catalogNumber=cat;
         contents=con;
     }
 
@@ -38,12 +40,12 @@ public class Artifact {
         return level;
     }
 
-    public String getCatalogNumber()
+    public int getCatalogNumber()
     {
         return catalogNumber;
     }
 
-    public int getAccessionNumber()
+    public String getAccessionNumber()
     {
         return accessionNumber;
     }
@@ -59,9 +61,9 @@ public class Artifact {
         return accessionNumber + "-" + catalogNumber + " " + contents;
     }
 
-    public void setAccessionNumber(int a)
+    public void setCatalogNumber(int c)
     {
-        accessionNumber=a;
+        catalogNumber=c;
     }
 
     public void setContents(String c)
@@ -70,4 +72,5 @@ public class Artifact {
     }
 
 
+    //TODO: override .equals()
 }
