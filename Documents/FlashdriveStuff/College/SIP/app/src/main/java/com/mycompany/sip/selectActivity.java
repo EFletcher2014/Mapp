@@ -4,10 +4,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -36,7 +33,7 @@ public class selectActivity extends AppCompatActivity {
     public void onClickArtifact(View view)
     {
         LayoutInflater inflater = getLayoutInflater();
-        View artifactLayout = inflater.inflate(R.layout.layout_custom_dialog, null);
+        View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Create New Artifact");
         // this is set the view from XML inside AlertDialog

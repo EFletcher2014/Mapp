@@ -3,7 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
-    <!--TODO: figure out why this activity has a different font than the rest-->
     <LinearLayout
         xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
         android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -20,7 +19,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal" tools:context=".MapHome">
             <TextView android:text="@string/site_number" android:layout_width="wrap_content"
-                android:layout_height="wrap_content" android:gravity="left" android:layout_gravity="start" android:layout_weight="1"/>
+                android:layout_height="wrap_content" android:gravity="left" android:layout_gravity="start" android:layout_weight="1" android:id="@+id/siteNumLevel"/>
             <TextView android:id="@+id/UnitNumberLevel" android:text="@string/unit_number" android:layout_width="wrap_content"
                 android:layout_height="wrap_content" android:gravity="right" android:layout_gravity="end"
                 android:layout_weight="1"/>
@@ -93,5 +92,6 @@
             android:clickable="true"
             android:layout_gravity="center_horizontal"/>
 
+        <!--TODO: Add a cancel button which takes the user back to the list-->
     </LinearLayout>
 </ScrollView>

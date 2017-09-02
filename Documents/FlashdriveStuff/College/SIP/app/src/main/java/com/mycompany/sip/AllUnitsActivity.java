@@ -31,8 +31,6 @@ public class AllUnitsActivity extends ListActivity {
     JSONParser jParser = new JSONParser();
 
     ArrayList<HashMap<String, String>> unitsList;
-    boolean test=true;
-    String[] testUnits = {"N24W11", "N23E9", "N24W6"};
 
     // url to get all sites list
     //TODO: Get real URL
@@ -43,7 +41,12 @@ public class AllUnitsActivity extends ListActivity {
     private static final String TAG_UNITS = "units";
     private static final String TAG_PID = "pid";
     private static final String TAG_NAME = "datum";
-    private static String siteName="";
+    private static Site site;
+
+    boolean test=true;
+    Unit[] testUnits = {new Unit("N24W11", "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters"),
+            new Unit("N23E9",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters"),
+            new Unit("N24W6",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters")};
 
     // sites JSONArray
     JSONArray sites = null;
@@ -55,9 +58,9 @@ public class AllUnitsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        siteName = openIntent.getStringExtra("name");
+        site = openIntent.getParcelableExtra("name");
         TextView siteNameText = (TextView) findViewById(R.id.siteName);
-        siteNameText.setText(siteName + " Units");
+        siteNameText.setText(site.getName() + " Units");
 
         // Hashmap for ListView
         unitsList = new ArrayList<HashMap<String, String>>();
@@ -70,7 +73,7 @@ public class AllUnitsActivity extends ListActivity {
             // looping through All units
             for (int i = 0; i < 3; i++) {
 
-                String datum = testUnits[i];
+                String datum = testUnits[i].getDatum();
 
                 // creating new HashMap
                 HashMap<String, String> testMap = new HashMap<String, String>();
@@ -112,8 +115,8 @@ public class AllUnitsActivity extends ListActivity {
                         AllLevelsActivity.class);
                 // sending pid to next activity
                 in.putExtra(TAG_PID, pid);
-                in.putExtra("name", siteName);
-                in.putExtra(TAG_NAME, datum);
+                in.putExtra("name", site);
+                in.putExtra(TAG_NAME, testUnits[Integer.parseInt(pid)]);
 
                 // starting new activity and expecting some response back
                 startActivityForResult(in, 100);
@@ -129,7 +132,7 @@ public class AllUnitsActivity extends ListActivity {
                 // Launch Add New product Activity
                 Intent i = new Intent(getApplicationContext(),
                         NewUnitActivity.class);
-                i.putExtra("name", siteName);
+                i.putExtra("name", site);
                 // Closing all previous activities
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(i);

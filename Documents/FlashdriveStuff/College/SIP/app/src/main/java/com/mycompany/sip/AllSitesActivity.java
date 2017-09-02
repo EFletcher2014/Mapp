@@ -31,7 +31,26 @@ public class AllSitesActivity extends ListActivity {
         // Progress Dialog
         private ProgressDialog pDialog;
         boolean test=true;
-        String[] testSites = {"Fort St. Joseph", "Lyne Site", "Fort Michilimackinac", "Fort Mackinac", "Site A", "Fletcher Site", "Jamestown", "White City", "Chichen Itza", "Dan", "foobar", "Copenhagen", "test site", "goldfish crackers", "Kampsville Gardens", "horrible reviews", "yahoo", "teotihuacan", "n0", "yes"};
+        Site[] testSites = {new Site("Fort St. Joseph", "20BE23", "11/03/1996", "location", "a site"),
+                new Site("Lyne Site", "20BE10", "11/1/1111", "location", "another site"),
+                new Site("Fort Michilimackinac", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("Fort Mackinac", "23MA23", "11/11/1011", "location", "yet another freaking site"),
+                new Site("Site A", "22ZZ23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("Fletcher Site", "3FL3", "11/11/1010", "location", "yet another freaking site"),
+                new Site("Jamestown", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("White City", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("Chichen Itza", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("Dan", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("foobar", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("Copenhagen", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("test site", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("goldfish crackers","22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("Kampsville Gardens", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("horrible reviews", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("yahoo", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("teotihuacan", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("n0", "22MA23", "11/11/1010", "location", "yet another freaking site"),
+                new Site("yes", "22MA23", "11/11/1010", "location", "yet another freaking site"),};
 
         // Creating JSON Parser object
         JSONParser jParser = new JSONParser();
@@ -70,7 +89,7 @@ public class AllSitesActivity extends ListActivity {
                 // looping through All sites
                 for (int i = 0; i < 20; i++) {
 
-                    String name = testSites[i];
+                    String name = testSites[i].getName();
 
                     // creating new HashMap
                     HashMap<String, String> testMap = new HashMap<String, String>();
@@ -113,7 +132,7 @@ public class AllSitesActivity extends ListActivity {
                                         AllUnitsActivity.class);
                                 // sending pid to next activity
                                 in.putExtra(TAG_PID, pid);
-                                in.putExtra(TAG_NAME, name);
+                                in.putExtra(TAG_NAME, testSites[Integer.parseInt(pid)]);
 
                                 // starting new activity and expecting some response back
                                 startActivityForResult(in, 100);

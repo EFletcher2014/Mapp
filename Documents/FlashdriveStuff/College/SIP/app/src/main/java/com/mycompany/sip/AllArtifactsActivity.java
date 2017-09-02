@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,10 +20,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class AllArtifactsActivity extends ListActivity {
     // Progress Dialog
@@ -33,8 +36,15 @@ public class AllArtifactsActivity extends ListActivity {
 
     ArrayList<HashMap<String, String>> artifactsList;
 
+    private static Site site;
+    private static Unit unit;
+    private static Level level;
+
+
     boolean test=true;
-    String[] testArtifacts = {"17-2-17 seed bead", "17-2-16 projectile point", "17-2-27 flint flake"};
+    Artifact[] testArtifacts = {new Artifact(site, unit, level, "17-2", 17, "seed bead"),
+            new Artifact(site, unit, level, "17-2", 16, "projectile point"),
+            new Artifact(site, unit, level, "17-2", 27, "flint flake")};
 
     // url to get all artifacts list
     //TODO: Get real URL
@@ -46,9 +56,6 @@ public class AllArtifactsActivity extends ListActivity {
     private static final String TAG_UNITS = "units";
     private static final String TAG_PID = "pid";
     private static final String TAG_NAME = "artifact";
-    private static String siteName = "";
-    private static String unitNumber = "";
-    private static String levelDepth ="";
 
     // levels JSONArray
     JSONArray levels = null;
@@ -63,11 +70,11 @@ public class AllArtifactsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/29/17
         Intent openIntent = getIntent();
-        siteName = openIntent.getStringExtra("name");
-        unitNumber = openIntent.getStringExtra("datum");
-        levelDepth = openIntent.getStringExtra("depth");
+        site = openIntent.getParcelableExtra("name");
+        unit = openIntent.getParcelableExtra("datum");
+        level = openIntent.getParcelableExtra("depth");
         TextView titleText = (TextView) findViewById(R.id.artifactsLabel);
-        String title = siteName + " " + unitNumber + " " + levelDepth + " Artifacts";
+        String title = site.getName() + " " + unit.getDatum() + " Level " + level.getNumber() + " Artifacts";
         titleText.setText(title);
 
         if(!test) {
@@ -79,7 +86,7 @@ public class AllArtifactsActivity extends ListActivity {
             // looping through All levels
             for (int i = 0; i < 3; i++) {
 
-                String artifact = testArtifacts[i];
+                String artifact = testArtifacts[i].toString();
 
                 // creating new HashMap
                 HashMap<String, String> testMap = new HashMap<String, String>();
@@ -112,21 +119,40 @@ public class AllArtifactsActivity extends ListActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
+                String depth = ((TextView) view.findViewById(R.id.name)).getText()
+                    .toString();
+                String pid = ((TextView) view.findViewById(R.id.pid)).getText()
+                        .toString();
                 LayoutInflater inflater = getLayoutInflater();
-                View artifactLayout = inflater.inflate(R.layout.layout_custom_dialog, null);
+                final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
                 AlertDialog.Builder alert = new AlertDialog.Builder(AllArtifactsActivity.this);
                 alert.setTitle("Edit Artifact");
+                alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Do server stuff
+                        CharSequence toastMessage = "Saving Artifact...";
+                        Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+                });
+                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Go back
+                    }
+                });
                 // this is set the view from XML inside AlertDialog
                 alert.setView(artifactLayout);
                 AlertDialog dialog = alert.create();
+                EditText accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
+                accNum.setText(testArtifacts[Integer.parseInt(pid)].getAccessionNumber());
+                EditText catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
+                catNum.setText(testArtifacts[Integer.parseInt(pid)].getCatalogNumber() + "");
+                EditText contents = (EditText) artifactLayout.findViewById(R.id.contents);
+                contents.setText(testArtifacts[Integer.parseInt(pid)].getContents());
                 dialog.show();
 
                 //TODO: make these fields autofill, like the other edit screens
                 // getting values from selected ListItem
-                String pid = ((TextView) view.findViewById(R.id.pid)).getText()
-                        .toString();
-                String depth = ((TextView) view.findViewById(R.id.name)).getText()
-                        .toString();
 
             }
         });
@@ -138,7 +164,7 @@ public class AllArtifactsActivity extends ListActivity {
             @Override
             public void onClick(View view) {
                 LayoutInflater inflater = getLayoutInflater();
-                View artifactLayout = inflater.inflate(R.layout.layout_custom_dialog, null);
+                View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
                 AlertDialog.Builder alert = new AlertDialog.Builder(AllArtifactsActivity.this);
                 alert.setTitle("Add A New Artifact");
                 // this is set the view from XML inside AlertDialog

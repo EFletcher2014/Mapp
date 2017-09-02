@@ -9,7 +9,8 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="##-#"/>
+        android:hint="#"
+        android:id="@+id/accNum"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -17,7 +18,8 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="#"/>
+        android:hint="##-#"
+        android:id="@+id/catNum"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,13 +28,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
-        android:hint="Describe artifact here"/>
+        android:hint="Describe artifact here"
+        android:id="@+id/contents"/>
     <!--should add something to add a picture of the artifact too and maybe save coordinates-->
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/saveArtifact"
-        android:clickable="true"
-        android:hint="save"
-        android:layout_weight="1"/>
 </LinearLayout>
