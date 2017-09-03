@@ -10,13 +10,7 @@
         android:orientation="vertical" >
 
         <!-- Added by Emily Fletcher 8/28/17-->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/newUnitTitle"
-            android:text="Add a new unit to"
-            android:textSize="32dp"
-            android:gravity="center"/>
+        <!--Refactored into dialog by Emily Fletcher 9/3/17-->
 
         <!-- Coordinates Label -->
         <TextView android:layout_width="fill_parent"
@@ -91,28 +85,39 @@
             android:layout_marginBottom="15dip"
             android:lines="4"/>
 
-        <!-- Dimensions Label -->
+        <!-- NS Dimension Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Dimensions"
+            android:text="North/South Dimension:"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
             android:textSize="17dip"/>
 
-        <!-- Input Dimensions -->
-        <EditText android:id="@+id/inputDims"
+        <!-- Input NSDimensions -->
+        <EditText android:id="@+id/inputNSDims"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
             android:singleLine="true"/>
 
-        <!-- Button Create Unit -->
-        <Button android:id="@+id/btnCreateUnit"
+        <!-- EW Dimension Label -->
+        <TextView android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="East/West Dimension:"
+            android:paddingLeft="10dip"
+            android:paddingRight="10dip"
+            android:paddingTop="10dip"
+            android:textSize="17dip"/>
+
+        <!-- Input EWDimensions -->
+        <EditText android:id="@+id/inputEWDims"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Create Unit"/>
+            android:layout_margin="5dip"
+            android:layout_marginBottom="15dip"
+            android:singleLine="true"/>
 
     </LinearLayout>
 </ScrollView>

@@ -153,6 +153,14 @@ public class MapHome extends AppCompatActivity {
                 }).start();
             }
         });
+
+        final Button cancelButton = (Button) findViewById(R.id.maincancel);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                finish();
+            }
+        });
     }
     /**
      * FROM STACKOVERFLOW https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically*****

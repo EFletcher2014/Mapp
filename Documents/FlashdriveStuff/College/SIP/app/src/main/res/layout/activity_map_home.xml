@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    style="@style/AppTheme">
     <LinearLayout
         xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
         android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -11,7 +12,7 @@
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:orientation="vertical" tools:context=".MapHome">
 
-        <TextView android:text="Project Name" android:id="@+id/SiteNameLevel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" />
+        <TextView android:text="Project Name" android:id="@+id/SiteNameLevel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:textSize="24dp" />
 
         <!--want these to be on the same line, at the top-->
         <LinearLayout
@@ -50,7 +51,8 @@
             android:clickable="true"
             android:id="@+id/toAddArtifactsActivity"
             android:hint="Click here to see artifacts found in this level"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/colorPrimary"/>
 
         <Button
             android:layout_width="wrap_content"
@@ -85,12 +87,25 @@
             android:gravity="center"
             android:layout_weight="1"/>
 
+    <LinearLayout
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" tools:context=".MapHome">
+        <Button android:id="@+id/maincancel"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:hint="Cancel"
+            android:clickable="true"
+            android:layout_gravity="start"
+            android:layout_weight="1"/>
         <Button android:id="@+id/mainsave"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
-            android:hint="@string/savecontent"
+            android:hint="Save"
             android:clickable="true"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="end"
+            android:layout_weight="1"/>
+        </LinearLayout>
 
         <!--TODO: Add a cancel button which takes the user back to the list-->
     </LinearLayout>

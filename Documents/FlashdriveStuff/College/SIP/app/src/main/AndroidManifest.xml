@@ -7,7 +7,7 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/mapp"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar" >
@@ -29,15 +29,7 @@
         </activity>
         <activity android:name=".AllUnitsActivity" >
         </activity>
-        <activity android:name=".NewSiteActivity" >
-        </activity>
-        <activity
-            android:name=".NewUnitActivity"
-            android:windowSoftInputMode="stateHidden" >
-        </activity>
         <activity android:name=".AllLevelsActivity" >
-        </activity>
-        <activity android:name=".NewLevelActivity" >
         </activity>
         <activity android:name=".AllArtifactsActivity" >
         </activity>
