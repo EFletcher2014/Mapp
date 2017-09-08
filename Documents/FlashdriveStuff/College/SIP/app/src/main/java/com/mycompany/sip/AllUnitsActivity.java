@@ -120,7 +120,7 @@ public class AllUnitsActivity extends ListActivity {
                 String datum = ((TextView) view.findViewById(R.id.name)).getText().toString();
 
                 // Starting new intent
-                Intent in = new Intent(getApplicationContext(),
+                Intent in = new Intent(view.getContext(),
                         AllLevelsActivity.class);
                 // sending pid to next activity
                 in.putExtra(TAG_PID, pid);
@@ -343,6 +343,7 @@ public class AllUnitsActivity extends ListActivity {
                     if (success == 1) {
                         // successfully created product
                         //TODO: Should this go to NewUnitDialog or AllUnitsActivity?
+                        //TODO: make this not getApplicationContext
                         Intent i = new Intent(getApplicationContext(), AllUnitsActivity.class);
                         startActivity(i);
 

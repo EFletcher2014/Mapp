@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/siteNameUnitNumber"
-        android:textSize="32dp"
+        android:theme="@style/titleTheme"
         android:gravity="center"/>
 
     <!-- Main ListView

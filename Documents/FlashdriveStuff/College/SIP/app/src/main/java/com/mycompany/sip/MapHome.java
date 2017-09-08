@@ -1,6 +1,8 @@
 package com.mycompany.sip;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -9,6 +11,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -17,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toolbar;
+import android.widget.ViewSwitcher;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -55,6 +59,8 @@ public class MapHome extends AppCompatActivity {
     private Site site;
     private Unit unit;
     private Level level;
+    private EditText begDepth;
+    private EditText endDepth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -63,6 +69,8 @@ public class MapHome extends AppCompatActivity {
         //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mytitle);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_home);
+        begDepth = (EditText) findViewById(R.id.enterBegDepth);
+        endDepth = (EditText) findViewById(R.id.enterEndDepth);
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
@@ -75,12 +83,15 @@ public class MapHome extends AppCompatActivity {
         if(level!=null) {
             levelNumber = level.getNumber() + "";
             levelDepth = level.getDepth();
+            EditText begDepthText = (EditText) findViewById(R.id.enterBegDepth);
+            begDepthText.setText(level.getBegDepth() + "");
+            EditText endDepthText = (EditText) findViewById(R.id.enterEndDepth);
+            endDepthText.setText(level.getEndDepth() + "");
         }
         else
         {
             //TODO: these vvvvvvv
             //Query server for new level number
-            //make edittext for depth
         }
         TextView siteNameText = (TextView) findViewById(R.id.SiteNameLevel);
         siteNameText.setText("Site: " + siteName);
@@ -90,8 +101,6 @@ public class MapHome extends AppCompatActivity {
         unitNumberText.setText("Unit: " + unitNumber);
         TextView levelNumberText = (TextView) findViewById(R.id.levelNumber);
         levelNumberText.setText("Level " + levelNumber);
-        TextView levelDepthText = (TextView) findViewById(R.id.levelDepth);
-        levelDepthText.setText("Depth: " + levelDepth);
 
         //TODO: Figure out what to do if no depth is given, i.e. a new level is created and the user has to input depth
         //Should that be an edittext? can I dynamically make it one?
@@ -157,8 +166,26 @@ public class MapHome extends AppCompatActivity {
         final Button cancelButton = (Button) findViewById(R.id.maincancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                finish();
+            public void onClick(View view) {
+                // Throws dialog asking if user wants to cancel without saving
+                LayoutInflater inflater = getLayoutInflater();
+                final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
+                AlertDialog.Builder alert = new AlertDialog.Builder(MapHome.this);
+                alert.setTitle("Cancel?");
+                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        finish();
+                    }
+
+                });
+                alert.setNegativeButton("Nevermind", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Go back
+                    }
+                });
+                alert.setView(cancelLayout);
+                AlertDialog dialog = alert.create();
+                dialog.show();
             }
         });
     }

@@ -39,9 +39,11 @@ public class AllArtifactsActivity extends ListActivity {
     private static Site site;
     private static Unit unit;
     private static Level level;
+    private static Artifact artifact;
 
 
     boolean test=true;
+    ArrayList<Artifact> testArtifactsList = new ArrayList<>();
     Artifact[] testArtifacts = {new Artifact(site, unit, level, "17-2", 17, "seed bead"),
             new Artifact(site, unit, level, "17-2", 16, "projectile point"),
             new Artifact(site, unit, level, "17-2", 27, "flint flake")};
@@ -83,10 +85,13 @@ public class AllArtifactsActivity extends ListActivity {
         }
         else
         {
+            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 17, "seed bead"));
+            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 16, "projectile point"));
+            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 27, "flint flake"));
             // looping through All levels
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < testArtifactsList.size(); i++) {
 
-                String artifact = testArtifacts[i].toString();
+                String artifact = testArtifactsList.get(i).toString();
 
                 // creating new HashMap
                 HashMap<String, String> testMap = new HashMap<String, String>();
@@ -164,9 +169,45 @@ public class AllArtifactsActivity extends ListActivity {
             @Override
             public void onClick(View view) {
                 LayoutInflater inflater = getLayoutInflater();
-                View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
+                final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
                 AlertDialog.Builder alert = new AlertDialog.Builder(AllArtifactsActivity.this);
                 alert.setTitle("Add A New Artifact");
+
+                alert.setPositiveButton("Create Artifact", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        EditText accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
+                        EditText catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
+                        EditText contents = (EditText) artifactLayout.findViewById(R.id.contents);
+
+                        artifact = new Artifact(site, unit, level, accNum.getText().toString(), Integer.parseInt(catNum.getText().toString()), contents.getText().toString());
+
+
+
+                        //TODO: Make sure this new site shows up on all sites
+                        //if not testing, save to server
+                        if(!test) {
+
+                            // creating new site in background thread
+                            //TODO: add CreateNewArtifact()
+                            //new AllArtifactsActivity().CreateNewArtifact().execute();
+                        }
+                        else
+                        {
+                            System.out.println(artifact.toString());
+                            // just go to next activity
+                            testArtifactsList.add(artifact);
+                            CharSequence toastMessage = "Creating New Artifact...";
+                            Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                            toast.show();
+
+                        }
+                    }
+                });
+                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //Go back
+                    }
+                });
                 // this is set the view from XML inside AlertDialog
                 alert.setView(artifactLayout);
                 AlertDialog dialog = alert.create();
