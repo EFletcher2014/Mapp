@@ -3,13 +3,15 @@
     android:fillAfter="true">
 
     <alpha
-        android:duration="300"
+        android:duration="1500"
+        android:startOffset="0"
         android:fromAlpha="1.0"
         android:interpolator="@android:anim/accelerate_interpolator"
         android:toAlpha="0.0" />
     <translate
         android:fromYDelta="0%p"
-        android:toYDelta="  00%p"
+        android:startOffset="0"
+        android:toYDelta="100%p"
         android:duration="1000"
         android:interpolator="@android:anim/accelerate_decelerate_interpolator"/>
 

@@ -34,7 +34,7 @@ public class selectActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select);
         Intent openIntent = getIntent();
-        Uri selectedImageUri = openIntent.getData();
+        final Uri selectedImageUri = openIntent.getData();
         switcher = (ViewSwitcher) findViewById(R.id.switchDrawView);
 
 
@@ -88,7 +88,53 @@ public class selectActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(fabMenuDeployed)
                 {
+                    //TODO: change button color/animate label to describe what this FAB does
+                    if(selectedImageUri!=null)
+                    {
+                        if(imageDraw.getTool().equals("highlight"))
+                        {
+                            imageDraw.noDraw();
+                        }
+                        else {
+                            imageDraw.highlight();
+                        }
+                    }
+                }
+            }
+        });
 
+        FloatingActionButton grid = (FloatingActionButton) findViewById(R.id.gridfab);
+        grid.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(fabMenuDeployed)
+                {
+                    //TODO: change button color/animate label to describe what this FAB does
+                    if(selectedImageUri!=null)
+                    {
+                        if(imageDraw.getTool().equals("grid"))
+                        {
+                            imageDraw.noDraw();
+                        }
+                        else {
+                            imageDraw.grid();
+                        }
+                    }
+                }
+            }
+        });
+
+        FloatingActionButton undo = (FloatingActionButton) findViewById(R.id.undofab);
+        undo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(fabMenuDeployed)
+                {
+                    //TODO: change button color/animate label to describe what this FAB does
+                    if(selectedImageUri!=null)
+                    {
+                        imageDraw.undo();
+                    }
                 }
             }
         });

@@ -74,7 +74,10 @@ public class MapHome extends AppCompatActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
+        System.out.println(openIntent);
         site = openIntent.getParcelableExtra("siteName");
+        System.out.println(openIntent.getExtras());
+        System.out.println(site);
         siteName=site.getName();
         siteNumber=site.getNumber();
         unit = openIntent.getParcelableExtra("unitNumber");

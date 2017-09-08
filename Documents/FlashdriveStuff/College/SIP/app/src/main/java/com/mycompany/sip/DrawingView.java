@@ -10,6 +10,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.view.MotionEvent;
+
+import java.util.ArrayList;
+
 /**
  * Created by Emily on 9/7/2017.
  */
@@ -21,11 +24,15 @@ public class DrawingView extends View {
     //drawing and canvas paint
     private Paint drawPaint, canvasPaint;
     //initial color
-    private int paintColor = 0xFF660000;
+    private int paintColor = 0xffffff;
     //canvas
     private Canvas drawCanvas;
     //canvas bitmap
     private Bitmap canvasBitmap;
+    private String whichTool = "";
+    private float startX, startY, endX, endY;
+    ArrayList<Bitmap> maps = new ArrayList<>();
+
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
         setupDrawing();
@@ -36,7 +43,7 @@ public class DrawingView extends View {
         drawPaint = new Paint();
         drawPaint.setColor(paintColor);
         drawPaint.setAntiAlias(true);
-        drawPaint.setStrokeWidth(20);
+        drawPaint.setStrokeWidth(5);
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
@@ -54,7 +61,34 @@ public class DrawingView extends View {
     protected void onDraw(Canvas canvas) {
 //draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
-        canvas.drawPath(drawPath, drawPaint);
+        if(this.whichTool.equals("highlight"))
+        {
+            drawPaint.setAlpha(100);
+            canvas.drawPath(drawPath, drawPaint);
+        }
+        else
+        {
+            if(this.whichTool.equals("grid"))
+            {
+                drawPaint.setAlpha(255);
+                canvas.drawLine(startX, startY, startX, endY, drawPaint);
+                canvas.drawLine(startX, endY, endX, endY, drawPaint);
+                canvas.drawLine(endX, endY, endX, startY, drawPaint);
+                canvas.drawLine(endX, startY, startX, startY, drawPaint);
+                float intervalX = (endX-startX)/10;
+                for(int i = 1; i<=9; i++)
+                {
+                    canvas.drawLine(startX+(intervalX*i), startY, startX+(intervalX*i), endY, drawPaint);
+                }
+                float intervalY = (endY-startY)/10;
+                for(int i = 1; i<=9; i++)
+                {
+                    canvas.drawLine(startX, startY+(intervalY*i), endX, startY+(intervalY*i), drawPaint);
+                }
+            }
+        }
+        Bitmap temp = canvasBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        maps.add(temp);
     }
 
     @Override
@@ -62,19 +96,48 @@ public class DrawingView extends View {
     //detect user touch
         float touchX = event.getX();
         float touchY = event.getY();
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                drawPath.moveTo(touchX, touchY);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                drawPath.lineTo(touchX, touchY);
-                break;
-            case MotionEvent.ACTION_UP:
-                drawCanvas.drawPath(drawPath, drawPaint);
-                drawPath.reset();
-                break;
-            default:
-                return false;
+        if(this.whichTool.equals("highlight")) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    drawPath.moveTo(touchX, touchY);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    drawPath.lineTo(touchX, touchY);
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    invalidate();
+                    //TODO: pop up dialog asking user to save this highlight
+                    break;
+                default:
+                    return false;
+            }
+        }else
+        {
+            if(this.whichTool.equals("grid")) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startX = event.getX();
+                        startY = event.getY();
+                        endX = event.getX();
+                        endY = event.getY();
+                        invalidate();
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+                        endX = event.getX();
+                        endY = event.getY();
+                        invalidate();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        endX = event.getX();
+                        endY = event.getY();
+                        invalidate();
+                        break;
+                    default:
+                        return false;
+                }
+            }
         }
         invalidate();
         return true;
@@ -83,6 +146,8 @@ public class DrawingView extends View {
     public void setCanvasBitmap(Bitmap im)
     {
         canvasBitmap=im.copy(Bitmap.Config.ARGB_8888, true);
+        Bitmap temp = canvasBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        maps.add(temp);
     }
 
 
@@ -143,5 +208,34 @@ public class DrawingView extends View {
         System.out.println("height: " + height + " width: " + width);
         //MUST CALL THIS
         setMeasuredDimension(width, height);
+    }
+
+    public void grid()
+    {
+        this.whichTool="grid";
+    }
+
+    public void highlight()
+    {
+        this.whichTool="highlight";
+    }
+
+    public void noDraw()
+    {
+        this.whichTool="";
+    }
+
+    public String getTool()
+    {
+        return this.whichTool;
+    }
+
+    public void undo()
+    {
+        System.out.println(maps);
+        if(maps.size()>1) {
+            maps.remove(maps.size() - 1);
+            canvasBitmap = maps.get(maps.size() - 1);
+        }
     }
 }
