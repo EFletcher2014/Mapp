@@ -115,7 +115,7 @@ public class AllLevelsActivity extends ListActivity {
         lv.setOnItemClickListener(new OnItemClickListener() {
 
             @Override
-            public void onItemClick(AdapterView<?> parent, View view,
+            public void onItemClick(AdapterView<?> parent, final View view,
                                     int position, long id) {
                 String pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
@@ -135,7 +135,8 @@ public class AllLevelsActivity extends ListActivity {
 
                         // Starting new intent
                         //TODO: Will have to add call to server to pick the correct level sheet to edit
-                        Intent in = new Intent(getApplicationContext(),
+                        //TODO: is this the right context?
+                        Intent in = new Intent(view.getContext(),
                                 MapHome.class);
                         // sending pid to next activity
                         in.putExtra("depth", level);
@@ -164,7 +165,7 @@ public class AllLevelsActivity extends ListActivity {
             @Override
             public void onClick(View view) {
                 // Launch Add New product Activity
-                Intent i = new Intent(getApplicationContext(),
+                Intent i = new Intent(view.getContext(),
                         MapHome.class);
                 i.putExtra("siteName", site);
                 i.putExtra("unitNumber", unit);
@@ -252,6 +253,7 @@ public class AllLevelsActivity extends ListActivity {
                 } else {
                     // no levels found
                     // Launch Add New level Activity
+                    //TODO: Change it so it isn't getApplicationContext
                     Intent i = new Intent(getApplicationContext(),
                             MapHome.class);
                     // Closing all previous activities

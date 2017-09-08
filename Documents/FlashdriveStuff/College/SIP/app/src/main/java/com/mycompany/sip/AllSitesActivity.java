@@ -141,7 +141,7 @@ public class AllSitesActivity extends ListActivity {
                                         .toString();
 
                                 // Starting new intent
-                                Intent in = new Intent(getApplicationContext(),
+                                Intent in = new Intent(view.getContext(),
                                         AllUnitsActivity.class);
                                 // sending pid to next activity
                                 in.putExtra(TAG_PID, pid);
