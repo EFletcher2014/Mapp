@@ -16,6 +16,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
@@ -27,6 +28,8 @@ public class selectActivity extends AppCompatActivity {
     private static DrawingView imageDraw;
     public Bitmap bitmap;
     private static ViewSwitcher switcher;
+    private TextView hi;
+    private TextView gr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,17 +80,28 @@ public class selectActivity extends AppCompatActivity {
                     fabMenuDeployed = false;
                     Animation hide = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.hide_fab_menu);
                     FABMenu.startAnimation(hide);
+                    imageDraw.noDraw();
                     //FABMenu.setVisibility(View.GONE);
                 }
             }
         });
 
+        hi  = (TextView) findViewById(R.id.highlightLabel);
         FloatingActionButton highlight = (FloatingActionButton) findViewById(R.id.selectfab);
         highlight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(fabMenuDeployed)
                 {
+                    if(hi.getVisibility()==View.VISIBLE)
+                    {
+                        hi.setVisibility(View.GONE);
+                    }
+                    else
+                    {
+                        hi.setVisibility(View.VISIBLE);
+                        gr.setVisibility(View.GONE);
+                    }
                     //TODO: change button color/animate label to describe what this FAB does
                     if(selectedImageUri!=null)
                     {
@@ -102,13 +116,23 @@ public class selectActivity extends AppCompatActivity {
                 }
             }
         });
-
+        gr = (TextView) findViewById(R.id.gridLabel);
         FloatingActionButton grid = (FloatingActionButton) findViewById(R.id.gridfab);
         grid.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(fabMenuDeployed)
                 {
+                    if(gr.getVisibility()==View.VISIBLE)
+                    {
+                        gr.setVisibility(View.GONE);
+                    }
+                    else
+                    {
+
+                        gr.setVisibility(View.VISIBLE);
+                        hi.setVisibility(View.GONE);
+                    }
                     //TODO: change button color/animate label to describe what this FAB does
                     if(selectedImageUri!=null)
                     {
@@ -124,7 +148,7 @@ public class selectActivity extends AppCompatActivity {
             }
         });
 
-        FloatingActionButton undo = (FloatingActionButton) findViewById(R.id.undofab);
+        final FloatingActionButton undo = (FloatingActionButton) findViewById(R.id.undofab);
         undo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -138,18 +162,6 @@ public class selectActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    public void onClickArtifact(View view)
-    {
-        LayoutInflater inflater = getLayoutInflater();
-        View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Create New Artifact");
-        // this is set the view from XML inside AlertDialog
-        alert.setView(artifactLayout);
-        AlertDialog dialog = alert.create();
-        dialog.show();
     }
 
 }

@@ -36,7 +36,6 @@ public class AllSitesActivity extends ListActivity {
         private ProgressDialog pDialog;
         boolean test=true;
         //TODO: Make this an arraylist so that even in testing sites can be added and deleted [FIGURE OUT HOW TO DELETE SITES]
-        //Not sure why that isn't working right now
         Site[] testSites = {new Site("Fort St. Joseph", "20BE23", "11/03/1996", "location", "a site"),
                 new Site("Lyne Site", "20BE10", "11/1/1111", "location", "another site"),
                 new Site("Fort Michilimackinac", "22MA23", "11/11/1010", "location", "yet another freaking site"),
@@ -80,10 +79,17 @@ public class AllSitesActivity extends ListActivity {
         private static final String TAG_NAME = "name";
 
         private static SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
-    private static Site site;
+        private static Site site;
 
         // sites JSONArray
         JSONArray sites = null;
+
+        private String siteName;
+        private String siteDesc;
+        private String dateFound;
+        private String siteNumber;
+        private String siteLoca;
+        AlertDialog.Builder alert;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -161,7 +167,7 @@ public class AllSitesActivity extends ListActivity {
                         // Launch Add New Site Dialog
                         LayoutInflater inflater = getLayoutInflater();
                         final View siteLayout = inflater.inflate(R.layout.new_site_dialog, null);
-                        AlertDialog.Builder alert = new AlertDialog.Builder(AllSitesActivity.this);
+                        alert = new AlertDialog.Builder(AllSitesActivity.this);
                         alert.setTitle("Create A New Site");
                         alert.setPositiveButton("Create Site", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
@@ -385,5 +391,16 @@ public class AllSitesActivity extends ListActivity {
             pDialog.dismiss();
         }
 
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Make sure to call the super method so that the states of our views are saved
+        super.onSaveInstanceState(outState);
+        // Save our own state now
+        if(alert!=null)
+        {
+            //TODO: Figure out how to save alert and all of its corresponding strings--UGH
+        }
     }
 }
