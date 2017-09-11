@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:theme="@style/AppTheme"
-    android:layout_gravity="center_vertical"
-    android:orientation="vertical">
+    android:orientation="horizontal">
     <!--need to figure out how to add prompt to rotate screen/just be rotated-->
     <!--the image view upon which users will click to map artifacts/features of their units-->
     <!--<ImageView
@@ -15,83 +16,112 @@
         android:clickable="true"
         android:layout_weight="2"
         android:layout_gravity="center_vertical"/>-->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <ViewSwitcher
+        android:id="@+id/switchDrawView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:orientation="horizontal"
-        android:layout_weight="1">
-        <ViewSwitcher
-            android:id="@+id/switchDrawView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
-            android:layout_gravity="center|center_horizontal">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/errorTextDraw"
-                android:text="@string/no_draw_hint"
-                android:textSize="32dp"
-                android:textColor="@color/colorPrimaryText"/>
-            <com.mycompany.sip.DrawingView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/draw"
-                android:layout_gravity="center_horizontal"
-                />
-        </ViewSwitcher>
-    </LinearLayout>
-    <!--<Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/addArtifact"
-        android:clickable="true"
-        android:hint="@string/artifact_button_hint"
-        android:onClick="onClickArtifact"
-        android:layout_gravity="center"
-        android:gravity="center_vertical"
-        android:layout_weight="1"/>-->
-    <!--TODO: make this a fragment???????-->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/fabMenu"
-        android:layout_gravity="bottom|end"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:visibility="gone">
-        <!--All from this tutorial: https://www.sitepoint.com/animating-android-floating-action-button/-->
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/undofab"
+        android:layout_gravity="start">
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:layout_margin="@dimen/fab_margin"
-            android:src="@drawable/ic_replay_white_24dp" />
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/selectfab"
+            android:id="@+id/errorTextDraw"
+            android:text="@string/no_draw_hint"
+            android:textSize="32dp"
+            android:textColor="@color/colorPrimaryText"
+            android:gravity="center"
+            android:layout_gravity="center_vertical|center_horizontal"/>
+        <com.mycompany.sip.DrawingView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_margin="@dimen/fab_margin"
-            android:src="@drawable/ic_create_white_24dp"/>
+            android:id="@+id/draw"
+            android:layout_gravity="center_vertical|center_horizontal"
+            />
+    </ViewSwitcher>
+
+    <!--TODO: make this a fragment???????-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:layout_gravity="end"
+        android:gravity="bottom"
+        android:orientation="vertical">
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/fabMenu"
+            android:layout_gravity="end"
+            android:visibility="gone">
+            <!--All from this tutorial: https://www.sitepoint.com/animating-android-floating-action-button/-->
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/undofab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/fab_margin"
+                android:src="@drawable/ic_replay_white_24dp"
+                android:scaleType="center"
+                app:fabSize="normal"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/highlightLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@+id/selectfab"
+                    android:layout_alignBottom="@id/selectfab"
+                    android:visibility="gone"
+                    android:text="Highlight Features"
+                    android:textSize="24dp"
+                    android:textColor="@color/colorAccent"
+                    android:gravity="center"/>
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@id/selectfab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="@dimen/fab_margin"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_create_white_24dp"
+                    app:fabSize="normal"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/gridLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@+id/gridfab"
+                    android:layout_alignBottom="@id/gridfab"
+                    android:visibility="gone"
+                    android:text="Overlay Grid"
+                    android:textSize="24dp"
+                    android:textColor="@color/colorAccent"
+                    android:gravity="center"/>
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/gridfab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="@dimen/fab_margin"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_grid_on_white_24dp"
+                    app:fabSize="normal"/>
+            </RelativeLayout>
+        </LinearLayout>
         <android.support.design.widget.FloatingActionButton
-            android:id="@+id/gridfab"
+            android:id="@+id/editfab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginTop="@dimen/fab_margin"
-            android:layout_marginLeft="@dimen/fab_margin"
+            android:layout_gravity="end"
+            android:layout_weight="1"
             android:layout_marginRight="@dimen/fab_margin"
-            android:src="@drawable/ic_grid_on_white_24dp"/>
+            android:src="@drawable/plus_circle"
+            android:scaleType="center"
+            app:fabSize="normal"/>
     </LinearLayout>
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/editfab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/plus_circle"/>
 </LinearLayout>

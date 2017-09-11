@@ -32,8 +32,8 @@ public class Level implements Parcelable {
         this.number=in.readInt();
         this.begDepth=in.readDouble();
         this.endDepth=in.readDouble();
-        this.site=in.readParcelable(null);
-        this.unit=in.readParcelable(null);
+        this.site=in.readParcelable(Site.class.getClassLoader());//https://stackoverflow.com/questions/1996294/problem-unmarshalling-parcelables
+        this.unit=in.readParcelable(Unit.class.getClassLoader());
         this.dateStarted=in.readString();
         this.excavationMethod=in.readString();
     }

@@ -12,10 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
         <activity android:name=".MapHome"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="stateHidden"
+            android:configChanges="orientation">
         </activity>
         <activity android:name=".selectActivity"
             android:label="@string/title_activity_select"
+            android:screenOrientation="landscape"
             android:windowSoftInputMode="stateHidden" >
         </activity>
         <activity android:name=".AllSitesActivity" >

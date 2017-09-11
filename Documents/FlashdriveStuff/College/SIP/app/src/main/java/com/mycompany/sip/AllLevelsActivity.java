@@ -138,10 +138,13 @@ public class AllLevelsActivity extends ListActivity {
                         //TODO: is this the right context?
                         Intent in = new Intent(view.getContext(),
                                 MapHome.class);
+                        System.out.println(in);
                         // sending pid to next activity
                         in.putExtra("depth", level);
                         in.putExtra("unitNumber", unit);
                         in.putExtra("siteName", site);
+                        System.out.println(site + " " + unit + " " + level);
+                        System.out.println(in.getExtras());
 
                         // starting new activity and expecting some response back
                         startActivityForResult(in, 100);

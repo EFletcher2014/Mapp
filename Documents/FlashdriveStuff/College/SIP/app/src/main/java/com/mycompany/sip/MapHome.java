@@ -61,6 +61,7 @@ public class MapHome extends AppCompatActivity {
     private Level level;
     private EditText begDepth;
     private EditText endDepth;
+    private ImageView unitImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -68,15 +69,24 @@ public class MapHome extends AppCompatActivity {
         //requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mytitle);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_map_home);
         begDepth = (EditText) findViewById(R.id.enterBegDepth);
         endDepth = (EditText) findViewById(R.id.enterEndDepth);
+        unitImage = (ImageView) findViewById(R.id.unitImgView);
+
+
+        if(savedInstanceState!=null)
+        {
+            selectedImageUri=savedInstanceState.getParcelable("URI");
+            unitImage.setImageURI(selectedImageUri);
+        }
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
         System.out.println(openIntent);
-        site = openIntent.getParcelableExtra("siteName");
         System.out.println(openIntent.getExtras());
+        site = openIntent.getParcelableExtra("siteName");
         System.out.println(site);
         siteName=site.getName();
         siteNumber=site.getNumber();
@@ -104,9 +114,6 @@ public class MapHome extends AppCompatActivity {
         unitNumberText.setText("Unit: " + unitNumber);
         TextView levelNumberText = (TextView) findViewById(R.id.levelNumber);
         levelNumberText.setText("Level " + levelNumber);
-
-        //TODO: Figure out what to do if no depth is given, i.e. a new level is created and the user has to input depth
-        //Should that be an edittext? can I dynamically make it one?
 
         final ImageView unitImage = (ImageView) findViewById(R.id.unitImgView);
         unitImage.setOnClickListener(new View.OnClickListener() {
@@ -191,6 +198,30 @@ public class MapHome extends AppCompatActivity {
                 dialog.show();
             }
         });
+
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
+        AlertDialog.Builder alert = new AlertDialog.Builder(MapHome.this);
+        alert.setTitle("Cancel?");
+        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finish();
+            }
+
+        });
+        alert.setNegativeButton("Nevermind", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Go back
+            }
+        });
+        alert.setView(cancelLayout);
+        AlertDialog dialog = alert.create();
+        dialog.show();
     }
     /**
      * FROM STACKOVERFLOW https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically*****
@@ -203,7 +234,6 @@ public class MapHome extends AppCompatActivity {
                 System.out.println("selectedImageUri is" + selectedImageUri);
 
                 //MEDIA GALLERY
-                ImageView unitImage = (ImageView) findViewById(R.id.unitImgView);
                 unitImage.setImageURI(selectedImageUri);
             }
         }
@@ -305,5 +335,13 @@ public class MapHome extends AppCompatActivity {
         }
         System.out.println("Connected to database");
         return conn;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Make sure to call the super method so that the states of our views are saved
+        super.onSaveInstanceState(outState);
+        // Save our own state now
+        outState.putParcelable("URI", selectedImageUri);
     }
 }

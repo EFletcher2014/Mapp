@@ -31,7 +31,10 @@ public class DrawingView extends View {
     private Bitmap canvasBitmap;
     private String whichTool = "";
     private float startX, startY, endX, endY;
-    ArrayList<Bitmap> maps = new ArrayList<>();
+    private ArrayList<Path> toUndo = new ArrayList<>();
+    private ArrayList<Paint> toUndoPaint = new ArrayList<>();
+    private ArrayList<Path> toRedo = new ArrayList<>();
+    private ArrayList<Paint> toRedoPaint = new ArrayList<>();
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -61,9 +64,16 @@ public class DrawingView extends View {
     protected void onDraw(Canvas canvas) {
 //draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
+
+        //TODO: add undo implementation
+        /*for(int i=0; i<toUndo.size(); i++)
+        {
+            canvas.drawPath(toUndo.get(i), toUndoPaint.get(i));
+        }*/
         if(this.whichTool.equals("highlight"))
         {
             drawPaint.setAlpha(100);
+            drawPaint.setStrokeWidth(10);
             canvas.drawPath(drawPath, drawPaint);
         }
         else
@@ -71,6 +81,7 @@ public class DrawingView extends View {
             if(this.whichTool.equals("grid"))
             {
                 drawPaint.setAlpha(255);
+                drawPaint.setStrokeWidth(5);
                 canvas.drawLine(startX, startY, startX, endY, drawPaint);
                 canvas.drawLine(startX, endY, endX, endY, drawPaint);
                 canvas.drawLine(endX, endY, endX, startY, drawPaint);
@@ -87,8 +98,8 @@ public class DrawingView extends View {
                 }
             }
         }
-        Bitmap temp = canvasBitmap.copy(Bitmap.Config.ARGB_8888, true);
-        maps.add(temp);
+        toUndo.add(drawPath);
+        toUndoPaint.add(drawPaint);
     }
 
     @Override
@@ -146,8 +157,6 @@ public class DrawingView extends View {
     public void setCanvasBitmap(Bitmap im)
     {
         canvasBitmap=im.copy(Bitmap.Config.ARGB_8888, true);
-        Bitmap temp = canvasBitmap.copy(Bitmap.Config.ARGB_8888, true);
-        maps.add(temp);
     }
 
 
@@ -232,10 +241,9 @@ public class DrawingView extends View {
 
     public void undo()
     {
-        System.out.println(maps);
-        if(maps.size()>1) {
-            maps.remove(maps.size() - 1);
-            canvasBitmap = maps.get(maps.size() - 1);
-        }
+        toRedo.add(toUndo.get(toUndo.size()-1));
+        toUndo.remove(toUndo.size()-1);
+        toRedoPaint.add(toUndoPaint.get(toUndoPaint.size()-1));
+        toUndoPaint.remove(toUndoPaint.size()-1);
     }
 }

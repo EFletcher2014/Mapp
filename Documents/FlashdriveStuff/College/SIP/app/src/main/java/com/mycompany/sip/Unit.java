@@ -35,7 +35,7 @@ public class Unit implements Parcelable {
         this.dateOpened=in.readString();
         this.nsDimension=in.readString();
         this.ewDimension=in.readString();
-        this.site=in.readParcelable(null);
+        this.site=in.readParcelable(Site.class.getClassLoader());
         this.excavators=in.readString();
         this.reasonForOpening=in.readString();
     }
