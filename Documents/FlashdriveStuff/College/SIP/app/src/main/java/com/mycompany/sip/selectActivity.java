@@ -1,6 +1,8 @@
 package com.mycompany.sip;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -30,12 +32,14 @@ public class selectActivity extends AppCompatActivity {
     private static ViewSwitcher switcher;
     private TextView hi;
     private TextView gr;
+    private static View context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println("start");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select);
+        context = findViewById(R.id.selectActivity);
         Intent openIntent = getIntent();
         final Uri selectedImageUri = openIntent.getData();
         switcher = (ViewSwitcher) findViewById(R.id.switchDrawView);
@@ -163,5 +167,22 @@ public class selectActivity extends AppCompatActivity {
             }
         });
     }
+    public static void saveLayer()
+    {
+        AlertDialog.Builder alert = new AlertDialog.Builder(imageDraw.getContext());
+        alert.setTitle("Would you like to save your artifact?");
+        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                imageDraw.save();
+                //TODO: get info about artifact and save to server
+            }
 
+        });
+        alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+            }
+        });
+        AlertDialog d = alert.create();
+        d.show();
+    }
 }
