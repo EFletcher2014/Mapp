@@ -66,10 +66,10 @@ public class DrawingView extends View {
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
         //TODO: add undo implementation
-        /*for(int i=0; i<toUndo.size(); i++)
+        for(int i=0; i<toUndo.size(); i++)
         {
             canvas.drawPath(toUndo.get(i), toUndoPaint.get(i));
-        }*/
+        }
         if(this.whichTool.equals("highlight"))
         {
             drawPaint.setAlpha(100);
@@ -98,8 +98,7 @@ public class DrawingView extends View {
                 }
             }
         }
-        toUndo.add(drawPath);
-        toUndoPaint.add(drawPaint);
+        //TODO: figure out how to add grid
     }
 
     @Override
@@ -107,7 +106,8 @@ public class DrawingView extends View {
     //detect user touch
         float touchX = event.getX();
         float touchY = event.getY();
-        if(this.whichTool.equals("highlight")) {
+        if(this.whichTool.equals("highlight")) {this.drawPaint.setStrokeWidth(10);
+            this.drawPaint.setAlpha(100);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     drawPath.moveTo(touchX, touchY);
@@ -118,8 +118,11 @@ public class DrawingView extends View {
                     invalidate();
                     break;
                 case MotionEvent.ACTION_UP:
+                    toUndo.add(drawPath);
+                    toUndoPaint.add(drawPaint);
                     invalidate();
                     //TODO: pop up dialog asking user to save this highlight
+                    //selectActivity.saveLayer();
                     break;
                 default:
                     return false;
@@ -166,6 +169,7 @@ public class DrawingView extends View {
 
         int desiredWidth;
         int desiredHeight;
+        float ratio;
         if(canvasBitmap!=null) {
             desiredWidth = canvasBitmap.getWidth();
             desiredHeight = canvasBitmap.getHeight();
@@ -175,6 +179,7 @@ public class DrawingView extends View {
             desiredWidth=100;
             desiredHeight=100;
         }
+        ratio=desiredWidth/desiredHeight;
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
@@ -188,6 +193,7 @@ public class DrawingView extends View {
         if (widthMode == MeasureSpec.EXACTLY) {
             System.out.println("Exactly");
             //Must be this size
+            //TODO: ensure that image isn't being cropped
             width = widthSize;
         } else if (widthMode == MeasureSpec.AT_MOST) {
             System.out.println("At most");
@@ -241,9 +247,13 @@ public class DrawingView extends View {
 
     public void undo()
     {
-        toRedo.add(toUndo.get(toUndo.size()-1));
-        toUndo.remove(toUndo.size()-1);
-        toRedoPaint.add(toUndoPaint.get(toUndoPaint.size()-1));
-        toUndoPaint.remove(toUndoPaint.size()-1);
+        toRedo.add(toUndo.remove(toUndo.size()-1));
+        toRedoPaint.add(toUndoPaint.remove(toUndoPaint.size()-1));
+        invalidate();
+    }
+
+    public void save()
+    {
+        drawCanvas.save();
     }
 }
