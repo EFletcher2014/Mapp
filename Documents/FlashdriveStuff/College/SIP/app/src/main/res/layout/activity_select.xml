@@ -56,15 +56,31 @@
             android:layout_gravity="end"
             android:visibility="gone">
             <!--All from this tutorial: https://www.sitepoint.com/animating-android-floating-action-button/-->
-            <android.support.design.widget.FloatingActionButton
-                android:id="@+id/undofab"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|end"
-                android:layout_margin="@dimen/fab_margin"
-                android:src="@drawable/ic_replay_white_24dp"
-                android:scaleType="center"
-                app:fabSize="normal"/>
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/keystoneLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@+id/keystonefab"
+                    android:layout_alignBottom="@id/keystonefab"
+                    android:visibility="gone"
+                    android:text="Keystone Grid"
+                    android:textSize="24dp"
+                    android:textColor="@color/colorAccent"
+                    android:gravity="center"/>
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/keystonefab"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:scaleType="center"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="@dimen/fab_margin"
+                    android:src="@drawable/ic_keystone_grid_on_white_24dp"
+                    app:fabSize="normal"/>
+            </RelativeLayout>
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
