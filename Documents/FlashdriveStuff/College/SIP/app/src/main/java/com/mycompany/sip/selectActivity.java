@@ -32,6 +32,7 @@ public class selectActivity extends AppCompatActivity {
     private static ViewSwitcher switcher;
     private TextView hi;
     private TextView gr;
+    private TextView ks;
     private static View context;
 
     @Override
@@ -105,6 +106,7 @@ public class selectActivity extends AppCompatActivity {
                     {
                         hi.setVisibility(View.VISIBLE);
                         gr.setVisibility(View.GONE);
+                        ks.setVisibility(View.GONE);
                     }
                     //TODO: change button color/animate label to describe what this FAB does
                     if(selectedImageUri!=null)
@@ -136,6 +138,7 @@ public class selectActivity extends AppCompatActivity {
 
                         gr.setVisibility(View.VISIBLE);
                         hi.setVisibility(View.GONE);
+                        ks.setVisibility(View.GONE);
                     }
                     //TODO: change button color/animate label to describe what this FAB does
                     if(selectedImageUri!=null)
@@ -152,16 +155,35 @@ public class selectActivity extends AppCompatActivity {
             }
         });
 
-        final FloatingActionButton undo = (FloatingActionButton) findViewById(R.id.undofab);
-        undo.setOnClickListener(new View.OnClickListener() {
+        ks = (TextView) findViewById(R.id.keystoneLabel);
+        final FloatingActionButton keystone = (FloatingActionButton) findViewById(R.id.keystonefab);
+        keystone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(fabMenuDeployed)
                 {
+                    if(ks.getVisibility()==View.VISIBLE)
+                    {
+                        ks.setVisibility(View.GONE);
+                    }
+                    else
+                    {
+
+                        ks.setVisibility(View.VISIBLE);
+                        hi.setVisibility(View.GONE);
+                        gr.setVisibility(View.GONE);
+                    }
                     //TODO: change button color/animate label to describe what this FAB does
                     if(selectedImageUri!=null)
                     {
-                        imageDraw.undo();
+                        if(imageDraw.getTool().equals("keystone"))
+                        {
+                            imageDraw.noDraw();
+                        }
+                        else {
+                            imageDraw.keystone();
+
+                        }
                     }
                 }
             }
@@ -180,6 +202,7 @@ public class selectActivity extends AppCompatActivity {
         });
         alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                imageDraw.undo();
             }
         });
         AlertDialog d = alert.create();

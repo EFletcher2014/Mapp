@@ -35,6 +35,8 @@ public class DrawingView extends View {
     private ArrayList<Paint> toUndoPaint = new ArrayList<>();
     private ArrayList<Path> toRedo = new ArrayList<>();
     private ArrayList<Paint> toRedoPaint = new ArrayList<>();
+    private float[][] keystonePoints = new float[4][2];
+    private int keystoneCounter=0;
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -65,11 +67,6 @@ public class DrawingView extends View {
 //draw view
         canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
 
-        //TODO: add undo implementation
-        for(int i=0; i<toUndo.size(); i++)
-        {
-            canvas.drawPath(toUndo.get(i), toUndoPaint.get(i));
-        }
         if(this.whichTool.equals("highlight"))
         {
             drawPaint.setAlpha(100);
@@ -97,6 +94,52 @@ public class DrawingView extends View {
                     canvas.drawLine(startX, startY+(intervalY*i), endX, startY+(intervalY*i), drawPaint);
                 }
             }
+            else
+            {
+                if(this.whichTool.equals("keystone"))
+                {
+                    drawPaint.setAlpha(255);
+                    drawPaint.setStrokeWidth(5);
+                    System.out.println("actually legit drawing it");
+                    float topLength = keystonePoints[1][0]-keystonePoints[0][0];
+                    System.out.println(topLength);
+                    float botLength = keystonePoints[2][0]-keystonePoints[3][0];
+                    System.out.println(botLength);
+                    float height = keystonePoints[2][1]-keystonePoints[1][1];
+                    System.out.println(height);
+                    float leftKeystone = keystonePoints[0][0]-keystonePoints[3][0];
+                    System.out.println(leftKeystone);
+                    float leftInt = leftKeystone/10;
+                    float rightKeystone = keystonePoints[2][0]-keystonePoints[1][0];
+                    System.out.println(rightKeystone);
+                    float rightInt = rightKeystone/10;
+
+                    //draws top line
+                    canvas.drawLine(keystonePoints[0][0], keystonePoints [0][1], keystonePoints[1][0], keystonePoints[1][1], drawPaint);
+
+                    //draws bottom line
+                    canvas.drawLine(keystonePoints[3][0], keystonePoints[3][1], keystonePoints[2][0], keystonePoints[2][1], drawPaint);
+
+                    //draws left line
+                    canvas.drawLine(keystonePoints[0][0], keystonePoints [0][1], keystonePoints[3][0], keystonePoints[3][1], drawPaint);
+
+                    //draws right line
+                    canvas.drawLine(keystonePoints[1][0], keystonePoints[1][1], keystonePoints[2][0], keystonePoints[2][1], drawPaint);
+
+                    //fills in vertical lines
+                    //TODO: allow to keystone top and bottom too
+                    for(int l=1; l<=9; l++)
+                    {
+                        canvas.drawLine(keystonePoints[0][0] + (l*(topLength/10)), keystonePoints[0][1], keystonePoints[3][0] + (l*(botLength/10)), keystonePoints[3][1], drawPaint);
+                    }
+
+                    //fills in horizontal lines
+                    for(int h=1; h<=9; h++)
+                    {
+                        canvas.drawLine(keystonePoints[0][0] - (h*(leftKeystone/10)), keystonePoints[0][1]+ h*(height/10), keystonePoints[1][0] + (h*(rightKeystone/10)), keystonePoints[0][1] + h*(height/10), drawPaint);
+                    }
+                }
+            }
         }
         //TODO: figure out how to add grid
     }
@@ -110,19 +153,21 @@ public class DrawingView extends View {
             this.drawPaint.setAlpha(100);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    drawPath.reset();
                     drawPath.moveTo(touchX, touchY);
-                    invalidate();
+                    //invalidate();
                     break;
                 case MotionEvent.ACTION_MOVE:
                     drawPath.lineTo(touchX, touchY);
-                    invalidate();
+                    //invalidate();
                     break;
                 case MotionEvent.ACTION_UP:
-                    toUndo.add(drawPath);
-                    toUndoPaint.add(drawPaint);
-                    invalidate();
+                    //toUndo.add(drawPath);
+                    //toUndoPaint.add(drawPaint);
+                    //invalidate();
+                    //TODO: add undo implementation
                     //TODO: pop up dialog asking user to save this highlight
-                    //selectActivity.saveLayer();
+                    selectActivity.saveLayer();
                     break;
                 default:
                     return false;
@@ -150,6 +195,33 @@ public class DrawingView extends View {
                         break;
                     default:
                         return false;
+                }
+            }
+            else
+            {
+                if(this.whichTool.equals("keystone")) {
+                    System.out.println("keystoning!!!!");
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            if(keystoneCounter<4) {
+                                keystonePoints[keystoneCounter][0] = event.getX();
+                                keystonePoints[keystoneCounter][1] = event.getY();
+                                keystoneCounter++;
+                            }
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            if(keystoneCounter==4)
+                            {
+                                System.out.println("drawing keystone!");
+                                //drawKeystone(keystonePoints);
+                                invalidate();
+                            }
+                            break;
+                        default:
+                            return false;
+                    }
                 }
             }
         }
@@ -247,13 +319,65 @@ public class DrawingView extends View {
 
     public void undo()
     {
-        toRedo.add(toUndo.remove(toUndo.size()-1));
-        toRedoPaint.add(toUndoPaint.remove(toUndoPaint.size()-1));
+        System.out.println(toUndo);
+        if(toUndo.size()>0) {
+            toRedo.add(toUndo.remove(toUndo.size() - 1));
+            toRedoPaint.add(toUndoPaint.remove(toUndoPaint.size() - 1));
+            System.out.println(toRedo.get(toRedo.size() - 1));
+        }
+        drawPath.reset();
         invalidate();
     }
 
     public void save()
     {
-        drawCanvas.save();
+        Path temp = new Path(drawPath);
+        Paint tempPaint = new Paint(drawPaint);
+        toUndo.add(temp);
+        toUndoPaint.add(tempPaint);
+        drawCanvas.drawPath(temp, tempPaint);
+        /*for(int i=0; i<toUndo.size()-1; i++)
+        {
+            System.out.println(toUndo.get(i));
+            drawCanvas.drawPath(toUndo.get(i), toUndoPaint.get(i));
+        }*/
+    }
+
+    public void drawKeystone(float[][] points)
+    {
+        float topLength = points[0][0]-points[1][0];
+        float botLength = points[3][0]-points[2][0];
+        float height = points[0][1]-points[2][1];
+        float leftKeystone = points[0][0]-points[3][0];
+        float rightKeystone = points[2][0]-points[1][0];
+
+        //draws top line
+        drawCanvas.drawLine(points[0][0], points [0][1], points[1][0], points[1][1], drawPaint);
+
+        //draws bottom line
+        drawCanvas.drawLine(points[3][0], points[3][1], points[2][0], points[2][1], drawPaint);
+
+        //draws left line
+        drawCanvas.drawLine(points[0][0], points [0][1], points[3][0], points[3][1], drawPaint);
+
+        //draws right line
+        drawCanvas.drawLine(points[1][0], points[1][1], points[2][0], points[2][1], drawPaint);
+
+        //fills in vertical lines
+        for(int l=1; l<9; l++)
+        {
+            drawCanvas.drawLine(points[0][0] + (l*(topLength/10)), points[0][1], points[3][0] + (l*(botLength/10)), points[3][1], drawPaint);
+        }
+
+        //fills in horizontal lines
+        for(int h=1; h<9; h++)
+        {
+            drawCanvas.drawLine(points[0][0] - (h*(leftKeystone/10)), points[0][1]+ h*(height/10), points[2][0] + (h*(rightKeystone/10)), points[0][1] + h*(height/10), drawPaint);
+        }
+    }
+
+    public void keystone()
+    {
+        this.whichTool="keystone";
     }
 }
