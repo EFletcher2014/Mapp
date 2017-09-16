@@ -53,6 +53,14 @@ public class AllUnitsActivity extends ListActivity {
     private static Site site;
     private static Unit unit;
 
+    private AlertDialog.Builder alert;
+    private EditText inputCoords;
+    private EditText inputExcs;
+    private EditText inputDate;
+    private EditText inputReas;
+    private EditText inputNSDims;
+    private EditText inputEWDims;
+
     boolean test=true;
     Unit[] testUnits = {new Unit("N24W11", "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters"),
             new Unit("N23E9",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters"),
@@ -65,6 +73,21 @@ public class AllUnitsActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_get_all_units);
+
+        if(savedInstanceState!=null)
+        {
+            if(savedInstanceState.getBoolean("alert"))
+            {
+                final String coords = savedInstanceState.getString("Datum Coordinate");
+                final String excs = savedInstanceState.getString("Excavators");
+                final String date = savedInstanceState.getString("Date Opened");
+                final String reas = savedInstanceState.getString("Reason");
+                final String  nsd = savedInstanceState.getString("NSDim");
+                final String ewd = savedInstanceState.getString("EWDim");
+
+                showDialog(new Unit(coords, date, nsd, ewd, site, excs, reas));
+            }
+        }
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
@@ -140,50 +163,7 @@ public class AllUnitsActivity extends ListActivity {
             public void onClick(View view) {
 
                 //TODO: make sure these new units are loading on list
-
-                // Launch Add New Site Dialog
-                LayoutInflater inflater = getLayoutInflater();
-                final View unitLayout = inflater.inflate(R.layout.new_unit_dialog, null);
-                AlertDialog.Builder alert = new AlertDialog.Builder(AllUnitsActivity.this);
-                alert.setTitle("Create A New Unit");
-                alert.setPositiveButton("Create Unit", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        EditText inputCoords = (EditText) unitLayout.findViewById(R.id.inputCoords);
-                        EditText inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
-                        EditText inputDate = (EditText) unitLayout.findViewById(R.id.inputDate);
-                        EditText inputReas = (EditText) unitLayout.findViewById(R.id.inputReas);
-                        EditText inputNSDims = (EditText) unitLayout.findViewById(R.id.inputNSDims);
-                        EditText inputEWDims = (EditText) unitLayout.findViewById(R.id.inputEWDims);
-
-                        unit = new Unit(inputCoords.getText().toString(),
-                                inputDate.getText().toString(), inputNSDims.getText().toString(),
-                                inputEWDims.getText().toString(), site, inputExcs.getText().toString(),
-                                inputReas.getText().toString());
-
-                        //if not testing, save to server
-                        if (!test) {
-
-                            // creating new unit in background thread
-                            new CreateNewUnit().execute();
-                        } else {
-                            System.out.println(unit.toString());
-                            // just go to next activity
-                            CharSequence toastMessage = "Creating New Unit...";
-                            Toast toast = Toast.makeText(unitLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                            toast.show();
-
-                        }
-                    }
-                });
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //Go back
-                    }
-                });
-                // this is set the view from XML inside AlertDialog
-                alert.setView(unitLayout);
-                AlertDialog dialog = alert.create();
-                dialog.show();
+                showDialog(null);
             }
 
         });
@@ -368,4 +348,84 @@ public class AllUnitsActivity extends ListActivity {
             }
 
         }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Make sure to call the super method so that the states of our views are saved
+        super.onSaveInstanceState(outState);
+        // Save our own state now
+        if(alert!=null)
+        {
+            //TODO: replace these with unit parcelable?
+            outState.putBoolean("alert", true);
+            outState.putString("Datum Coordinate", inputCoords.getText().toString());
+            outState.putString("Excavators", inputExcs.getText().toString());
+            outState.putString("Date Opened", inputDate.getText().toString());
+            outState.putString("Reason", inputReas.getText().toString());
+            outState.putString("NSDim", inputNSDims.getText().toString());
+            outState.putString("EWDim", inputEWDims.getText().toString());
+
+        }
+        else
+        {
+            outState.putBoolean("alert", false);
+        }
+    }
+
+    private void showDialog(Unit un)
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View unitLayout = inflater.inflate(R.layout.new_unit_dialog, null);
+        alert = new AlertDialog.Builder(AllUnitsActivity.this);
+        inputCoords = (EditText) unitLayout.findViewById(R.id.inputCoords);
+        inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
+        inputDate = (EditText) unitLayout.findViewById(R.id.inputDate);
+        inputReas = (EditText) unitLayout.findViewById(R.id.inputReas);
+        inputNSDims = (EditText) unitLayout.findViewById(R.id.inputNSDims);
+        inputEWDims = (EditText) unitLayout.findViewById(R.id.inputEWDims);
+
+        if(un!=null)
+        {
+            inputCoords.setText(un.getDatum());
+            inputExcs.setText(un.getExcavators());
+            inputDate.setText(un.getDateOpened());
+            inputReas.setText(un.getReasonForOpening());
+            inputNSDims.setText(un.getNsDimension());
+            inputEWDims.setText(un.getEwDimension());
+        }
+        alert.setTitle("Create A New Unit");
+        alert.setPositiveButton("Create Unit", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                unit = new Unit(inputCoords.getText().toString(),
+                        inputDate.getText().toString(), inputNSDims.getText().toString(),
+                        inputEWDims.getText().toString(), site, inputExcs.getText().toString(),
+                        inputReas.getText().toString());
+
+                //if not testing, save to server
+                if (!test) {
+
+                    // creating new unit in background thread
+                    new CreateNewUnit().execute();
+                } else {
+                    System.out.println(unit.toString());
+                    // just go to next activity
+                    CharSequence toastMessage = "Creating New Unit...";
+                    Toast toast = Toast.makeText(unitLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                    toast.show();
+
+                }
+                alert=null;
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Go back
+                alert=null;
+            }
+        });
+        // this is set the view from XML inside AlertDialog
+        alert.setView(unitLayout);
+        AlertDialog dialog = alert.create();
+        dialog.show();
+    }
 }

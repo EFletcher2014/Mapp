@@ -105,8 +105,11 @@ public class DrawingView extends View {
                     System.out.println(topLength);
                     float botLength = keystonePoints[2][0]-keystonePoints[3][0];
                     System.out.println(botLength);
-                    float height = keystonePoints[2][1]-keystonePoints[1][1];
-                    System.out.println(height);
+                    float height = keystonePoints[2][1]-keystonePoints[0][1];
+                    float topHeightDiff = keystonePoints[1][1]-keystonePoints[0][1];
+                    System.out.println(topHeightDiff);
+                    float botHeightDiff = keystonePoints[2][1]-keystonePoints[3][1];
+                    System.out.println(botHeightDiff);
                     float leftKeystone = keystonePoints[0][0]-keystonePoints[3][0];
                     System.out.println(leftKeystone);
                     float leftInt = leftKeystone/10;
@@ -130,7 +133,7 @@ public class DrawingView extends View {
                     //TODO: allow to keystone top and bottom too
                     for(int l=1; l<=9; l++)
                     {
-                        canvas.drawLine(keystonePoints[0][0] + (l*(topLength/10)), keystonePoints[0][1], keystonePoints[3][0] + (l*(botLength/10)), keystonePoints[3][1], drawPaint);
+                        canvas.drawLine(keystonePoints[0][0] + (l*(topLength/10)), (keystonePoints[0][1] + l*(topHeightDiff/10)), keystonePoints[3][0] + (l*(botLength/10)), (keystonePoints[3][1] + l*(botHeightDiff/10)), drawPaint);
                     }
 
                     //fills in horizontal lines
