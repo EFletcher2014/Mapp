@@ -62,6 +62,7 @@ public class MapHome extends AppCompatActivity {
     private EditText begDepth;
     private EditText endDepth;
     private ImageView unitImage;
+    private AlertDialog.Builder alert;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -80,6 +81,11 @@ public class MapHome extends AppCompatActivity {
         {
             selectedImageUri=savedInstanceState.getParcelable("URI");
             unitImage.setImageURI(selectedImageUri);
+
+            if(savedInstanceState.getBoolean("alert"))
+            {
+                showDialog();
+            }
         }
 
         //added by Emily Fletcher 8/27/17
@@ -178,9 +184,10 @@ public class MapHome extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // Throws dialog asking if user wants to cancel without saving
-                LayoutInflater inflater = getLayoutInflater();
+                showDialog();
+                /*LayoutInflater inflater = getLayoutInflater();
                 final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
-                AlertDialog.Builder alert = new AlertDialog.Builder(MapHome.this);
+                alert = new AlertDialog.Builder(MapHome.this);
                 alert.setTitle("Cancel?");
                 alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -195,7 +202,7 @@ public class MapHome extends AppCompatActivity {
                 });
                 alert.setView(cancelLayout);
                 AlertDialog dialog = alert.create();
-                dialog.show();
+                dialog.show();*/
             }
         });
 
@@ -204,7 +211,8 @@ public class MapHome extends AppCompatActivity {
     @Override
     public void onBackPressed()
     {
-        LayoutInflater inflater = getLayoutInflater();
+        showDialog();
+        /*LayoutInflater inflater = getLayoutInflater();
         final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
         AlertDialog.Builder alert = new AlertDialog.Builder(MapHome.this);
         alert.setTitle("Cancel?");
@@ -221,7 +229,7 @@ public class MapHome extends AppCompatActivity {
         });
         alert.setView(cancelLayout);
         AlertDialog dialog = alert.create();
-        dialog.show();
+        dialog.show();*/
     }
     /**
      * FROM STACKOVERFLOW https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically*****
@@ -343,5 +351,37 @@ public class MapHome extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         // Save our own state now
         outState.putParcelable("URI", selectedImageUri);
+        if(alert!=null)
+        {
+            outState.putBoolean("alert", true);
+        }
+        else
+        {
+            outState.putBoolean("alert", false);
+        }
+    }
+
+    private void showDialog()
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
+        alert = new AlertDialog.Builder(MapHome.this);
+        alert.setTitle("Cancel?");
+        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                alert=null;
+                finish();
+            }
+
+        });
+        alert.setNegativeButton("Nevermind", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Go back
+                alert=null;
+            }
+        });
+        alert.setView(cancelLayout);
+        AlertDialog dialog = alert.create();
+        dialog.show();
     }
 }

@@ -48,6 +48,9 @@ public class AllLevelsActivity extends ListActivity {
     private static Site site;
     private static Unit unit;
     private static Level level;
+    private static int levelNumber;
+
+    private AlertDialog.Builder alert;
 
 
 
@@ -63,6 +66,14 @@ public class AllLevelsActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_levels);
+
+        if(savedInstanceState!=null)
+        {
+            if(savedInstanceState.getBoolean("alert"))
+            {
+                showDialog((Level) savedInstanceState.getParcelable("level"));
+            }
+        }
 
         // Hashmap for ListView
         levelsList = new ArrayList<HashMap<String, String>>();
@@ -119,45 +130,11 @@ public class AllLevelsActivity extends ListActivity {
                                     int position, long id) {
                 String pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
-                level=testLevels[Integer.parseInt(pid)];
+                levelNumber=Integer.parseInt(pid);
+                level=testLevels[levelNumber];
                 System.out.println(level.toString());
 
-                // Throws dialog asking if user wants to edit this level
-                LayoutInflater inflater = getLayoutInflater();
-                final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
-                AlertDialog.Builder alert = new AlertDialog.Builder(AllLevelsActivity.this);
-                alert.setTitle("Level " + testLevels[Integer.parseInt(pid)].toString());
-                System.out.println("You should have a dialog");
-                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //Pass intent
-                        // getting values from selected ListItem
-
-                        // Starting new intent
-                        //TODO: Will have to add call to server to pick the correct level sheet to edit
-                        //TODO: is this the right context?
-                        Intent in = new Intent(view.getContext(),
-                                MapHome.class);
-                        System.out.println(in);
-                        // sending pid to next activity
-                        in.putExtra("depth", level);
-                        in.putExtra("unitNumber", unit);
-                        in.putExtra("siteName", site);
-                        System.out.println(site + " " + unit + " " + level);
-                        System.out.println(in.getExtras());
-
-                        // starting new activity and expecting some response back
-                        startActivityForResult(in, 100);
-                    }
-                });
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //Go back
-                    }
-                });
-                alert.setView(editLevelLayout);
-                AlertDialog dialog = alert.create();
-                dialog.show();
+                showDialog(level);
             }
         });
 
@@ -294,5 +271,63 @@ public class AllLevelsActivity extends ListActivity {
 
         }
 
+    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Make sure to call the super method so that the states of our views are saved
+        super.onSaveInstanceState(outState);
+        // Save our own state now
+        if(alert!=null)
+        {
+            //TODO: Figure out how to save alert and all of its corresponding strings--UGH
+            outState.putBoolean("alert", true);
+            outState.putParcelable("level", level);
+
+        }
+        else
+        {
+            outState.putBoolean("alert", false);
+        }
+    }
+
+    public void showDialog(Level lvl)
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
+        alert = new AlertDialog.Builder(AllLevelsActivity.this);
+        alert.setTitle("Level " + lvl.toString());
+        System.out.println("You should have a dialog");
+        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Pass intent
+                // getting values from selected ListItem
+
+                // Starting new intent
+                //TODO: Will have to add call to server to pick the correct level sheet to edit
+                //TODO: is this the right context?
+                Intent in = new Intent(editLevelLayout.getContext(),
+                        MapHome.class);
+                System.out.println(in);
+                // sending pid to next activity
+                in.putExtra("depth", level);
+                in.putExtra("unitNumber", unit);
+                in.putExtra("siteName", site);
+                System.out.println(site + " " + unit + " " + level);
+                System.out.println(in.getExtras());
+
+                // starting new activity and expecting some response back
+                startActivityForResult(in, 100);
+                alert=null;
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                alert=null;
+                //Go back
+            }
+        });
+        alert.setView(editLevelLayout);
+        AlertDialog dialog = alert.create();
+        dialog.show();
     }
 }

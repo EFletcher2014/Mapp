@@ -41,6 +41,12 @@ public class AllArtifactsActivity extends ListActivity {
     private static Level level;
     private static Artifact artifact;
 
+    private AlertDialog.Builder alert;
+    private EditText accNum;
+    private EditText catNum;
+    private EditText contents;
+    private String pid;
+    private String depth;
 
     boolean test=true;
     ArrayList<Artifact> testArtifactsList = new ArrayList<>();
@@ -66,6 +72,14 @@ public class AllArtifactsActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_artifacts);
+
+        if(savedInstanceState!=null)
+        {
+            if(savedInstanceState.getBoolean("alert"))
+            {
+                showDialog(savedInstanceState.getString("Accession Number"), savedInstanceState.getString("Catalog Number"), savedInstanceState.getString("Contents"));
+            }
+        }
 
         // Hashmap for ListView
         artifactsList = new ArrayList<HashMap<String, String>>();
@@ -124,37 +138,12 @@ public class AllArtifactsActivity extends ListActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                String depth = ((TextView) view.findViewById(R.id.name)).getText()
+                depth = ((TextView) view.findViewById(R.id.name)).getText()
                     .toString();
-                String pid = ((TextView) view.findViewById(R.id.pid)).getText()
+                pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
-                LayoutInflater inflater = getLayoutInflater();
-                final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
-                AlertDialog.Builder alert = new AlertDialog.Builder(AllArtifactsActivity.this);
-                alert.setTitle("Edit Artifact");
-                alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //Do server stuff
-                        CharSequence toastMessage = "Saving Artifact...";
-                        Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                        toast.show();
-                    }
-                });
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //Go back
-                    }
-                });
-                // this is set the view from XML inside AlertDialog
-                alert.setView(artifactLayout);
-                AlertDialog dialog = alert.create();
-                EditText accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
-                accNum.setText(testArtifacts[Integer.parseInt(pid)].getAccessionNumber());
-                EditText catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
-                catNum.setText(testArtifacts[Integer.parseInt(pid)].getCatalogNumber() + "");
-                EditText contents = (EditText) artifactLayout.findViewById(R.id.contents);
-                contents.setText(testArtifacts[Integer.parseInt(pid)].getContents());
-                dialog.show();
+
+                showDialog(testArtifacts[Integer.parseInt(pid)].getAccessionNumber(), testArtifacts[Integer.parseInt(pid)].getCatalogNumber() + "", testArtifacts[Integer.parseInt(pid)].getContents());
 
                 //TODO: make these fields autofill, like the other edit screens
                 // getting values from selected ListItem
@@ -168,50 +157,7 @@ public class AllArtifactsActivity extends ListActivity {
         newArtifact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                LayoutInflater inflater = getLayoutInflater();
-                final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
-                AlertDialog.Builder alert = new AlertDialog.Builder(AllArtifactsActivity.this);
-                alert.setTitle("Add A New Artifact");
-
-                alert.setPositiveButton("Create Artifact", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        EditText accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
-                        EditText catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
-                        EditText contents = (EditText) artifactLayout.findViewById(R.id.contents);
-
-                        artifact = new Artifact(site, unit, level, accNum.getText().toString(), Integer.parseInt(catNum.getText().toString()), contents.getText().toString());
-
-
-
-                        //TODO: Make sure this new site shows up on all sites
-                        //if not testing, save to server
-                        if(!test) {
-
-                            // creating new site in background thread
-                            //TODO: add CreateNewArtifact()
-                            //new AllArtifactsActivity().CreateNewArtifact().execute();
-                        }
-                        else
-                        {
-                            System.out.println(artifact.toString());
-                            // just go to next activity
-                            testArtifactsList.add(artifact);
-                            CharSequence toastMessage = "Creating New Artifact...";
-                            Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                            toast.show();
-
-                        }
-                    }
-                });
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //Go back
-                    }
-                });
-                // this is set the view from XML inside AlertDialog
-                alert.setView(artifactLayout);
-                AlertDialog dialog = alert.create();
-                dialog.show();
+                showDialog("", "", "");
 
                 //TODO: When user clicks save, should save to server and add new artifact to list
             }
@@ -332,5 +278,56 @@ public class AllArtifactsActivity extends ListActivity {
 
         }
 
+    }
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Make sure to call the super method so that the states of our views are saved
+        super.onSaveInstanceState(outState);
+        // Save our own state now
+        if(alert!=null)
+        {
+            //TODO: Figure out how to save alert and all of its corresponding strings--UGH
+            outState.putBoolean("alert", true);
+            outState.putString("Accession Number", accNum.getText().toString());
+            outState.putString("Catalog Number", catNum.getText().toString());
+            outState.putString("Contents", contents.getText().toString());
+
+        }
+        else
+        {
+            outState.putBoolean("alert", false);
+        }
+    }
+    private void showDialog(String aNum, String cNum, String con)
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
+        alert = new AlertDialog.Builder(AllArtifactsActivity.this);
+        accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
+        accNum.setText(aNum);
+        catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
+        catNum.setText(cNum);
+        contents = (EditText) artifactLayout.findViewById(R.id.contents);
+        contents.setText(con);
+        alert.setTitle("Edit Artifact");
+        alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //TODO: Do server stuff
+                CharSequence toastMessage = "Saving Artifact...";
+                Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                toast.show();
+                alert=null;
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Go back
+                alert=null;
+            }
+        });
+        // this is set the view from XML inside AlertDialog
+        alert.setView(artifactLayout);
+        AlertDialog dialog = alert.create();
+        dialog.show();
     }
 }

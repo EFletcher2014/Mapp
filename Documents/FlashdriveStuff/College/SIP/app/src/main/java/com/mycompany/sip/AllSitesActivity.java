@@ -81,6 +81,13 @@ public class AllSitesActivity extends ListActivity {
         private static SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
         private static Site site;
 
+        private EditText inputName;
+        private EditText inputDesc;
+        private EditText inputDate;
+        private EditText inputNumb;
+        private EditText inputLoca;
+
+
         // sites JSONArray
         JSONArray sites = null;
 
@@ -94,6 +101,20 @@ public class AllSitesActivity extends ListActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
+
+                if(savedInstanceState!=null)
+                {
+                    if(savedInstanceState.getBoolean("alert"))
+                    {
+                        final String sName = savedInstanceState.getString("Site Name");
+                        final String sDesc = savedInstanceState.getString("Description");
+                        final String sDate = savedInstanceState.getString("Date Discovered");
+                        final String sNumb = savedInstanceState.getString("Site Number");
+                        final String sLoca = savedInstanceState.getString("Location");
+
+                        showDialog(new Site(sName, sNumb, sDate, sLoca, sDesc));
+                    }
+                }
                 setContentView(R.layout.activity_get_all_sites);
 
                 // Hashmap for ListView
@@ -165,49 +186,8 @@ public class AllSitesActivity extends ListActivity {
                     @Override
                     public void onClick(View view) {
                         // Launch Add New Site Dialog
-                        LayoutInflater inflater = getLayoutInflater();
-                        final View siteLayout = inflater.inflate(R.layout.new_site_dialog, null);
-                        alert = new AlertDialog.Builder(AllSitesActivity.this);
-                        alert.setTitle("Create A New Site");
-                        alert.setPositiveButton("Create Site", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                EditText inputName = (EditText) siteLayout.findViewById(R.id.inputName);
-                                EditText inputDesc = (EditText) siteLayout.findViewById(R.id.inputDesc);
-                                EditText inputDate = (EditText) siteLayout.findViewById(R.id.inputDate);
-                                EditText inputNumb = (EditText) siteLayout.findViewById(R.id.inputNumb);
-                                EditText inputLoca = (EditText) siteLayout.findViewById(R.id.inputLoca);
 
-                                    site = new Site(inputName.getText().toString(), inputNumb.getText().toString(), inputDate.getText().toString(), inputLoca.getText().toString(), inputDesc.getText().toString());
-
-
-
-                                //TODO: Make sure this new site shows up on all sites
-                                //if not testing, save to server
-                                if(!test) {
-
-                                    // creating new site in background thread
-                                    new CreateNewSite().execute();
-                                }
-                                else
-                                {
-                                    System.out.println(site.toString());
-                                    // just go to next activity
-                                    CharSequence toastMessage = "Creating New Site...";
-                                    Toast toast = Toast.makeText(siteLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                                    toast.show();
-
-                                }
-                            }
-                        });
-                        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                //Go back
-                            }
-                        });
-                        // this is set the view from XML inside AlertDialog
-                        alert.setView(siteLayout);
-                        AlertDialog dialog = alert.create();
-                        dialog.show();
+                        showDialog(null);
 
                     }
             });
@@ -401,6 +381,77 @@ public class AllSitesActivity extends ListActivity {
         if(alert!=null)
         {
             //TODO: Figure out how to save alert and all of its corresponding strings--UGH
+            outState.putBoolean("alert", true);
+            outState.putString("Site Name", inputName.getText().toString());
+            outState.putString("Description", inputDesc.getText().toString());
+            outState.putString("Date Discovered", inputDate.getText().toString());
+            outState.putString("Site Number", inputNumb.getText().toString());
+            outState.putString("Location", inputLoca.getText().toString());
+
         }
+        else
+        {
+            outState.putBoolean("alert", false);
+        }
+    }
+
+    private void showDialog(Site st)
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View siteLayout = inflater.inflate(R.layout.new_site_dialog, null);
+        alert = new AlertDialog.Builder(AllSitesActivity.this);
+        inputName = (EditText) siteLayout.findViewById(R.id.inputName);
+        inputDesc = (EditText) siteLayout.findViewById(R.id.inputDesc);
+        inputDate = (EditText) siteLayout.findViewById(R.id.inputDate);
+        inputNumb = (EditText) siteLayout.findViewById(R.id.inputNumb);
+        inputLoca = (EditText) siteLayout.findViewById(R.id.inputLoca);
+
+        if(st!=null)
+        {
+
+            inputName.setText(st.getName());
+            inputDesc.setText(st.getDescription());
+            inputDate.setText(st.getDateOpened());
+            inputNumb.setText(st.getNumber());
+            inputLoca.setText(st.getLocation());
+
+        }
+        alert.setTitle("Create A New Site");
+        alert.setPositiveButton("Create Site", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+
+                site = new Site(inputName.getText().toString(), inputNumb.getText().toString(), inputDate.getText().toString(), inputLoca.getText().toString(), inputDesc.getText().toString());
+
+
+
+                //TODO: Make sure this new site shows up on all sites
+                //if not testing, save to server
+                if(!test) {
+
+                    // creating new site in background thread
+                    new CreateNewSite().execute();
+                }
+                else
+                {
+                    System.out.println(site.toString());
+                    // just go to next activity
+                    CharSequence toastMessage = "Creating New Site...";
+                    Toast toast = Toast.makeText(siteLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                    toast.show();
+
+                }
+                alert=null;
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Go back
+                alert=null;
+            }
+        });
+        // this is set the view from XML inside AlertDialog
+        alert.setView(siteLayout);
+        AlertDialog dialog = alert.create();
+        dialog.show();
     }
 }
