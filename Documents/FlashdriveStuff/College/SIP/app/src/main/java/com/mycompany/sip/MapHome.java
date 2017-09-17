@@ -153,6 +153,7 @@ public class MapHome extends AppCompatActivity {
               public void onClick(View view) {
                   //Move to select on image activity
                   Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
+                  selectActivityIntent.putExtra("unit", unit);
                   startActivity(selectActivityIntent);
               }
        });
