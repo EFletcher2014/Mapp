@@ -25,6 +25,7 @@ public class DrawingView extends View {
     private Paint drawPaint, canvasPaint;
     //initial color
     private int paintColor = 0xffffff;
+    private int red = 0xff0000;
     //canvas
     private Canvas drawCanvas;
     //canvas bitmap
@@ -79,18 +80,27 @@ public class DrawingView extends View {
             {
                 drawPaint.setAlpha(255);
                 drawPaint.setStrokeWidth(5);
+
+                String[] dimensions = selectActivity.getUnitDimensions();
+                float ewDim = Float.parseFloat(dimensions[0]);
+                float nsDim = Float.parseFloat(dimensions[1]);
                 canvas.drawLine(startX, startY, startX, endY, drawPaint);
                 canvas.drawLine(startX, endY, endX, endY, drawPaint);
                 canvas.drawLine(endX, endY, endX, startY, drawPaint);
                 canvas.drawLine(endX, startY, startX, startY, drawPaint);
-                float intervalX = (endX-startX)/10;
-                for(int i = 1; i<=9; i++)
+                float intervalX = (endX-startX)/(10*nsDim);
+                for(int i = 1; i<10*nsDim; i++)
                 {
                     canvas.drawLine(startX+(intervalX*i), startY, startX+(intervalX*i), endY, drawPaint);
                 }
-                float intervalY = (endY-startY)/10;
-                for(int i = 1; i<=9; i++)
+                float intervalY = (endY-startY)/(10*ewDim);
+                for(int i = 1; i<10*ewDim; i++)
                 {
+                    /*drawPaint.setColor(paintColor);
+                    if(i%10==0)
+                    {
+                        drawPaint.setColor(red);
+                    }*/
                     canvas.drawLine(startX, startY+(intervalY*i), endX, startY+(intervalY*i), drawPaint);
                 }
             }
@@ -98,9 +108,16 @@ public class DrawingView extends View {
             {
                 if(this.whichTool.equals("keystone"))
                 {
+                    String[] dimensions = selectActivity.getUnitDimensions();
                     drawPaint.setAlpha(255);
                     drawPaint.setStrokeWidth(5);
                     System.out.println("actually legit drawing it");
+
+                    float nsDim = Float.parseFloat(dimensions[0]);
+                    float ewDim = Float.parseFloat(dimensions[1]);
+
+                    System.out.println(nsDim + " " + ewDim);
+
                     float topLength = keystonePoints[1][0]-keystonePoints[0][0];
                     System.out.println(topLength);
                     float botLength = keystonePoints[2][0]-keystonePoints[3][0];
@@ -110,6 +127,8 @@ public class DrawingView extends View {
                     System.out.println(topHeightDiff);
                     float botHeightDiff = keystonePoints[2][1]-keystonePoints[3][1];
                     System.out.println(botHeightDiff);
+                    float leftHeight = keystonePoints[3][1] - keystonePoints[0][1];
+                    float rightHeight = keystonePoints[2][1] - keystonePoints[1][1];
                     float leftKeystone = keystonePoints[0][0]-keystonePoints[3][0];
                     System.out.println(leftKeystone);
                     float leftInt = leftKeystone/10;
@@ -131,15 +150,15 @@ public class DrawingView extends View {
 
                     //fills in vertical lines
                     //TODO: allow to keystone top and bottom too
-                    for(int l=1; l<=9; l++)
+                    for(int l=1; l<10*ewDim; l++)
                     {
-                        canvas.drawLine(keystonePoints[0][0] + (l*(topLength/10)), (keystonePoints[0][1] + l*(topHeightDiff/10)), keystonePoints[3][0] + (l*(botLength/10)), (keystonePoints[3][1] + l*(botHeightDiff/10)), drawPaint);
+                        canvas.drawLine(keystonePoints[0][0] + (l*(topLength/(10*ewDim))), (keystonePoints[0][1] + l*(topHeightDiff/(10*ewDim))), keystonePoints[3][0] + (l*(botLength/(10*ewDim))), (keystonePoints[3][1] + l*(botHeightDiff/(10*ewDim))), drawPaint);
                     }
 
                     //fills in horizontal lines
-                    for(int h=1; h<=9; h++)
+                    for(int h=1; h<10*nsDim; h++)
                     {
-                        canvas.drawLine(keystonePoints[0][0] - (h*(leftKeystone/10)), keystonePoints[0][1]+ h*(height/10), keystonePoints[1][0] + (h*(rightKeystone/10)), keystonePoints[0][1] + h*(height/10), drawPaint);
+                        canvas.drawLine(keystonePoints[0][0] - (h*(leftKeystone/(10*nsDim))), keystonePoints[0][1]+ h*(leftHeight/(10*nsDim)), keystonePoints[1][0] + (h*(rightKeystone/(10*nsDim))), keystonePoints[0][1] + h*(rightHeight/(10*nsDim)), drawPaint);
                     }
                 }
             }
@@ -168,8 +187,6 @@ public class DrawingView extends View {
                     //toUndo.add(drawPath);
                     //toUndoPaint.add(drawPaint);
                     //invalidate();
-                    //TODO: add undo implementation
-                    //TODO: pop up dialog asking user to save this highlight
                     selectActivity.saveLayer();
                     break;
                 default:

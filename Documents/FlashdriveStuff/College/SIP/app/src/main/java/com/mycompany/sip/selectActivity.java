@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,14 +36,19 @@ public class selectActivity extends AppCompatActivity {
     private TextView ks;
     private static View context;
 
+    private static Unit unit;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println("start");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select);
+        fabMenuDeployed=false;
         context = findViewById(R.id.selectActivity);
         Intent openIntent = getIntent();
         final Uri selectedImageUri = openIntent.getData();
+        unit = openIntent.getParcelableExtra("unit");
+
         switcher = (ViewSwitcher) findViewById(R.id.switchDrawView);
 
 
@@ -193,6 +199,9 @@ public class selectActivity extends AppCompatActivity {
     {
         AlertDialog.Builder alert = new AlertDialog.Builder(imageDraw.getContext());
         alert.setTitle("Would you like to save your artifact?");
+        EditText name = new EditText(imageDraw.getContext());
+        name.setHint("Name your selection");
+        alert.setView(name);
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 imageDraw.save();
@@ -207,5 +216,18 @@ public class selectActivity extends AppCompatActivity {
         });
         AlertDialog d = alert.create();
         d.show();
+    }
+
+    public static String[] getUnitDimensions()
+    {
+        String NS = unit.getNsDimension();
+        String EW = unit.getEwDimension();
+
+        String[] dimensions = new String[2];
+
+        dimensions[0]=NS;
+        dimensions[1]=EW;
+
+        return dimensions;
     }
 }

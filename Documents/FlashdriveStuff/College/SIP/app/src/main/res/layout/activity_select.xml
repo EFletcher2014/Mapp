@@ -137,7 +137,7 @@
             android:layout_gravity="end"
             android:layout_weight="1"
             android:layout_marginRight="@dimen/fab_margin"
-            android:src="@drawable/plus_circle"
+            android:src="@drawable/ic_add_white_24dp"
             android:scaleType="center"
             app:fabSize="normal"/>
     </LinearLayout>
