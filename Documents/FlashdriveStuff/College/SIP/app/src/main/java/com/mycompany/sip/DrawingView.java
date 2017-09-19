@@ -271,7 +271,10 @@ public class DrawingView extends View {
             desiredWidth=100;
             desiredHeight=100;
         }
-        ratio=desiredWidth/desiredHeight;
+        ratio= (float)desiredWidth/(float)desiredHeight;
+
+        System.out.println("desiredWidth: " + desiredWidth + " desiredHeight: " + desiredHeight);
+        System.out.println("ratio: " + ratio);
 
         int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
@@ -291,6 +294,14 @@ public class DrawingView extends View {
             System.out.println("At most");
             //Can't be bigger than...
             width = Math.min(desiredWidth, widthSize);
+            if(width==desiredWidth)
+            {
+                System.out.println("desired");
+            }
+            else {
+                System.out.println("widthSize");
+            }
+            desiredHeight=(int) (width/ratio);
         } else {
             System.out.println("Whatever");
             //Be whatever you want
@@ -306,12 +317,22 @@ public class DrawingView extends View {
             System.out.println("Height at most");
             //Can't be bigger than...
             height = Math.min(desiredHeight, heightSize);
+            if(height==heightSize)
+            {
+                System.out.println("heightSize");
+                width= (int) (height*ratio);
+            }
+            else
+            {
+                System.out.println("desiredHeight");
+            }
         } else {
             System.out.println("Height whatever");
             //Be whatever you want
             height = desiredHeight;
         }
-
+        Bitmap newBitmap = Bitmap.createScaledBitmap(canvasBitmap, width, height, true);
+        canvasBitmap=newBitmap;
         System.out.println("height: " + height + " width: " + width);
         //MUST CALL THIS
         setMeasuredDimension(width, height);
