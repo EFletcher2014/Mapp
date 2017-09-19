@@ -103,11 +103,29 @@
 
             <!--an imageView which will show the selected image of the unit.-->
             <!--This should be able to accept a photograph of the unit, or a photograph of a hand drawn map if the user prefers-->
-            <ImageView
-                android:layout_width="match_parent"
+            <ViewSwitcher
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/unitImgView"
-                android:src="@drawable/image_prompt"/>
+                android:id="@+id/imageSwitch"
+                android:layout_gravity="center_horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/selectImage"
+                    android:text="Click here to add an image of the unit"
+                    android:lines="5"
+                    android:layout_weight="1"
+                    android:textSize="24sp"
+                    android:gravity="center"
+                    android:textColor="@color/colorPrimaryText"
+                    android:background="@color/colorAccent"
+                    />
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/unitImgView"
+                    android:layout_gravity="center_horizontal|center_vertical" />
+            </ViewSwitcher>
 
             <!--a button which will take the user to the select on image activity. Need to figure out how to get back****-->
             <Button

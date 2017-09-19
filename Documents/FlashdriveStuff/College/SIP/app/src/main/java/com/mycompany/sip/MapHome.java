@@ -63,6 +63,7 @@ public class MapHome extends AppCompatActivity {
     private EditText endDepth;
     private ImageView unitImage;
     private AlertDialog.Builder alert;
+    private ViewSwitcher switcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -72,6 +73,7 @@ public class MapHome extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_map_home);
+        switcher= (ViewSwitcher) findViewById(R.id.imageSwitch);
         begDepth = (EditText) findViewById(R.id.enterBegDepth);
         endDepth = (EditText) findViewById(R.id.enterEndDepth);
         unitImage = (ImageView) findViewById(R.id.unitImgView);
@@ -80,6 +82,7 @@ public class MapHome extends AppCompatActivity {
         if(savedInstanceState!=null)
         {
             selectedImageUri=savedInstanceState.getParcelable("URI");
+            switcher.showNext();
             unitImage.setImageURI(selectedImageUri);
 
             if(savedInstanceState.getBoolean("alert"))
@@ -120,6 +123,17 @@ public class MapHome extends AppCompatActivity {
         unitNumberText.setText("Unit: " + unitNumber);
         TextView levelNumberText = (TextView) findViewById(R.id.levelNumber);
         levelNumberText.setText("Level " + levelNumber);
+
+        switcher.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Get Picture
+                Intent pictureIntent = new Intent();
+                pictureIntent.setType("image/*");
+                pictureIntent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
+            }
+        });
 
         final ImageView unitImage = (ImageView) findViewById(R.id.unitImgView);
         unitImage.setOnClickListener(new View.OnClickListener() {
@@ -243,6 +257,10 @@ public class MapHome extends AppCompatActivity {
                 System.out.println("selectedImageUri is" + selectedImageUri);
 
                 //MEDIA GALLERY
+                if(switcher.getNextView().equals(findViewById(R.id.unitImgView)))
+                {
+                    switcher.showNext();
+                }
                 unitImage.setImageURI(selectedImageUri);
             }
         }
