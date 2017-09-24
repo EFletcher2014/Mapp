@@ -19,6 +19,7 @@ import java.util.ArrayList;
 
 public class DrawingView extends View {
 
+    private Grid gr, keystone;
     //drawing path
     private Path drawPath;
     //drawing and canvas paint
@@ -32,12 +33,16 @@ public class DrawingView extends View {
     private Bitmap canvasBitmap;
     private String whichTool = "";
     private float startX, startY, endX, endY;
-    private ArrayList<Path> toUndo = new ArrayList<>();
+    private ArrayList<String> whatToUndo = new ArrayList<>(); //tells the system what the next thing to undo is
+    private ArrayList<Path> toUndoPath = new ArrayList<>();
+    private ArrayList<Grid> toUndoGrid = new ArrayList<>();
     private ArrayList<Paint> toUndoPaint = new ArrayList<>();
     private ArrayList<Path> toRedo = new ArrayList<>();
     private ArrayList<Paint> toRedoPaint = new ArrayList<>();
     private float[][] keystonePoints = new float[4][2];
+    private float[][] points = new float[4][2];
     private int keystoneCounter=0;
+    private float nsDim, ewDim;
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -54,6 +59,7 @@ public class DrawingView extends View {
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
         canvasPaint = new Paint(Paint.DITHER_FLAG);
+
     }
 
     @Override
@@ -76,15 +82,28 @@ public class DrawingView extends View {
         }
         else
         {
+            String[] dimensions = selectActivity.getUnitDimensions();
+            ewDim = Float.parseFloat(dimensions[1]);
+            nsDim = Float.parseFloat(dimensions[0]);
             if(this.whichTool.equals("grid"))
             {
                 drawPaint.setAlpha(255);
                 drawPaint.setStrokeWidth(5);
 
-                String[] dimensions = selectActivity.getUnitDimensions();
-                float ewDim = Float.parseFloat(dimensions[0]);
-                float nsDim = Float.parseFloat(dimensions[1]);
-                canvas.drawLine(startX, startY, startX, endY, drawPaint);
+                points = new float[4][2];
+                points[0][0]=startX;
+                points[0][1]=startY;
+                points[1][0]=endX;
+                points[1][1]=startY;
+                points[2][0]=endX;
+                points[2][1]=endY;
+                points[3][0]=startX;
+                points[3][1]=endY;
+
+                gr = new Grid("grid", points, nsDim, ewDim, canvas, drawPaint);
+                gr.drawGrid();
+
+                /*canvas.drawLine(startX, startY, startX, endY, drawPaint);
                 canvas.drawLine(startX, endY, endX, endY, drawPaint);
                 canvas.drawLine(endX, endY, endX, startY, drawPaint);
                 canvas.drawLine(endX, startY, startX, startY, drawPaint);
@@ -93,22 +112,22 @@ public class DrawingView extends View {
                 {
                     canvas.drawLine(startX+(intervalX*i), startY, startX+(intervalX*i), endY, drawPaint);
                 }
-                float intervalY = (endY-startY)/(10*ewDim);
-                for(int i = 1; i<10*ewDim; i++)
-                {
+                float intervalY = (endY-startY)/(10*ewDim);*/
+                //for(int i = 1; i<10*ewDim; i++)
+                //{
                     /*drawPaint.setColor(paintColor);
                     if(i%10==0)
                     {
                         drawPaint.setColor(red);
                     }*/
-                    canvas.drawLine(startX, startY+(intervalY*i), endX, startY+(intervalY*i), drawPaint);
-                }
+                    //canvas.drawLine(startX, startY+(intervalY*i), endX, startY+(intervalY*i), drawPaint);
+                //}
             }
             else
             {
                 if(this.whichTool.equals("keystone"))
                 {
-                    String[] dimensions = selectActivity.getUnitDimensions();
+                    dimensions = selectActivity.getUnitDimensions();
                     drawPaint.setAlpha(255);
                     drawPaint.setStrokeWidth(5);
                     System.out.println("actually legit drawing it");
@@ -116,7 +135,10 @@ public class DrawingView extends View {
                     float nsDim = Float.parseFloat(dimensions[0]);
                     float ewDim = Float.parseFloat(dimensions[1]);
 
-                    System.out.println(nsDim + " " + ewDim);
+                    keystone = new Grid("keystone", keystonePoints, nsDim, ewDim, canvas, drawPaint);
+                    keystone.drawGrid();
+
+                   /* System.out.println(nsDim + " " + ewDim);
 
                     float topLength = keystonePoints[1][0]-keystonePoints[0][0];
                     System.out.println(topLength);
@@ -159,7 +181,7 @@ public class DrawingView extends View {
                     for(int h=1; h<10*nsDim; h++)
                     {
                         canvas.drawLine(keystonePoints[0][0] - (h*(leftKeystone/(10*nsDim))), keystonePoints[0][1]+ h*(leftHeight/(10*nsDim)), keystonePoints[1][0] + (h*(rightKeystone/(10*nsDim))), keystonePoints[0][1] + h*(rightHeight/(10*nsDim)), drawPaint);
-                    }
+                    }*/
                 }
             }
         }
@@ -184,8 +206,6 @@ public class DrawingView extends View {
                     //invalidate();
                     break;
                 case MotionEvent.ACTION_UP:
-                    //toUndo.add(drawPath);
-                    //toUndoPaint.add(drawPaint);
                     //invalidate();
                     selectActivity.saveLayer();
                     break;
@@ -211,7 +231,8 @@ public class DrawingView extends View {
                     case MotionEvent.ACTION_UP:
                         endX = event.getX();
                         endY = event.getY();
-                        invalidate();
+                        selectActivity.saveGrid();
+                        //invalidate();
                         break;
                     default:
                         return false;
@@ -360,10 +381,11 @@ public class DrawingView extends View {
 
     public void undo()
     {
-        System.out.println(toUndo);
-        if(toUndo.size()>0) {
-            toRedo.add(toUndo.remove(toUndo.size() - 1));
-            toRedoPaint.add(toUndoPaint.remove(toUndoPaint.size() - 1));
+        System.out.println(toUndoPath);
+        if(whatToUndo.size()>0) {
+            //TODO: fix this to implement grid undoing as well
+            //toRedo.add(toUndoPath.remove(toUndoPath.size() - 1));
+            //toRedoPaint.add(toUndoPaint.remove(toUndoPaint.size() - 1));
             System.out.println(toRedo.get(toRedo.size() - 1));
         }
         drawPath.reset();
@@ -374,7 +396,7 @@ public class DrawingView extends View {
     {
         Path temp = new Path(drawPath);
         Paint tempPaint = new Paint(drawPaint);
-        toUndo.add(temp);
+        toUndoPath.add(temp);
         toUndoPaint.add(tempPaint);
         drawCanvas.drawPath(temp, tempPaint);
         /*for(int i=0; i<toUndo.size()-1; i++)
@@ -384,41 +406,99 @@ public class DrawingView extends View {
         }*/
     }
 
-    public void drawKeystone(float[][] points)
-    {
-        float topLength = points[0][0]-points[1][0];
-        float botLength = points[3][0]-points[2][0];
-        float height = points[0][1]-points[2][1];
-        float leftKeystone = points[0][0]-points[3][0];
-        float rightKeystone = points[2][0]-points[1][0];
-
-        //draws top line
-        drawCanvas.drawLine(points[0][0], points [0][1], points[1][0], points[1][1], drawPaint);
-
-        //draws bottom line
-        drawCanvas.drawLine(points[3][0], points[3][1], points[2][0], points[2][1], drawPaint);
-
-        //draws left line
-        drawCanvas.drawLine(points[0][0], points [0][1], points[3][0], points[3][1], drawPaint);
-
-        //draws right line
-        drawCanvas.drawLine(points[1][0], points[1][1], points[2][0], points[2][1], drawPaint);
-
-        //fills in vertical lines
-        for(int l=1; l<9; l++)
-        {
-            drawCanvas.drawLine(points[0][0] + (l*(topLength/10)), points[0][1], points[3][0] + (l*(botLength/10)), points[3][1], drawPaint);
-        }
-
-        //fills in horizontal lines
-        for(int h=1; h<9; h++)
-        {
-            drawCanvas.drawLine(points[0][0] - (h*(leftKeystone/10)), points[0][1]+ h*(height/10), points[2][0] + (h*(rightKeystone/10)), points[0][1] + h*(height/10), drawPaint);
-        }
-    }
-
     public void keystone()
     {
         this.whichTool="keystone";
+    }
+
+    public void saveGrid()
+    {
+        System.out.println("saving grid!!!");
+        if(gr!=null)
+        {
+            System.out.println("drawing gr!");
+            drawGrid(drawCanvas, drawPaint, points, nsDim, ewDim);
+            /*if(toUndoGrid!=null && !toUndoGrid.contains(gr))
+            {
+                gr.drawGrid();
+                whatToUndo.add("grid");
+                toUndoGrid.add(gr);
+                toUndoPaint.add(drawPaint);
+            }*/
+        }
+        if(keystone!=null)
+        {
+            System.out.println("Trying to draw keystone");
+            keystone.drawGrid();
+           /* if(toUndoGrid!=null && !toUndoGrid.contains(keystone))
+            {
+                keystone.drawGrid();
+                whatToUndo.add("grid");
+                toUndoGrid.add(keystone);
+                toUndoPaint.add(drawPaint);
+            }*/
+        }
+
+        System.out.println("Drew the thing");
+    }
+
+    //will this make save not break?
+    public static void drawGrid(Canvas canvas, Paint drawPaint, float[][] points, float nsDim, float ewDim)
+    {
+        drawPaint.setAlpha(255);
+        drawPaint.setStrokeWidth(5);
+        System.out.println("actually legit drawing it");
+
+        System.out.println(nsDim + " " + ewDim);
+
+        float topLength = points[1][0]-points[0][0];
+        System.out.println(" tL: " + topLength);
+        float botLength = points[2][0]-points[3][0];
+        System.out.println(" bL: " + botLength);
+        float height = points[2][1]-points[0][1];
+        float topHeightDiff = points[1][1]-points[0][1];
+        System.out.println(" thd: " + topHeightDiff);
+        float botHeightDiff = points[2][1]-points[3][1];
+        System.out.println(" btd: " + botHeightDiff);
+        float leftHeight = points[3][1] - points[0][1];
+        float rightHeight = points[2][1] - points[1][1];
+        float leftKeystone = points[0][0]-points[3][0];
+        System.out.println(" lk: " + leftKeystone);
+        float leftInt = leftKeystone/10;
+        float rightKeystone = points[2][0]-points[1][0];
+        System.out.println(" rk: " + rightKeystone);
+        float rightInt = rightKeystone/10;
+
+
+        //TODO: figure out why this isn't working from saveGrid, but is working from onDraw
+        //draws top line
+        canvas.drawLine(points[0][0], points[0][1], points[1][0], points[1][1], drawPaint);
+
+        System.out.println("DRAW*******************************************************************************************************************************************************************************************");
+
+        //draws bottom line
+        canvas.drawLine(points[3][0], points[3][1], points[2][0], points
+                [2][1], drawPaint);
+
+        //draws left line
+        canvas.drawLine(points[0][0], points[0][1], points[3][0], points[3][1], drawPaint);
+
+        //draws right line
+        canvas.drawLine(points[1][0], points[1][1], points[2][0], points[2][1], drawPaint);
+
+        //fills in vertical lines
+        //TODO: allow to keystone top and bottom too
+        for(int l=1; l<10*ewDim; l++)
+        {
+            canvas.drawLine(points[0][0] + (l*(topLength/(10*ewDim))), (points[0][1] + l*(topHeightDiff/(10*ewDim))), points[3][0] + (l*(botLength/(10*ewDim))), (points[3][1] + l*(botHeightDiff/(10*ewDim))), drawPaint);
+        }
+        System.out.println("Drew the vertical ones!");
+
+        //fills in horizontal lines
+        for(int h=1; h<10*nsDim; h++)
+        {
+            canvas.drawLine(points[0][0] - (h*(leftKeystone/(10*nsDim))), points[0][1]+ h*(leftHeight/(10*nsDim)), points[1][0] + (h*(rightKeystone/(10*nsDim))), points[0][1] + h*(rightHeight/(10*nsDim)), drawPaint);
+        }
+        System.out.println("DONE!!!");
     }
 }
