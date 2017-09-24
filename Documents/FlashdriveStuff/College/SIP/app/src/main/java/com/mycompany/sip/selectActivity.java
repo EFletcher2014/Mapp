@@ -230,4 +230,24 @@ public class selectActivity extends AppCompatActivity {
 
         return dimensions;
     }
+
+    public static void saveGrid()
+    {
+        AlertDialog.Builder alert1 = new AlertDialog.Builder(imageDraw.getContext());
+        alert1.setTitle("Would you like to save your grid?");
+        alert1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                imageDraw.saveGrid();
+                //TODO: get info about artifact and save to server
+            }
+
+        });
+        alert1.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //imageDraw.undo();
+            }
+        });
+        AlertDialog d = alert1.create();
+        d.show();
+    }
 }

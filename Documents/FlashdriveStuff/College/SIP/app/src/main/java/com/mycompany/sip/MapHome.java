@@ -1,12 +1,16 @@
 package com.mycompany.sip;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +20,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -62,8 +67,9 @@ public class MapHome extends AppCompatActivity {
     private EditText begDepth;
     private EditText endDepth;
     private ImageView unitImage;
-    private AlertDialog.Builder alert;
+    private AlertDialog.Builder alert, alert1;
     private ViewSwitcher switcher;
+    private static final int CAMERA_REQUEST = 1888;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -87,7 +93,11 @@ public class MapHome extends AppCompatActivity {
 
             if(savedInstanceState.getBoolean("alert"))
             {
-                showDialog();
+                showCancelDialog();
+            }
+            if(savedInstanceState.getBoolean("alert1"))
+            {
+                showChooserDialog();
             }
         }
 
@@ -127,23 +137,8 @@ public class MapHome extends AppCompatActivity {
         switcher.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Get Picture
-                Intent pictureIntent = new Intent();
-                pictureIntent.setType("image/*");
-                pictureIntent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
-            }
-        });
-
-        final ImageView unitImage = (ImageView) findViewById(R.id.unitImgView);
-        unitImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Get Picture
-                Intent pictureIntent = new Intent();
-                pictureIntent.setType("image/*");
-                pictureIntent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
+                //TODO: make this not look dumb
+                showChooserDialog();
             }
         });
 
@@ -199,7 +194,7 @@ public class MapHome extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 // Throws dialog asking if user wants to cancel without saving
-                showDialog();
+                showCancelDialog();
                 /*LayoutInflater inflater = getLayoutInflater();
                 final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
                 alert = new AlertDialog.Builder(MapHome.this);
@@ -226,7 +221,7 @@ public class MapHome extends AppCompatActivity {
     @Override
     public void onBackPressed()
     {
-        showDialog();
+        showCancelDialog();
         /*LayoutInflater inflater = getLayoutInflater();
         final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
         AlertDialog.Builder alert = new AlertDialog.Builder(MapHome.this);
@@ -251,17 +246,35 @@ public class MapHome extends AppCompatActivity {
      */
      public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            if (requestCode == SELECT_PICTURE) {
-                selectedImageUri = data.getData();
-                imageReference = selectedImageUri.toString();
-                System.out.println("selectedImageUri is" + selectedImageUri);
 
-                //MEDIA GALLERY
-                if(switcher.getNextView().equals(findViewById(R.id.unitImgView)))
-                {
-                    switcher.showNext();
+            if(switcher.getNextView().equals(findViewById(R.id.unitImgView)))
+            {
+                switcher.showNext();
+            }
+            selectedImageUri = data.getData();
+            imageReference = selectedImageUri.toString();
+            System.out.println("selectedImageUri is" + selectedImageUri);
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
+                ExifInterface exif = null;
+                try {
+                    //TODO: Try this: https://stackoverflow.com/questions/34696787/a-final-answer-on-how-to-get-exif-data-from-uri
+                    exif = new ExifInterface(selectedImageUri.getPath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("Error");
                 }
+                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                        ExifInterface.ORIENTATION_UNDEFINED);
+                Bitmap bmRotated = rotateBitmap(bitmap, orientation);
+                unitImage.setImageBitmap(bmRotated);
+
+            } catch (IOException e)
+            {
+                System.out.println("Error: image URI is null");
                 unitImage.setImageURI(selectedImageUri);
+
             }
         }
     }
@@ -370,18 +383,13 @@ public class MapHome extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         // Save our own state now
         outState.putParcelable("URI", selectedImageUri);
-        if(alert!=null)
-        {
-            outState.putBoolean("alert", true);
-        }
-        else
-        {
-            outState.putBoolean("alert", false);
-        }
+        outState.putBoolean("alert", (alert!=null));
+        outState.putBoolean("alert1", (alert1!=null));
     }
 
-    private void showDialog()
+    private void showCancelDialog()
     {
+        //TODO: show different dialogs (one for close and one for "which type of picture")
         LayoutInflater inflater = getLayoutInflater();
         final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
         alert = new AlertDialog.Builder(MapHome.this);
@@ -402,5 +410,92 @@ public class MapHome extends AppCompatActivity {
         alert.setView(cancelLayout);
         AlertDialog dialog = alert.create();
         dialog.show();
+    }
+
+    private void showChooserDialog()
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View chooserLayout = inflater.inflate(R.layout.chooser_dialog, null);
+        alert1 = new AlertDialog.Builder(MapHome.this);
+        alert1.setView(chooserLayout);
+        //TextView title = (TextView) this.findViewById(R.id.myTitle);
+        //title.setText("Add A Picture:");
+        //alert1.setCustomTitle((View)R.layout.mytitle);
+        alert1.setTitle("Add A Picture:");
+        alert1.setIcon(R.drawable.ic_add_a_photo_white_24dp);
+        final AlertDialog dialog = alert1.create();
+        dialog.show();
+        ImageButton findPic = (ImageButton) chooserLayout.findViewById(R.id.goToGallery);
+        findPic.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                //Get Picture
+                Intent pictureIntent = new Intent();
+                pictureIntent.setType("image/*");
+                pictureIntent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
+                alert1=null;
+                dialog.cancel();
+            }
+
+        });
+
+        ImageButton takePic = (ImageButton) chooserLayout.findViewById(R.id.takeNewPicture);
+        takePic.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                //Take picture from camera
+                //TODO: make this not get huge
+                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                cameraIntent.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                alert1=null;
+                dialog.cancel();
+            }
+        });
+    }
+
+    //From https://stackoverflow.com/questions/31781150/auto-image-rotated-from-portrait-to-landscape
+    public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
+
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_NORMAL:
+                return bitmap;
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.setScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.setRotate(180);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.setRotate(90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.setRotate(-90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                return bitmap;
+        }
+        try {
+            System.out.println("rotating!");
+            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap.recycle();
+            return bmRotated;
+        }
+        catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

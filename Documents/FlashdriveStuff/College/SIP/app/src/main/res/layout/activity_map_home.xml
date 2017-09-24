@@ -117,14 +117,15 @@
                     android:layout_weight="1"
                     android:textSize="24sp"
                     android:gravity="center"
-                    android:textColor="@color/colorPrimaryText"
-                    android:background="@color/colorAccent"
+                    android:textColor="@color/colorAccent"
+                    android:background="@color/colorText"
                     />
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/unitImgView"
-                    android:layout_gravity="center_horizontal|center_vertical" />
+                    android:layout_gravity="center_horizontal|center_vertical"
+                    android:adjustViewBounds="true"/>
             </ViewSwitcher>
 
             <!--a button which will take the user to the select on image activity. Need to figure out how to get back****-->
