@@ -195,8 +195,10 @@ public class selectActivity extends AppCompatActivity {
             }
         });
     }
+
     public static void saveLayer()
     {
+        System.out.println("Saving!");
         AlertDialog.Builder alert = new AlertDialog.Builder(imageDraw.getContext());
         alert.setTitle("Would you like to save your artifact?");
         EditText name = new EditText(imageDraw.getContext());
@@ -204,18 +206,27 @@ public class selectActivity extends AppCompatActivity {
         alert.setView(name);
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                imageDraw.save();
+                imageDraw.setDrawingCacheEnabled(true);
+                imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+                Bitmap temp = Bitmap.createBitmap(imageDraw.getDrawingCache());
+                System.out.println("Yes!\nDrawing cache Bitmap: " + temp);
+                imageDraw.save(temp);
                 //TODO: get info about artifact and save to server
             }
 
         });
         alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                System.out.println("No! :(");
+                /*imageDraw.setDrawingCacheEnabled(true);
+                imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+                imageDraw.destroyDrawingCache();*/
                 imageDraw.undo();
             }
         });
         AlertDialog d = alert.create();
         d.show();
+        imageDraw.setDrawingCacheEnabled(false);
     }
 
     public static String[] getUnitDimensions()
@@ -229,25 +240,5 @@ public class selectActivity extends AppCompatActivity {
         dimensions[1]=EW;
 
         return dimensions;
-    }
-
-    public static void saveGrid()
-    {
-        AlertDialog.Builder alert1 = new AlertDialog.Builder(imageDraw.getContext());
-        alert1.setTitle("Would you like to save your grid?");
-        alert1.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                imageDraw.saveGrid();
-                //TODO: get info about artifact and save to server
-            }
-
-        });
-        alert1.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                //imageDraw.undo();
-            }
-        });
-        AlertDialog d = alert1.create();
-        d.show();
     }
 }
