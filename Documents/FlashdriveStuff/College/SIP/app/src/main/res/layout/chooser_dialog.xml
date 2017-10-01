@@ -15,8 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/takeNewPicture"
-            android:background="@drawable/ic_add_a_photo_grey_48dp"
-            android:backgroundTint="@color/colorAccent"/>
+            android:background="@drawable/ic_add_a_photo_grey_48dp"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -31,7 +30,6 @@
             android:id="@+id/goToGallery"
             android:background="@drawable/ic_photo_library_grey_48dp"
             android:gravity="center"
-            android:layout_alignParentRight="true"
-            android:backgroundTint="@color/colorAccent"/>
+            android:layout_alignParentRight="true"/>
     </RelativeLayout>
 </LinearLayout>
