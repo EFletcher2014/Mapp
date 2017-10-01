@@ -160,6 +160,7 @@ public class MapHome extends AppCompatActivity {
         toSelectOnImageActivity.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View view) {
+
                   //Move to select on image activity
                   Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
                   selectActivityIntent.putExtra("unit", unit);
@@ -260,7 +261,7 @@ public class MapHome extends AppCompatActivity {
                 ExifInterface exif = null;
                 try {
                     //TODO: Try this: https://stackoverflow.com/questions/34696787/a-final-answer-on-how-to-get-exif-data-from-uri
-                    exif = new ExifInterface(selectedImageUri.getPath());
+                    exif = new ExifInterface(/*getRealPathFromURI*/(selectedImageUri.getPath()));
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.out.println("Error");
@@ -497,5 +498,20 @@ public class MapHome extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private String getRealPathFromURI(Uri contentURI) {
+        String result;
+        Cursor cursor;
+        cursor = getContentResolver().query(contentURI, null, null, null, null);
+        if (cursor == null) { // Source is Dropbox or other similar local file path
+            result = contentURI.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
     }
 }
