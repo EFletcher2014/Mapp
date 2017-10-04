@@ -10,9 +10,11 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -70,6 +72,7 @@ public class MapHome extends AppCompatActivity {
     private AlertDialog.Builder alert, alert1;
     private ViewSwitcher switcher;
     private static final int CAMERA_REQUEST = 1888;
+    private int rotation = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -88,8 +91,15 @@ public class MapHome extends AppCompatActivity {
         if(savedInstanceState!=null)
         {
             selectedImageUri=savedInstanceState.getParcelable("URI");
-            switcher.showNext();
-            unitImage.setImageURI(selectedImageUri);
+            if(selectedImageUri!=null)
+            {
+                switcher.showNext();
+                unitImage.setImageURI(selectedImageUri);
+                Bitmap bm=((BitmapDrawable)unitImage.getDrawable()).getBitmap();
+                rotation=savedInstanceState.getInt("rotation");
+                Bitmap bitmap = rotateBitmap(bm, rotation);
+                unitImage.setImageBitmap(bitmap);
+            }
 
             if(savedInstanceState.getBoolean("alert"))
             {
@@ -142,6 +152,19 @@ public class MapHome extends AppCompatActivity {
             }
         });
 
+        final FloatingActionButton rotate = (FloatingActionButton) findViewById(R.id.rotateFab);
+        rotate.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view){
+                Bitmap bm=((BitmapDrawable)unitImage.getDrawable()).getBitmap();
+                Bitmap bmRotated = rotateBitmap(bm, 90);
+                unitImage.setImageBitmap(bmRotated);
+                rotation+=90;
+                rotation%=360;
+            }
+        });
+
         //TODO: Throw error if user tries to click these buttons before saving the level
         final Button toAddArtifactActivity = (Button) findViewById(R.id.toAddArtifactsActivity);
         toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
@@ -164,6 +187,7 @@ public class MapHome extends AppCompatActivity {
                   //Move to select on image activity
                   Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
                   selectActivityIntent.putExtra("unit", unit);
+                  selectActivityIntent.putExtra("rotation", rotation);
                   startActivity(selectActivityIntent);
               }
        });
@@ -248,35 +272,36 @@ public class MapHome extends AppCompatActivity {
      public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
 
-            if(switcher.getNextView().equals(findViewById(R.id.unitImgView)))
+            if(switcher.getNextView().equals(findViewById(R.id.pictures)))
             {
                 switcher.showNext();
             }
             selectedImageUri = data.getData();
             imageReference = selectedImageUri.toString();
             System.out.println("selectedImageUri is" + selectedImageUri);
-
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
-                ExifInterface exif = null;
-                try {
-                    //TODO: Try this: https://stackoverflow.com/questions/34696787/a-final-answer-on-how-to-get-exif-data-from-uri
-                    exif = new ExifInterface(/*getRealPathFromURI*/(selectedImageUri.getPath()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("Error");
-                }
-                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                        ExifInterface.ORIENTATION_UNDEFINED);
-                Bitmap bmRotated = rotateBitmap(bitmap, orientation);
-                unitImage.setImageBitmap(bmRotated);
-
-            } catch (IOException e)
-            {
-                System.out.println("Error: image URI is null");
-                unitImage.setImageURI(selectedImageUri);
-
-            }
+            unitImage.setImageURI(selectedImageUri);
+            rotation=0;
+//            try {
+//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
+//                ExifInterface exif = null;
+//                try {
+//                    //TODO: Try this: https://stackoverflow.com/questions/34696787/a-final-answer-on-how-to-get-exif-data-from-uri
+//                    exif = new ExifInterface(/*getRealPathFromURI(selectedImageUri)*/(selectedImageUri.getPath()));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                    System.out.println("Error");
+//                }
+//                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+//                        ExifInterface.ORIENTATION_UNDEFINED);
+//                Bitmap bmRotated = rotateBitmap(bitmap, orientation);
+//                unitImage.setImageBitmap(bmRotated);
+//
+//            } catch (IOException e)
+//            {
+//                System.out.println("Error: image URI is null");
+//                unitImage.setImageURI(selectedImageUri);
+//
+//            }
         }
     }
     public void queryServer() throws ClassNotFoundException, SQLException{
@@ -386,6 +411,7 @@ public class MapHome extends AppCompatActivity {
         outState.putParcelable("URI", selectedImageUri);
         outState.putBoolean("alert", (alert!=null));
         outState.putBoolean("alert1", (alert1!=null));
+        outState.putInt("rotation", rotation);
     }
 
     private void showCancelDialog()
@@ -458,40 +484,12 @@ public class MapHome extends AppCompatActivity {
     public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
 
         Matrix matrix = new Matrix();
-        switch (orientation) {
-            case ExifInterface.ORIENTATION_NORMAL:
-                return bitmap;
-            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
-                matrix.setScale(-1, 1);
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_180:
-                matrix.setRotate(180);
-                break;
-            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
-                matrix.setRotate(180);
-                matrix.postScale(-1, 1);
-                break;
-            case ExifInterface.ORIENTATION_TRANSPOSE:
-                matrix.setRotate(90);
-                matrix.postScale(-1, 1);
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_90:
-                matrix.setRotate(90);
-                break;
-            case ExifInterface.ORIENTATION_TRANSVERSE:
-                matrix.setRotate(-90);
-                matrix.postScale(-1, 1);
-                break;
-            case ExifInterface.ORIENTATION_ROTATE_270:
-                matrix.setRotate(-90);
-                break;
-            default:
-                return bitmap;
-        }
+        matrix.setRotate(orientation);
+
         try {
             System.out.println("rotating!");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-            bitmap.recycle();
+            //bitmap.recycle();
             return bmRotated;
         }
         catch (OutOfMemoryError e) {
@@ -502,13 +500,15 @@ public class MapHome extends AppCompatActivity {
 
     private String getRealPathFromURI(Uri contentURI) {
         String result;
-        Cursor cursor;
-        cursor = getContentResolver().query(contentURI, null, null, null, null);
+        Cursor cursor=null;
+        String[] proj = {MediaStore.Images.Media.DATA};
+        cursor = this.getBaseContext().getContentResolver().query(contentURI, proj, null, null, null);
         if (cursor == null) { // Source is Dropbox or other similar local file path
             result = contentURI.getPath();
         } else {
+            System.out.println("Cursor: " + cursor);
+            int idx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
-            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
             result = cursor.getString(idx);
             cursor.close();
         }

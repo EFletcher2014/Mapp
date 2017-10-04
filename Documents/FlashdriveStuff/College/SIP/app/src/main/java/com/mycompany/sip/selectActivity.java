@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -35,12 +36,14 @@ public class selectActivity extends AppCompatActivity {
     private TextView gr;
     private TextView ks;
     private static View context;
+    private int rotation;
 
     private static Unit unit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         System.out.println("start");
+        bitmap=null;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select);
         fabMenuDeployed=false;
@@ -48,6 +51,7 @@ public class selectActivity extends AppCompatActivity {
         Intent openIntent = getIntent();
         final Uri selectedImageUri = openIntent.getData();
         unit = openIntent.getParcelableExtra("unit");
+        rotation = openIntent.getIntExtra("rotation", 0);
 
         switcher = (ViewSwitcher) findViewById(R.id.switchDrawView);
 
@@ -58,7 +62,8 @@ public class selectActivity extends AppCompatActivity {
             try {
                 imageDraw = (DrawingView) findViewById(R.id.draw);
                 System.out.println("Adding bitmap");
-                bitmap = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
+                Bitmap bm = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
+                bitmap = rotateBitmap(bm, rotation);
                 imageDraw.setCanvasBitmap(bitmap);
                 System.out.println("set Canvas Bitmap");
             } catch (IOException e) {
@@ -240,5 +245,22 @@ public class selectActivity extends AppCompatActivity {
         dimensions[1]=EW;
 
         return dimensions;
+    }
+    //From https://stackoverflow.com/questions/31781150/auto-image-rotated-from-portrait-to-landscape
+    public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
+
+        Matrix matrix = new Matrix();
+        matrix.setRotate(orientation);
+
+        try {
+            System.out.println("rotating!");
+            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            //bitmap.recycle();
+            return bmRotated;
+        }
+        catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
