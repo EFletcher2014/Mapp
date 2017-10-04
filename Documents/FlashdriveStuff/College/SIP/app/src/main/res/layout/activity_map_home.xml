@@ -120,12 +120,25 @@
                     android:textColor="@color/colorAccent"
                     android:background="@color/colorText"
                     />
-                <ImageView
-                    android:layout_width="wrap_content"
+                <android.support.design.widget.CoordinatorLayout
                     android:layout_height="wrap_content"
-                    android:id="@+id/unitImgView"
+                    android:layout_width="wrap_content"
+                    android:id="@+id/pictures"
                     android:layout_gravity="center_horizontal|center_vertical"
-                    android:adjustViewBounds="true"/>
+                    >
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/unitImgView"
+                        android:adjustViewBounds="true"/>
+                    <android.support.design.widget.FloatingActionButton
+                        android:layout_height="wrap_content"
+                        android:layout_width="wrap_content"
+                        android:id="@+id/rotateFab"
+                        android:src="@drawable/ic_rotate_right_white_48dp"
+                        android:layout_gravity="end|bottom"
+                        android:layout_margin="16dp"/>
+                </android.support.design.widget.CoordinatorLayout>
             </ViewSwitcher>
 
             <!--a button which will take the user to the select on image activity. Need to figure out how to get back****-->
