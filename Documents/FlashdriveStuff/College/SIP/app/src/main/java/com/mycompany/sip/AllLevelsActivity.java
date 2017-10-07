@@ -37,24 +37,29 @@ public class AllLevelsActivity extends ListActivity {
 
     // url to get all levels list
     //TODO: Get real URL
-    private static String url_all_levels = "https://api.androidhive.info/android_connect/get_all_levels.php";
+    private static String url_all_levels = "http://75.134.106.101:80/mapp/get_all_levels.php";
 
     // JSON Node names
     //TODO: get correct variables (once server is running)
     private static final String TAG_SUCCESS = "success";
-    private static final String TAG_UNITS = "units";
-    private static final String TAG_PID = "pid";
-    private static final String TAG_NAME = "name";
+    private static final String TAG_LEVELS = "levels";
+    private static final String TAG_NUM = "lvlNum";
+    private static final String TAG_PID = "PrimaryKey";
+    private static final String TAG_BD = "begDepth";
+    private static final String TAG_ED = "endDepth";
+    private static final String TAG_DATE = "dateStarted";
+    private static final String TAG_EXCM = "excavationMethod";
     private static Site site;
     private static Unit unit;
     private static Level level;
     private static int levelNumber;
 
     private AlertDialog.Builder alert;
+    ArrayList<Level> allLevels = new ArrayList<>();
 
 
 
-    boolean test=true;
+    boolean test=false;
     Level[] testLevels = {new Level(1, 10.0, 15.0, site, unit, "11/03/1996", "shovel skimmed"),
             new Level(2, 15.0, 20.0, site, unit, "07/22/17", "troweling"),
             new Level(3, 20.0, 25.0, site, unit, "08/2/17", "backhoe")};
@@ -80,7 +85,7 @@ public class AllLevelsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        site = openIntent.getParcelableExtra("name");
+        site = openIntent.getParcelableExtra("siteName");
         unit = openIntent.getParcelableExtra("datum");
         TextView titleText = (TextView) findViewById(R.id.siteNameUnitNumber);
         String title = site.getName() + " " + unit.getDatum() + " Levels";
@@ -102,7 +107,7 @@ public class AllLevelsActivity extends ListActivity {
 
                 // adding each child node to HashMap key => value
                 testMap.put(TAG_PID, i + "");
-                testMap.put(TAG_NAME, depth);
+                testMap.put("name", depth);
 
                 // adding HashList to ArrayList
                 levelsList.add(testMap);
@@ -111,7 +116,7 @@ public class AllLevelsActivity extends ListActivity {
             ListAdapter adapter = new SimpleAdapter(
                     AllLevelsActivity.this, levelsList,
                     R.layout.list_item, new String[] { TAG_PID,
-                    TAG_NAME},
+                    "name"},
                     new int[] { R.id.pid, R.id.name });
             // updating listview
             setListAdapter(adapter);
@@ -210,7 +215,7 @@ public class AllLevelsActivity extends ListActivity {
                 if (success == 1) {
                     // levels found
                     // Getting Array of levels
-                    levels = json.getJSONArray(TAG_UNITS);
+                    levels = json.getJSONArray(TAG_LEVELS);
 
                     // looping through All sites
                     for (int i = 0; i < levels.length(); i++) {
@@ -218,14 +223,23 @@ public class AllLevelsActivity extends ListActivity {
 
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
-                        String name = c.getString(TAG_NAME);
+                        int num = c.getInt(TAG_NUM);
+                        Double bd = c.getDouble(TAG_BD);
+                        Double ed = c.getDouble(TAG_ED);
+                        String date = c.getString(TAG_DATE);
+                        String excm = c.getString(TAG_EXCM);
+
+                        Level temp = new Level(num, bd, ed, site, unit, date, excm);
+                        allLevels.add(temp);
+                        String name = temp.toString();
+
 
                         // creating new HashMap
                         HashMap<String, String> map = new HashMap<String, String>();
 
                         // adding each child node to HashMap key => value
                         map.put(TAG_PID, id);
-                        map.put(TAG_NAME, name);
+                        map.put("name", name);
 
                         // adding HashList to ArrayList
                         levelsList.add(map);
@@ -262,7 +276,7 @@ public class AllLevelsActivity extends ListActivity {
                     ListAdapter adapter = new SimpleAdapter(
                             AllLevelsActivity.this, levelsList,
                             R.layout.list_item, new String[] { TAG_PID,
-                            TAG_NAME},
+                            "name"},
                             new int[] { R.id.pid, R.id.name });
                     // updating listview
                     setListAdapter(adapter);

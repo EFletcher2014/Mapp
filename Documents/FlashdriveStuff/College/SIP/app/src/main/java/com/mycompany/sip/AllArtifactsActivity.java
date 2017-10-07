@@ -47,8 +47,9 @@ public class AllArtifactsActivity extends ListActivity {
     private EditText contents;
     private String pid;
     private String depth;
+    ArrayList<Artifact> allArtifacts = new ArrayList<>();
 
-    boolean test=true;
+    boolean test=false;
     ArrayList<Artifact> testArtifactsList = new ArrayList<>();
     Artifact[] testArtifacts = {new Artifact(site, unit, level, "17-2", 17, "seed bead"),
             new Artifact(site, unit, level, "17-2", 16, "projectile point"),
@@ -56,17 +57,19 @@ public class AllArtifactsActivity extends ListActivity {
 
     // url to get all artifacts list
     //TODO: Get real URL
-    private static String url_all_artifacts = "https://api.androidhive.info/android_connect/get_all_levels.php";
+    private static String url_all_artifacts = "http://75.134.106.101:80/mapp/get_all_artifacts.php";
 
     // JSON Node names
     //TODO: get correct variables (once server is running)
     private static final String TAG_SUCCESS = "success";
-    private static final String TAG_UNITS = "units";
-    private static final String TAG_PID = "pid";
-    private static final String TAG_NAME = "artifact";
+    private static final String TAG_ARTIFACTS = "artifacts";
+    private static final String TAG_PID = "PrimaryKey";
+    private static final String TAG_ANUM = "accNum";
+    private static final String TAG_CNUM = "catNum";
+    private static final String TAG_CONT = "contents";
 
-    // levels JSONArray
-    JSONArray levels = null;
+    // artifacts JSONArray
+    JSONArray artifacts = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -95,14 +98,14 @@ public class AllArtifactsActivity extends ListActivity {
 
         if(!test) {
             // Loading sites in Background Thread
-            new LoadAllLevels().execute();
+            new LoadAllArtifacts().execute();
         }
         else
         {
             testArtifactsList.add(new Artifact(site, unit, level, "17-2", 17, "seed bead"));
             testArtifactsList.add(new Artifact(site, unit, level, "17-2", 16, "projectile point"));
             testArtifactsList.add(new Artifact(site, unit, level, "17-2", 27, "flint flake"));
-            // looping through All levels
+            // looping through All artifacts
             for (int i = 0; i < testArtifactsList.size(); i++) {
 
                 String artifact = testArtifactsList.get(i).toString();
@@ -112,7 +115,7 @@ public class AllArtifactsActivity extends ListActivity {
 
                 // adding each child node to HashMap key => value
                 testMap.put(TAG_PID, i + "");
-                testMap.put(TAG_NAME, artifact);
+                testMap.put("name", artifact);
 
                 // adding HashList to ArrayList
                 artifactsList.add(testMap);
@@ -121,7 +124,7 @@ public class AllArtifactsActivity extends ListActivity {
             ListAdapter adapter = new SimpleAdapter(
                     AllArtifactsActivity.this, artifactsList,
                     R.layout.list_item, new String[] { TAG_PID,
-                    TAG_NAME},
+                    "name"},
                     new int[] { R.id.pid, R.id.name });
             // updating listview
             setListAdapter(adapter);
@@ -184,7 +187,7 @@ public class AllArtifactsActivity extends ListActivity {
     /**
      * Background Async Task to Load all product by making HTTP Request
      * */
-    class LoadAllLevels extends AsyncTask<String, String, String> {
+    class LoadAllArtifacts extends AsyncTask<String, String, String> {
 
         /**
          * Before starting background thread Show Progress Dialog
@@ -193,14 +196,14 @@ public class AllArtifactsActivity extends ListActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             pDialog = new ProgressDialog(AllArtifactsActivity.this);
-            pDialog.setMessage("Loading levels. Please wait...");
+            pDialog.setMessage("Loading artifacts. Please wait...");
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
         }
 
         /**
-         * getting All levels from url
+         * getting All artifacts from url
          * */
         protected String doInBackground(String... args) {
             // Building Parameters
@@ -209,37 +212,43 @@ public class AllArtifactsActivity extends ListActivity {
             JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
 
             // Check your log cat for JSON reponse
-            Log.d("All levels: ", json.toString());
+            Log.d("All artifacts: ", json.toString());
 
             try {
                 // Checking for SUCCESS TAG
                 int success = json.getInt(TAG_SUCCESS);
 
                 if (success == 1) {
-                    // levels found
-                    // Getting Array of levels
-                    levels = json.getJSONArray(TAG_UNITS);
+                    // artifacts found
+                    // Getting Array of artifacts
+                    artifacts = json.getJSONArray(TAG_ARTIFACTS);
 
                     // looping through All sites
-                    for (int i = 0; i < levels.length(); i++) {
-                        JSONObject c = levels.getJSONObject(i);
+                    for (int i = 0; i < artifacts.length(); i++) {
+                        JSONObject c = artifacts.getJSONObject(i);
 
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
-                        String name = c.getString(TAG_NAME);
+                        String anum = c.getString(TAG_ANUM);
+                        int cnum = c.getInt(TAG_CNUM);
+                        String cont = c.getString(TAG_CONT);
+
+                        Artifact temp = new Artifact(site, unit, level, anum, cnum, cont);
+                        String name = temp.toString();
+                        allArtifacts.add(temp);
 
                         // creating new HashMap
                         HashMap<String, String> map = new HashMap<String, String>();
 
                         // adding each child node to HashMap key => value
                         map.put(TAG_PID, id);
-                        map.put(TAG_NAME, name);
+                        map.put("name", name);
 
                         // adding HashList to ArrayList
                         artifactsList.add(map);
                     }
                 } else {
-                    // no levels found
+                    // no artifacts found
                     // Launch Add New level Activity
                     Intent i = new Intent(getApplicationContext(),
                             MapHome.class);
@@ -269,7 +278,7 @@ public class AllArtifactsActivity extends ListActivity {
                     ListAdapter adapter = new SimpleAdapter(
                             AllArtifactsActivity.this, artifactsList,
                             R.layout.list_item, new String[] { TAG_PID,
-                            TAG_NAME},
+                            "name"},
                             new int[] { R.id.pid, R.id.name });
                     // updating listview
                     setListAdapter(adapter);
