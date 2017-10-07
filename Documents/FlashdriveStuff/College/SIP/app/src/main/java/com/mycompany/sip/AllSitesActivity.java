@@ -34,7 +34,8 @@ package com.mycompany.sip;
 public class AllSitesActivity extends ListActivity {
         // Progress Dialog
         private ProgressDialog pDialog;
-        boolean test=true;
+        ArrayList<Site> allSites = new ArrayList<>();
+        boolean test=false;
         //TODO: Make this an arraylist so that even in testing sites can be added and deleted [FIGURE OUT HOW TO DELETE SITES]
         Site[] testSites = {new Site("Fort St. Joseph", "20BE23", "11/03/1996", "location", "a site"),
                 new Site("Lyne Site", "20BE10", "11/1/1111", "location", "another site"),
@@ -65,18 +66,21 @@ public class AllSitesActivity extends ListActivity {
 
         // url to get all sites list
         //TODO: Get real URL
-        private static String url_all_sites = "https://api.androidhive.info/android_connect/get_all_sites.php";
+        private static String url_all_sites = "http://75.134.106.101:80/mapp/get_all_sites.php";
 
         //TODO: get actual URL
         // url to create new site
-        private static String url_create_site = "https://api.androidhive.info/android_connect/create_product.php";
+        private static String url_create_site = "http://75.134.106.101:80/mapp/create_new_site.php";
 
         // JSON Node names
-        //TODO: figure out what these do
+        private static final String TAG_PID = "PrimaryKey";
         private static final String TAG_SUCCESS = "success";
         private static final String TAG_SITES = "sites";
-        private static final String TAG_PID = "pid";
-        private static final String TAG_NAME = "name";
+        private static final String TAG_NUM = "siteNumber";
+        private static final String TAG_NAME = "siteName";
+        private static final String TAG_LOC = "location";
+        private static final String TAG_DESC = "description";
+        private static final String TAG_DATE = "dateDiscovered";
 
         private static SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
         private static Site site;
@@ -172,7 +176,14 @@ public class AllSitesActivity extends ListActivity {
                                         AllUnitsActivity.class);
                                 // sending pid to next activity
                                 in.putExtra(TAG_PID, pid);
-                                in.putExtra(TAG_NAME, testSites[Integer.parseInt(pid)]);
+                                if(test)
+                                {
+                                    in.putExtra(TAG_NAME, testSites[Integer.parseInt(pid)]);
+                                }
+                                else
+                                {
+                                    in.putExtra(TAG_NAME, allSites.get(Integer.parseInt(pid)-1));
+                                }
 
                                 // starting new activity and expecting some response back
                                 startActivityForResult(in, 100);
@@ -253,15 +264,24 @@ public class AllSitesActivity extends ListActivity {
                                         for (int i = 0; i < sites.length(); i++) {
                                                 JSONObject c = sites.getJSONObject(i);
 
+                                            //TODO: Incorporate model objects
+
                                                 // Storing each json item in variable
-                                                String pid = c.getString(TAG_PID);
+                                                String pk = c.getString(TAG_PID);
                                                 String name = c.getString(TAG_NAME);
+                                                String siteNumber = c.getString(TAG_NUM);
+                                                String location = c.getString(TAG_LOC);
+                                                String description = c.getString(TAG_DESC);
+                                                String date = c.getString(TAG_DATE);
+
+                                                Site temp = new Site(name, siteNumber, date, location, description);
+                                                allSites.add(temp);
 
                                                 // creating new HashMap
                                                 HashMap<String, String> map = new HashMap<String, String>();
 
                                                 // adding each child node to HashMap key => value
-                                                map.put(TAG_PID, pid);
+                                                map.put(TAG_PID, pk);
                                                 map.put(TAG_NAME, name);
 
                                                 // adding HashList to ArrayList
@@ -330,15 +350,17 @@ public class AllSitesActivity extends ListActivity {
             // Building Parameters
             HashMap params = new HashMap();
             params.put("siteName", site.getName());
-            params.put("description", site.getDescription());
-            params.put("dateFound", site.getDateOpened());
             params.put("siteNumber", site.getNumber());
             params.put("location", site.getLocation());
+            params.put("description", site.getDescription());
+            params.put("dateDiscovered", site.getDateOpened());
 
             // getting JSON Object
             // Note that create site url accepts POST method
             JSONObject json = jsonParser.makeHttpRequest(url_create_site,
                     "POST", params);
+
+            System.out.println(json);
 
             // check log cat fro response
             Log.d("Create Response", json.toString());
@@ -380,7 +402,6 @@ public class AllSitesActivity extends ListActivity {
         // Save our own state now
         if(alert!=null)
         {
-            //TODO: Figure out how to save alert and all of its corresponding strings--UGH
             outState.putBoolean("alert", true);
             outState.putString("Site Name", inputName.getText().toString());
             outState.putString("Description", inputDesc.getText().toString());

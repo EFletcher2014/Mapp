@@ -37,9 +37,9 @@ public class AllUnitsActivity extends ListActivity {
 
     ArrayList<HashMap<String, String>> unitsList;
 
-    // url to get all sites list
+    // url to get all units list
     //TODO: Get real URL
-    private static String url_all_units = "https://api.androidhive.info/android_connect/get_all_units.php";
+    private static String url_all_units = "http://75.134.106.101:80/mapp/get_all_units.php";
 
     //TODO: get actual URL
     // url to create new unit
@@ -48,8 +48,13 @@ public class AllUnitsActivity extends ListActivity {
     // JSON Node names
     private static final String TAG_SUCCESS = "success";
     private static final String TAG_UNITS = "units";
-    private static final String TAG_PID = "pid";
+    private static final String TAG_PID = "PrimaryKey";
     private static final String TAG_NAME = "datum";
+    private static final String TAG_NS = "nsDim";
+    private static final String TAG_EW = "ewDim";
+    private static final String TAG_DATE = "dateOpened";
+    private static final String TAG_EXCS = "excavators";
+    private static final String TAG_REAS = "reasonForOpening";
     private static Site site;
     private static Unit unit;
 
@@ -60,14 +65,16 @@ public class AllUnitsActivity extends ListActivity {
     private EditText inputReas;
     private EditText inputNSDims;
     private EditText inputEWDims;
+    private int foreignKey;
 
-    boolean test=true;
+    boolean test=false;
+    ArrayList<Unit> allUnits = new ArrayList<>();
     Unit[] testUnits = {new Unit("N24W11", "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters"),
             new Unit("N23E9",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters"),
             new Unit("N24W6",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters")};
 
-    // sites JSONArray
-    JSONArray sites = null;
+    //units JSONArray
+    JSONArray units = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,7 +98,8 @@ public class AllUnitsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        site = openIntent.getParcelableExtra("name");
+        site = openIntent.getParcelableExtra("siteName");
+        foreignKey = openIntent.getIntExtra("PrimaryKey", 0);
         TextView siteNameText = (TextView) findViewById(R.id.siteName);
         siteNameText.setText(site.getName() + " Units");
 
@@ -99,7 +107,7 @@ public class AllUnitsActivity extends ListActivity {
         unitsList = new ArrayList<HashMap<String, String>>();
 
         if (!test) {
-            // Loading sites in Background Thread
+            // Loading units in Background Thread
             new LoadAllUnits().execute();
         } else {
             // looping through All units
@@ -147,8 +155,15 @@ public class AllUnitsActivity extends ListActivity {
                         AllLevelsActivity.class);
                 // sending pid to next activity
                 in.putExtra(TAG_PID, pid);
-                in.putExtra("name", site);
-                in.putExtra(TAG_NAME, testUnits[Integer.parseInt(pid)]);
+                in.putExtra("siteName", site);
+                if(test)
+                {
+                    in.putExtra(TAG_NAME, testUnits[Integer.parseInt(pid)]);
+                }
+                else
+                {
+                    in.putExtra(TAG_NAME, allUnits.get(Integer.parseInt(pid)-1));
+                }
 
                 // starting new activity and expecting some response back
                 startActivityForResult(in, 100);
@@ -204,7 +219,7 @@ public class AllUnitsActivity extends ListActivity {
         }
 
         /**
-         * getting All sites from url
+         * getting All units from url
          * */
         protected String doInBackground(String... args) {
             // Building Parameters
@@ -212,25 +227,36 @@ public class AllUnitsActivity extends ListActivity {
             // getting JSON string from URL
             JSONObject json = jParser.makeHttpRequest(url_all_units, "GET", params);
 
+            //TODO: make it so it only gets the units from the site represented by PrimaryKey
+            params.put(TAG_PID, foreignKey);
+
             // Check your log cat for JSON reponse
-            Log.d("All sites: ", json.toString());
+            Log.d("All units: ", json.toString());
 
             try {
                 // Checking for SUCCESS TAG
                 int success = json.getInt(TAG_SUCCESS);
 
                 if (success == 1) {
-                    // sites found
-                    // Getting Array of sites
-                    sites = json.getJSONArray(TAG_UNITS);
+                    // units found
+                    // Getting Array of units
+                    units = json.getJSONArray(TAG_UNITS);
 
-                    // looping through All sites
-                    for (int i = 0; i < sites.length(); i++) {
-                        JSONObject c = sites.getJSONObject(i);
+                    // looping through All units
+                    for (int i = 0; i < units.length(); i++) {
+                        JSONObject c = units.getJSONObject(i);
 
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
                         String name = c.getString(TAG_NAME);
+                        String nsDim = c.getString(TAG_NS);
+                        String ewDim = c.getString(TAG_EW);
+                        String date = c.getString(TAG_DATE);
+                        String excs = c.getString(TAG_EXCS);
+                        String reas = c.getString(TAG_REAS);
+
+                        Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas);
+                        allUnits.add(temp);
 
                         // creating new HashMap
                         HashMap<String, String> map = new HashMap<String, String>();
@@ -243,7 +269,7 @@ public class AllUnitsActivity extends ListActivity {
                         unitsList.add(map);
                     }
                 } else {
-                    // no sites found
+                    // no units found
                     // Launch Add New unit Dialog
                 }
             } catch (JSONException e) {
@@ -257,7 +283,7 @@ public class AllUnitsActivity extends ListActivity {
          * After completing background task Dismiss the progress dialog
          * **/
         protected void onPostExecute(String file_url) {
-            // dismiss the dialog after getting all sites
+            // dismiss the dialog after getting all units
             pDialog.dismiss();
             // updating UI from Background Thread
             runOnUiThread(new Runnable() {
