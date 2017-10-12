@@ -43,7 +43,7 @@ public class AllUnitsActivity extends ListActivity {
 
     //TODO: get actual URL
     // url to create new unit
-    private static String url_create_unit = "https://api.androidhive.info/android_connect/create_product.php";
+    private static String url_create_unit = "http://75.134.106.101:80/mapp/create_new_unit.php";
 
     // JSON Node names
     private static final String TAG_SUCCESS = "success";
@@ -98,8 +98,8 @@ public class AllUnitsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
+        foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
         site = openIntent.getParcelableExtra("siteName");
-        foreignKey = openIntent.getIntExtra("PrimaryKey", 0);
         TextView siteNameText = (TextView) findViewById(R.id.siteName);
         siteNameText.setText(site.getName() + " Units");
 
@@ -146,15 +146,14 @@ public class AllUnitsActivity extends ListActivity {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 // getting values from selected ListItem
-                String pid = ((TextView) view.findViewById(R.id.pid)).getText()
-                        .toString();
+                String pid = ((TextView) view.findViewById(R.id.pid)).getText().toString();
                 String datum = ((TextView) view.findViewById(R.id.name)).getText().toString();
 
                 // Starting new intent
                 Intent in = new Intent(view.getContext(),
                         AllLevelsActivity.class);
                 // sending pid to next activity
-                in.putExtra(TAG_PID, pid);
+                in.putExtra(TAG_PID, Integer.parseInt(pid));
                 in.putExtra("siteName", site);
                 if(test)
                 {
@@ -224,11 +223,12 @@ public class AllUnitsActivity extends ListActivity {
         protected String doInBackground(String... args) {
             // Building Parameters
             HashMap params = new HashMap();
+
+            params.put("foreignKey", foreignKey);
+
             // getting JSON string from URL
             JSONObject json = jParser.makeHttpRequest(url_all_units, "GET", params);
 
-            //TODO: make it so it only gets the units from the site represented by PrimaryKey
-            params.put(TAG_PID, foreignKey);
 
             // Check your log cat for JSON reponse
             Log.d("All units: ", json.toString());
@@ -329,7 +329,10 @@ public class AllUnitsActivity extends ListActivity {
 
                 // Building Parameters
                 HashMap params = new HashMap();
-                params.put("coordinates", unit.getDatum());
+                params.put("foreignKey", foreignKey);
+                params.put("datum", unit.getDatum());
+                params.put("nsDim", unit.getNsDimension());
+                params.put("ewDim", unit.getEwDimension());
                 params.put("excavators", unit.getExcavators());
                 params.put("dateOpened", unit.getDateOpened());
                 params.put("reasonForOpening", unit.getReasonForOpening());
@@ -355,6 +358,7 @@ public class AllUnitsActivity extends ListActivity {
 
                         // closing this screen
                         finish();
+                        startActivity(getIntent());
                     } else {
                         // failed to create product
                     }

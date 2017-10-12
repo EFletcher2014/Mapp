@@ -53,6 +53,7 @@ public class AllLevelsActivity extends ListActivity {
     private static Unit unit;
     private static Level level;
     private static int levelNumber;
+    private static int foreignKey;
 
     private AlertDialog.Builder alert;
     ArrayList<Level> allLevels = new ArrayList<>();
@@ -85,6 +86,7 @@ public class AllLevelsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
+        foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
         site = openIntent.getParcelableExtra("siteName");
         unit = openIntent.getParcelableExtra("datum");
         TextView titleText = (TextView) findViewById(R.id.siteNameUnitNumber);
@@ -202,6 +204,9 @@ public class AllLevelsActivity extends ListActivity {
         protected String doInBackground(String... args) {
             // Building Parameters
             HashMap params = new HashMap();
+
+            params.put("foreignKey", foreignKey);
+
             // getting JSON string from URL
             JSONObject json = jParser.makeHttpRequest(url_all_levels, "GET", params);
 
@@ -323,6 +328,7 @@ public class AllLevelsActivity extends ListActivity {
                         MapHome.class);
                 System.out.println(in);
                 // sending pid to next activity
+                in.putExtra("PrimaryKey", levelNumber);
                 in.putExtra("depth", level);
                 in.putExtra("unitNumber", unit);
                 in.putExtra("siteName", site);

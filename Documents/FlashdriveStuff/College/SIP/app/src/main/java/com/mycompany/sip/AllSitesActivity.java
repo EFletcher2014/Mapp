@@ -7,6 +7,8 @@ package com.mycompany.sip;
         import java.text.SimpleDateFormat;
         import java.util.ArrayList;
         import java.util.HashMap;
+        import java.util.StringTokenizer;
+
         import org.json.JSONArray;
         import org.json.JSONException;
         import org.json.JSONObject;
@@ -24,6 +26,7 @@ package com.mycompany.sip;
         import android.widget.AdapterView;
         import android.widget.AdapterView.OnItemClickListener;
         import android.widget.Button;
+        import android.widget.DatePicker;
         import android.widget.EditText;
         import android.widget.ListAdapter;
         import android.widget.ListView;
@@ -87,7 +90,7 @@ public class AllSitesActivity extends ListActivity {
 
         private EditText inputName;
         private EditText inputDesc;
-        private EditText inputDate;
+        private DatePicker inputDate;
         private EditText inputNumb;
         private EditText inputLoca;
 
@@ -175,7 +178,7 @@ public class AllSitesActivity extends ListActivity {
                                 Intent in = new Intent(view.getContext(),
                                         AllUnitsActivity.class);
                                 // sending pid to next activity
-                                in.putExtra(TAG_PID, pid);
+                                in.putExtra(TAG_PID, Integer.parseInt(pid));
                                 if(test)
                                 {
                                     in.putExtra(TAG_NAME, testSites[Integer.parseInt(pid)]);
@@ -372,9 +375,10 @@ public class AllSitesActivity extends ListActivity {
                 if (success == 1) {
                     // successfully created product
                     //TODO: Should this go to a new dialog or the current activity
-
+                    //new LoadAllSites().execute();
                     // closing this screen
                     finish();
+                    startActivity(getIntent());
                 } else {
                     // failed to create product
                 }
@@ -405,7 +409,9 @@ public class AllSitesActivity extends ListActivity {
             outState.putBoolean("alert", true);
             outState.putString("Site Name", inputName.getText().toString());
             outState.putString("Description", inputDesc.getText().toString());
-            outState.putString("Date Discovered", inputDate.getText().toString());
+            outState.putString("Year", (inputDate.getYear()) + "");
+            outState.putString("Month", (inputDate.getMonth()) + "");
+            outState.putString("Day", (inputDate.getDayOfMonth()) + "");
             outState.putString("Site Number", inputNumb.getText().toString());
             outState.putString("Location", inputLoca.getText().toString());
 
@@ -423,7 +429,7 @@ public class AllSitesActivity extends ListActivity {
         alert = new AlertDialog.Builder(AllSitesActivity.this);
         inputName = (EditText) siteLayout.findViewById(R.id.inputName);
         inputDesc = (EditText) siteLayout.findViewById(R.id.inputDesc);
-        inputDate = (EditText) siteLayout.findViewById(R.id.inputDate);
+        inputDate = (DatePicker) siteLayout.findViewById(R.id.inputDate);
         inputNumb = (EditText) siteLayout.findViewById(R.id.inputNumb);
         inputLoca = (EditText) siteLayout.findViewById(R.id.inputLoca);
 
@@ -432,7 +438,8 @@ public class AllSitesActivity extends ListActivity {
 
             inputName.setText(st.getName());
             inputDesc.setText(st.getDescription());
-            inputDate.setText(st.getDateOpened());
+            int[] date = fromDate(st.getDateOpened());
+            inputDate.updateDate(date[0], date[1], date[2]);
             inputNumb.setText(st.getNumber());
             inputLoca.setText(st.getLocation());
 
@@ -441,7 +448,7 @@ public class AllSitesActivity extends ListActivity {
         alert.setPositiveButton("Create Site", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-                site = new Site(inputName.getText().toString(), inputNumb.getText().toString(), inputDate.getText().toString(), inputLoca.getText().toString(), inputDesc.getText().toString());
+                site = new Site(inputName.getText().toString(), inputNumb.getText().toString(), toDate(inputDate.getYear(), inputDate.getMonth(), inputDate.getDayOfMonth()), inputLoca.getText().toString(), inputDesc.getText().toString());
 
 
 
@@ -474,5 +481,31 @@ public class AllSitesActivity extends ListActivity {
         alert.setView(siteLayout);
         AlertDialog dialog = alert.create();
         dialog.show();
+    }
+
+    private String toDate(int year, int month, int day)
+    {
+        String m=month + "", d=day + "";
+        if(month<10)
+        {
+            m = "0" + month;
+        }
+        if(day<10)
+        {
+            d = "0" + day;
+        }
+        return year + "-" + m + "-" + d + " 00:00:00";
+    }
+
+    private int[] fromDate(String date)
+    {
+        int[] ymd = new int[3];
+        date.replace(" 00:00:00", "");
+        int i=0;
+        while(i<3) {
+            ymd[i] = Integer.parseInt(date.split("-")[i]);
+            i++;
+        }
+        return ymd;
     }
 }

@@ -47,6 +47,12 @@ public class JSONParser {
         }
 
         if (method.equals("POST")) {
+            //added by Emily Fletcher 10/12/17, was in GET method but not POST
+            if (sbParams.length() != 0) {
+                url += "?" + sbParams.toString();
+                System.out.println("URL is: " + url);
+            }
+
             // request method is POST
             try {
                 urlObj = new URL(url);
@@ -81,6 +87,7 @@ public class JSONParser {
 
             if (sbParams.length() != 0) {
                 url += "?" + sbParams.toString();
+                System.out.println("URL is: " + url);
             }
 
             try {

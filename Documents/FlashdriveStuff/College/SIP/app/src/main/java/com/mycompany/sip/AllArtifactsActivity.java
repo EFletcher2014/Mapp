@@ -47,6 +47,7 @@ public class AllArtifactsActivity extends ListActivity {
     private EditText contents;
     private String pid;
     private String depth;
+    private int foreignKey;
     ArrayList<Artifact> allArtifacts = new ArrayList<>();
 
     boolean test=false;
@@ -89,6 +90,7 @@ public class AllArtifactsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/29/17
         Intent openIntent = getIntent();
+        foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
         site = openIntent.getParcelableExtra("name");
         unit = openIntent.getParcelableExtra("datum");
         level = openIntent.getParcelableExtra("depth");
@@ -208,6 +210,9 @@ public class AllArtifactsActivity extends ListActivity {
         protected String doInBackground(String... args) {
             // Building Parameters
             HashMap params = new HashMap();
+
+            params.put("foreignKey", foreignKey);
+
             // getting JSON string from URL
             JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
 

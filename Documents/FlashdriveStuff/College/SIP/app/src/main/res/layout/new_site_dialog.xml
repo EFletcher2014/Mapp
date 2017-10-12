@@ -59,13 +59,20 @@
             android:textSize="17dip"/>
 
         <!-- Input DateFound -->
-        <EditText android:id="@+id/inputDate"
+        <!--<EditText android:id="@+id/inputDate"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:singleLine="true"/>-->
 
+        <!--TODO: figure out what to do for earlier APIs-->
+        <DatePicker
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/inputDate"
+            android:datePickerMode="spinner"
+            android:calendarViewShown="false"/>
 
 
         <!-- SiteNumber Label -->
