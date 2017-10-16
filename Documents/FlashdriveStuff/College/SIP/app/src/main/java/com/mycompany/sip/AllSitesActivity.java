@@ -67,11 +67,11 @@ public class AllSitesActivity extends ListActivity {
 
         ArrayList<HashMap<String, String>> sitesList;
 
+    //TODO: HANDLE BEING OFFLINE
+
         // url to get all sites list
-        //TODO: Get real URL
         private static String url_all_sites = "http://75.134.106.101:80/mapp/get_all_sites.php";
 
-        //TODO: get actual URL
         // url to create new site
         private static String url_create_site = "http://75.134.106.101:80/mapp/create_new_site.php";
 
@@ -90,7 +90,10 @@ public class AllSitesActivity extends ListActivity {
 
         private EditText inputName;
         private EditText inputDesc;
-        private DatePicker inputDate;
+        //private DatePicker inputDate;
+        private EditText inputDate;
+        private EditText inputMonth;
+        private EditText inputYear;
         private EditText inputNumb;
         private EditText inputLoca;
 
@@ -374,7 +377,6 @@ public class AllSitesActivity extends ListActivity {
 
                 if (success == 1) {
                     // successfully created product
-                    //TODO: Should this go to a new dialog or the current activity
                     //new LoadAllSites().execute();
                     // closing this screen
                     finish();
@@ -409,9 +411,9 @@ public class AllSitesActivity extends ListActivity {
             outState.putBoolean("alert", true);
             outState.putString("Site Name", inputName.getText().toString());
             outState.putString("Description", inputDesc.getText().toString());
-            outState.putString("Year", (inputDate.getYear()) + "");
-            outState.putString("Month", (inputDate.getMonth()) + "");
-            outState.putString("Day", (inputDate.getDayOfMonth()) + "");
+            outState.putString("Year", (inputYear.getText().toString()));
+            outState.putString("Month", (inputMonth.getText().toString()));
+            outState.putString("Day", (inputDate.getText().toString()));
             outState.putString("Site Number", inputNumb.getText().toString());
             outState.putString("Location", inputLoca.getText().toString());
 
@@ -429,46 +431,87 @@ public class AllSitesActivity extends ListActivity {
         alert = new AlertDialog.Builder(AllSitesActivity.this);
         inputName = (EditText) siteLayout.findViewById(R.id.inputName);
         inputDesc = (EditText) siteLayout.findViewById(R.id.inputDesc);
-        inputDate = (DatePicker) siteLayout.findViewById(R.id.inputDate);
+        //inputDate = (DatePicker) siteLayout.findViewById(R.id.inputDate);
+        inputDate = (EditText) siteLayout.findViewById(R.id.inputDate);
+        inputMonth = (EditText) siteLayout.findViewById(R.id.inputDate);
+        inputYear = (EditText) siteLayout.findViewById(R.id.inputDate);
         inputNumb = (EditText) siteLayout.findViewById(R.id.inputNumb);
         inputLoca = (EditText) siteLayout.findViewById(R.id.inputLoca);
 
         if(st!=null)
         {
-
             inputName.setText(st.getName());
             inputDesc.setText(st.getDescription());
+
+            //TODO: figure out if I want to change so that user can enter a partial date
             int[] date = fromDate(st.getDateOpened());
-            inputDate.updateDate(date[0], date[1], date[2]);
+            String y=date[0]+"", m=date[1]+"", d=date[2]+"";
+            if(date[0]!=0)
+                inputYear.setText(y);
+            if(date[1]!=0)
+                inputMonth.setText(m);
+            if(date[2]!=0)
+                inputDate.setText(d);
             inputNumb.setText(st.getNumber());
             inputLoca.setText(st.getLocation());
-
         }
         alert.setTitle("Create A New Site");
         alert.setPositiveButton("Create Site", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                int y, m, d;
+                try
+                {
+                    y=Integer.parseInt(inputYear.getText().toString());
+                }
+                catch(NumberFormatException e)
+                {
+                    y=0;
+                }
+                try
+                {
+                    m=Integer.parseInt(inputMonth.getText().toString());
+                }
+                catch(NumberFormatException e)
+                {
+                    m=0;
+                }
+                try
+                {
+                    d=Integer.parseInt(inputDate.getText().toString());
+                }
+                catch(NumberFormatException e)
+                {
+                    d=0;
+                }
 
-                site = new Site(inputName.getText().toString(), inputNumb.getText().toString(), toDate(inputDate.getYear(), inputDate.getMonth(), inputDate.getDayOfMonth()), inputLoca.getText().toString(), inputDesc.getText().toString());
+                site = new Site(inputName.getText().toString(), inputNumb.getText().toString(),
+                        toDate(y, m, d), inputLoca.getText().toString(), inputDesc.getText().toString());
 
+                System.out.println("text: " + inputName.getText());
+                if(!(inputName.getText().toString().equals("")) && !(inputDesc.getText().toString().equals(""))
+                        && !(inputNumb.getText().toString().equals("")) && !(inputLoca.getText().toString().equals(""))
+                        && !(inputDate.getText().toString().equals("")) && !(inputDate.getText().toString().equals("")) && !(inputDate.getText().toString().equals("")) && !(inputDesc.getText().toString().equals(""))) {
 
+                    //if not testing, save to server
+                    if (!test) {
 
-                //TODO: Make sure this new site shows up on all sites
-                //if not testing, save to server
-                if(!test) {
+                        // creating new site in background thread
+                        new CreateNewSite().execute();
+                    } else {
+                        System.out.println(site.toString());
+                        // just go to next activity
+                        CharSequence toastMessage = "Creating New Site...";
+                        Toast toast = Toast.makeText(siteLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                        toast.show();
 
-                    // creating new site in background thread
-                    new CreateNewSite().execute();
+                    }
+                    alert = null;
                 }
                 else
                 {
-                    System.out.println(site.toString());
-                    // just go to next activity
-                    CharSequence toastMessage = "Creating New Site...";
-                    Toast toast = Toast.makeText(siteLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                    toast.show();
-
+                    Toast.makeText(siteLayout.getContext(), "You must fill out every field before saving", Toast.LENGTH_SHORT).show();
+                    showDialog(site);
                 }
-                alert=null;
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -486,26 +529,41 @@ public class AllSitesActivity extends ListActivity {
     private String toDate(int year, int month, int day)
     {
         String m=month + "", d=day + "";
-        if(month<10)
+        System.out.println("Converting to date! " + year + " " + m + " " + d);
+        if(year<1 || month<1 || day<1)
         {
-            m = "0" + month;
+            return "0000-00-00 00:00:00";
         }
-        if(day<10)
-        {
-            d = "0" + day;
+        else {
+            if (month < 10) {
+                m = "0" + month;
+            }
+            if (day < 10) {
+                d = "0" + day;
+            }
+            return year + "-" + m + "-" + d + " 00:00:00";
         }
-        return year + "-" + m + "-" + d + " 00:00:00";
     }
 
     private int[] fromDate(String date)
     {
+        System.out.println("Converting " + date + " from date");
         int[] ymd = new int[3];
         date.replace(" 00:00:00", "");
         int i=0;
-        while(i<3) {
-            ymd[i] = Integer.parseInt(date.split("-")[i]);
-            i++;
+        try {
+            while (i < 3) {
+                ymd[i] = Integer.parseInt(date.split("-")[i]);
+                i++;
+            }
+        }catch(NumberFormatException e)
+        {
+            System.out.println("Error: date not valid");
+            ymd[0]=0;
+            ymd[1]=0;
+            ymd[2]=0;
         }
+        System.out.println(ymd[0] + " " + ymd[1] + " " + ymd[2]);
         return ymd;
     }
 }

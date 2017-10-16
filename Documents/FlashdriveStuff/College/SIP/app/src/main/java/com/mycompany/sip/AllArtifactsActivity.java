@@ -1,6 +1,7 @@
 //All from androidhive 7/30/17
 package com.mycompany.sip;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.json.JSONArray;
@@ -33,6 +34,7 @@ public class AllArtifactsActivity extends ListActivity {
 
     // Creating JSON Parser object
     JSONParser jParser = new JSONParser();
+    JSONParser jsonParser = new JSONParser();//TODO: figure out if I need both
 
     ArrayList<HashMap<String, String>> artifactsList;
 
@@ -57,8 +59,8 @@ public class AllArtifactsActivity extends ListActivity {
             new Artifact(site, unit, level, "17-2", 27, "flint flake")};
 
     // url to get all artifacts list
-    //TODO: Get real URL
     private static String url_all_artifacts = "http://75.134.106.101:80/mapp/get_all_artifacts.php";
+    private static String url_create_artifact = "http://75.134.106.101:80/mapp/create_new_artifact.php";
 
     // JSON Node names
     //TODO: get correct variables (once server is running)
@@ -81,7 +83,7 @@ public class AllArtifactsActivity extends ListActivity {
         {
             if(savedInstanceState.getBoolean("alert"))
             {
-                showDialog(savedInstanceState.getString("Accession Number"), savedInstanceState.getString("Catalog Number"), savedInstanceState.getString("Contents"));
+                showDialog(new Artifact(site, unit, level, savedInstanceState.getString("Accession Number"), Integer.parseInt(savedInstanceState.getString("Catalog Number")), savedInstanceState.getString("Contents")));
             }
         }
 
@@ -148,7 +150,7 @@ public class AllArtifactsActivity extends ListActivity {
                 pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
 
-                showDialog(testArtifacts[Integer.parseInt(pid)].getAccessionNumber(), testArtifacts[Integer.parseInt(pid)].getCatalogNumber() + "", testArtifacts[Integer.parseInt(pid)].getContents());
+                showDialog(testArtifacts[Integer.parseInt(pid)]);
 
                 //TODO: make these fields autofill, like the other edit screens
                 // getting values from selected ListItem
@@ -162,7 +164,7 @@ public class AllArtifactsActivity extends ListActivity {
         newArtifact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showDialog("", "", "");
+                showDialog(null);
 
                 //TODO: When user clicks save, should save to server and add new artifact to list
             }
@@ -254,12 +256,6 @@ public class AllArtifactsActivity extends ListActivity {
                     }
                 } else {
                     // no artifacts found
-                    // Launch Add New level Activity
-                    Intent i = new Intent(getApplicationContext(),
-                            MapHome.class);
-                    // Closing all previous activities
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(i);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -277,22 +273,96 @@ public class AllArtifactsActivity extends ListActivity {
             // updating UI from Background Thread
             runOnUiThread(new Runnable() {
                 public void run() {
-                    /**
-                     * Updating parsed JSON data into ListView
-                     * */
-                    ListAdapter adapter = new SimpleAdapter(
-                            AllArtifactsActivity.this, artifactsList,
-                            R.layout.list_item, new String[] { TAG_PID,
-                            "name"},
-                            new int[] { R.id.pid, R.id.name });
-                    // updating listview
-                    setListAdapter(adapter);
+                    if(artifactsList.size()!=0) {
+                        /**
+                         * Updating parsed JSON data into ListView
+                         * */
+                        ListAdapter adapter = new SimpleAdapter(
+                                AllArtifactsActivity.this, artifactsList,
+                                R.layout.list_item, new String[]{TAG_PID,
+                                "name"},
+                                new int[]{R.id.pid, R.id.name});
+                        // updating listview
+                        setListAdapter(adapter);
+                    }else
+                    {
+                        showDialog(null);
+                    }
                 }
             });
 
         }
 
     }
+
+
+    /**
+     * Background Async Task to Create new artifact
+     * */
+    class CreateNewArtifact extends AsyncTask<String, String, String> {
+
+        /**
+         * Before starting background thread Show Progress Dialog
+         * */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(AllArtifactsActivity.this);
+            pDialog.setMessage("Creating Artifact..");
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(true);
+            pDialog.show();
+        }
+
+        /**
+         * Creating artifact
+         * */
+        protected String doInBackground(String... args) {
+
+            // Building Parameters
+            HashMap params = new HashMap();
+            params.put("foreignKey", foreignKey);
+            params.put("accNum", artifact.getAccessionNumber());
+            params.put("catNum", artifact.getCatalogNumber());
+            params.put("contents", artifact.getContents());
+
+            // getting JSON Object
+            // Note that create site url accepts POST method
+            JSONObject json = jsonParser.makeHttpRequest(url_create_artifact,
+                    "POST", params);
+
+            // check log cat fro response
+            Log.d("Create Response", json.toString());
+
+            // check for success tag
+            try {
+                int success = json.getInt(TAG_SUCCESS);
+
+                if (success == 1) {
+
+                    // closing this screen
+                    finish();
+                    startActivity(getIntent());
+                } else {
+                    // failed to create artifact
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        /**
+         * After completing background task Dismiss the progress dialog
+         * **/
+        protected void onPostExecute(String file_url) {
+            // dismiss the dialog once done
+            pDialog.dismiss();
+        }
+
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         // Make sure to call the super method so that the states of our views are saved
@@ -300,7 +370,6 @@ public class AllArtifactsActivity extends ListActivity {
         // Save our own state now
         if(alert!=null)
         {
-            //TODO: Figure out how to save alert and all of its corresponding strings--UGH
             outState.putBoolean("alert", true);
             outState.putString("Accession Number", accNum.getText().toString());
             outState.putString("Catalog Number", catNum.getText().toString());
@@ -312,25 +381,54 @@ public class AllArtifactsActivity extends ListActivity {
             outState.putBoolean("alert", false);
         }
     }
-    private void showDialog(String aNum, String cNum, String con)
+    private void showDialog(Artifact art)
     {
         LayoutInflater inflater = getLayoutInflater();
         final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
         alert = new AlertDialog.Builder(AllArtifactsActivity.this);
         accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
-        accNum.setText(aNum);
         catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
-        catNum.setText(cNum);
         contents = (EditText) artifactLayout.findViewById(R.id.contents);
-        contents.setText(con);
+
+        if(art!=null)
+        {
+            accNum.setText(art.getAccessionNumber());
+            catNum.setText(art.getCatalogNumber());
+            contents.setText(art.getContents());
+        }
         alert.setTitle("Edit Artifact");
         alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                //TODO: Do server stuff
-                CharSequence toastMessage = "Saving Artifact...";
-                Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                toast.show();
-                alert=null;
+
+                int c = 0;
+                try
+                {
+                    c=Integer.parseInt(catNum.getText().toString());
+                }
+                catch(NumberFormatException e)
+                {
+                    c=0;
+                }
+                artifact = new Artifact(site, unit, level, accNum.getText().toString(), c, contents.getText().toString());
+
+                if(!(accNum.getText().toString().equals("")) && !(catNum.getText().toString().equals("")) && !(contents.getText().toString().equals("")))
+                {
+                    if(test) {
+                        CharSequence toastMessage = "Saving Artifact...";
+                        Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+                    else
+                    {
+                        new CreateNewArtifact().execute();
+                    }
+                    alert=null;
+                }
+                else
+                {
+                    Toast.makeText(artifactLayout.getContext(), "You must fill out all fields before saving", Toast.LENGTH_SHORT).show();
+                    showDialog(artifact);
+                }
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

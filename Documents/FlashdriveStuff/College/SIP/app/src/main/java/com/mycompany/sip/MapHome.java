@@ -26,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.Toolbar;
 import android.widget.ViewSwitcher;
 
@@ -36,6 +37,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import org.json.*;
+
+//TODO: allow this to save a new level and also edit an old one
 
 public class MapHome extends AppCompatActivity {
     private static int SELECT_PICTURE = 1;
@@ -118,6 +121,7 @@ public class MapHome extends AppCompatActivity {
         site = openIntent.getParcelableExtra("siteName");
         System.out.println(site);
         siteName=site.getName();
+        System.out.println(site.toString());
         siteNumber=site.getNumber();
         unit = openIntent.getParcelableExtra("unitNumber");
         unitNumber=unit.getDatum();
@@ -147,7 +151,6 @@ public class MapHome extends AppCompatActivity {
         switcher.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: make this not look dumb
                 showChooserDialog();
             }
         });
@@ -165,17 +168,22 @@ public class MapHome extends AppCompatActivity {
             }
         });
 
-        //TODO: Throw error if user tries to click these buttons before saving the level
         final Button toAddArtifactActivity = (Button) findViewById(R.id.toAddArtifactsActivity);
         toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Move to select on image activity
-                Intent artifactActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), AllArtifactsActivity.class);
-                artifactActivityIntent.putExtra("name", site);
-                artifactActivityIntent.putExtra("datum", unit);
-                artifactActivityIntent.putExtra("depth", level);
-                startActivity(artifactActivityIntent);
+                if(level!=null) {
+                    //Move to select on image activity
+                    Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactsActivity.class);
+                    artifactActivityIntent.putExtra("name", site);
+                    artifactActivityIntent.putExtra("datum", unit);
+                    artifactActivityIntent.putExtra("depth", level);
+                    startActivity(artifactActivityIntent);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "You must save your level before creating artifacts", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -183,12 +191,23 @@ public class MapHome extends AppCompatActivity {
         toSelectOnImageActivity.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View view) {
-
-                  //Move to select on image activity
-                  Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
-                  selectActivityIntent.putExtra("unit", unit);
-                  selectActivityIntent.putExtra("rotation", rotation);
-                  startActivity(selectActivityIntent);
+                    if(level!=null) {
+                        if(selectedImageUri!=null) {
+                            //Move to select on image activity
+                            Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
+                            selectActivityIntent.putExtra("unit", unit);
+                            selectActivityIntent.putExtra("rotation", rotation);
+                            startActivity(selectActivityIntent);
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(), "You must add a picture of your unit before using this feature", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(), "You must save your level before mapping", Toast.LENGTH_SHORT).show();
+                    }
               }
        });
         final Button saveButton = (Button) findViewById(R.id.mainsave);
@@ -281,27 +300,6 @@ public class MapHome extends AppCompatActivity {
             System.out.println("selectedImageUri is" + selectedImageUri);
             unitImage.setImageURI(selectedImageUri);
             rotation=0;
-//            try {
-//                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
-//                ExifInterface exif = null;
-//                try {
-//                    //TODO: Try this: https://stackoverflow.com/questions/34696787/a-final-answer-on-how-to-get-exif-data-from-uri
-//                    exif = new ExifInterface(/*getRealPathFromURI(selectedImageUri)*/(selectedImageUri.getPath()));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    System.out.println("Error");
-//                }
-//                int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-//                        ExifInterface.ORIENTATION_UNDEFINED);
-//                Bitmap bmRotated = rotateBitmap(bitmap, orientation);
-//                unitImage.setImageBitmap(bmRotated);
-//
-//            } catch (IOException e)
-//            {
-//                System.out.println("Error: image URI is null");
-//                unitImage.setImageURI(selectedImageUri);
-//
-//            }
         }
     }
     public void queryServer() throws ClassNotFoundException, SQLException{
@@ -416,7 +414,6 @@ public class MapHome extends AppCompatActivity {
 
     private void showCancelDialog()
     {
-        //TODO: show different dialogs (one for close and one for "which type of picture")
         LayoutInflater inflater = getLayoutInflater();
         final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
         alert = new AlertDialog.Builder(MapHome.this);
@@ -470,7 +467,6 @@ public class MapHome extends AppCompatActivity {
         takePic.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 //Take picture from camera
-                //TODO: make this not get huge
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 cameraIntent.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);

@@ -135,9 +135,9 @@ public class AllLevelsActivity extends ListActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view,
                                     int position, long id) {
-                String pid = ((TextView) view.findViewById(R.id.pid)).getText()
+                String su = ((TextView) view.findViewById(R.id.su)).getText()
                         .toString();
-                levelNumber=Integer.parseInt(pid);
+                levelNumber=Integer.parseInt(su);
                 level=testLevels[levelNumber];
                 System.out.println(level.toString());
 
@@ -245,6 +245,7 @@ public class AllLevelsActivity extends ListActivity {
                         // adding each child node to HashMap key => value
                         map.put(TAG_PID, id);
                         map.put("name", name);
+                        map.put("Unit Level", i + "");
 
                         // adding HashList to ArrayList
                         levelsList.add(map);
@@ -253,11 +254,11 @@ public class AllLevelsActivity extends ListActivity {
                     // no levels found
                     // Launch Add New level Activity
                     //TODO: Change it so it isn't getApplicationContext
-                    Intent i = new Intent(getApplicationContext(),
+                    /*Intent i = new Intent(getApplicationContext(),
                             MapHome.class);
                     // Closing all previous activities
                     i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(i);
+                    startActivity(i);*/
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -278,13 +279,25 @@ public class AllLevelsActivity extends ListActivity {
                     /**
                      * Updating parsed JSON data into ListView
                      * */
-                    ListAdapter adapter = new SimpleAdapter(
-                            AllLevelsActivity.this, levelsList,
-                            R.layout.list_item, new String[] { TAG_PID,
-                            "name"},
-                            new int[] { R.id.pid, R.id.name });
-                    // updating listview
-                    setListAdapter(adapter);
+                    if(levelsList.size()!=0) {
+                        ListAdapter adapter = new SimpleAdapter(
+                                AllLevelsActivity.this, levelsList,
+                                R.layout.list_item, new String[]{TAG_PID,
+                                "name", "Unit Level"},
+                                new int[]{R.id.pid, R.id.name, R.id.su});
+                        // updating listview
+                        setListAdapter(adapter);
+                    }
+                    else
+                    {
+                        Intent i = new Intent(findViewById(R.id.newLevelBtn).getContext(),
+                                MapHome.class);
+                        i.putExtra("siteName", site);
+                        i.putExtra("unitNumber", unit);
+                        // Closing all previous activities
+                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(i);
+                    }
                 }
             });
 
