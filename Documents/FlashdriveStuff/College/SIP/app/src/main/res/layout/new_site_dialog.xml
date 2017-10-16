@@ -3,7 +3,8 @@
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:fadeScrollbars="false">
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -59,13 +60,52 @@
             android:textSize="17dip"/>
 
         <!-- Input DateFound -->
-        <EditText android:id="@+id/inputDate"
+        <!--<EditText android:id="@+id/inputDate"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:singleLine="true"/>-->
 
+        <!--TODO: figure out what to do for earlier APIs-->
+        <!--
+        <DatePicker
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/inputDate"
+            android:datePickerMode="spinner"
+            android:calendarViewShown="false"/>
+
+            -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <EditText android:id="@+id/inputYear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:hint="YYYY"
+                android:inputType="number"
+                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+            <EditText android:id="@+id/inputMonth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:hint="MM"
+                android:inputType="number"
+                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+            <EditText android:id="@+id/inputDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:hint="DD"
+                android:inputType="number"
+                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+        </LinearLayout>
 
 
         <!-- SiteNumber Label -->

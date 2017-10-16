@@ -54,6 +54,10 @@ public class selectActivity extends AppCompatActivity {
         rotation = openIntent.getIntExtra("rotation", 0);
 
         switcher = (ViewSwitcher) findViewById(R.id.switchDrawView);
+        if(switcher.getNextView()!=findViewById(R.id.draw))
+        {
+            switcher.showNext();
+        }
 
 
         if(selectedImageUri!=null)
@@ -71,7 +75,7 @@ public class selectActivity extends AppCompatActivity {
             }
             switcher.showNext();
         }
-        System.out.println(selectedImageUri);
+        System.out.println("SURI: " + selectedImageUri);
         //ImageView selectImageView = (ImageView) findViewById(R.id.select_image_view);
 
         /*if (selectedImageUri == null) {
@@ -119,7 +123,7 @@ public class selectActivity extends AppCompatActivity {
                         gr.setVisibility(View.GONE);
                         ks.setVisibility(View.GONE);
                     }
-                    //TODO: change button color/animate label to describe what this FAB does
+
                     if(selectedImageUri!=null)
                     {
                         if(imageDraw.getTool().equals("highlight"))
@@ -151,7 +155,7 @@ public class selectActivity extends AppCompatActivity {
                         hi.setVisibility(View.GONE);
                         ks.setVisibility(View.GONE);
                     }
-                    //TODO: change button color/animate label to describe what this FAB does
+
                     if(selectedImageUri!=null)
                     {
                         if(imageDraw.getTool().equals("grid"))
@@ -184,7 +188,7 @@ public class selectActivity extends AppCompatActivity {
                         hi.setVisibility(View.GONE);
                         gr.setVisibility(View.GONE);
                     }
-                    //TODO: change button color/animate label to describe what this FAB does
+
                     if(selectedImageUri!=null)
                     {
                         if(imageDraw.getTool().equals("keystone"))
@@ -203,6 +207,7 @@ public class selectActivity extends AppCompatActivity {
 
     public static void saveLayer()
     {
+        //TODO: make different titles/functionality for features/artifacts etc
         System.out.println("Saving!");
         AlertDialog.Builder alert = new AlertDialog.Builder(imageDraw.getContext());
         alert.setTitle("Would you like to save your artifact?");

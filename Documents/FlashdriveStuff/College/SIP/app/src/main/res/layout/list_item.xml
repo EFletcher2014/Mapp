@@ -11,6 +11,13 @@
         android:layout_height="wrap_content"
         android:visibility="gone" />
 
+
+    <TextView
+        android:id="@+id/su"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone" />
+
     <!-- Name Label -->
     <TextView
         android:id="@+id/name"

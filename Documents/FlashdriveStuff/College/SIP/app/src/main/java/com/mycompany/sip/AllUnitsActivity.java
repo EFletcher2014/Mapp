@@ -43,7 +43,7 @@ public class AllUnitsActivity extends ListActivity {
 
     //TODO: get actual URL
     // url to create new unit
-    private static String url_create_unit = "https://api.androidhive.info/android_connect/create_product.php";
+    private static String url_create_unit = "http://75.134.106.101:80/mapp/create_new_unit.php";
 
     // JSON Node names
     private static final String TAG_SUCCESS = "success";
@@ -61,11 +61,14 @@ public class AllUnitsActivity extends ListActivity {
     private AlertDialog.Builder alert;
     private EditText inputCoords;
     private EditText inputExcs;
+    private EditText inputYear;
+    private EditText inputMonth;
     private EditText inputDate;
     private EditText inputReas;
     private EditText inputNSDims;
     private EditText inputEWDims;
     private int foreignKey;
+    private boolean unitsExist = false;
 
     boolean test=false;
     ArrayList<Unit> allUnits = new ArrayList<>();
@@ -98,8 +101,8 @@ public class AllUnitsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
+        foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
         site = openIntent.getParcelableExtra("siteName");
-        foreignKey = openIntent.getIntExtra("PrimaryKey", 0);
         TextView siteNameText = (TextView) findViewById(R.id.siteName);
         siteNameText.setText(site.getName() + " Units");
 
@@ -138,23 +141,23 @@ public class AllUnitsActivity extends ListActivity {
         // Get listview
         ListView lv = getListView();
 
-        // on seleting single product
-        // launching Edit Product Screen
+        // on seleting single unit
+        // launching Edit Unit Screen
         lv.setOnItemClickListener(new OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
                 // getting values from selected ListItem
-                String pid = ((TextView) view.findViewById(R.id.pid)).getText()
-                        .toString();
+                String pid = ((TextView) view.findViewById(R.id.pid)).getText().toString();
                 String datum = ((TextView) view.findViewById(R.id.name)).getText().toString();
+                String su = ((TextView) view.findViewById(R.id.su)).getText().toString();
 
                 // Starting new intent
                 Intent in = new Intent(view.getContext(),
                         AllLevelsActivity.class);
                 // sending pid to next activity
-                in.putExtra(TAG_PID, pid);
+                in.putExtra(TAG_PID, Integer.parseInt(pid));
                 in.putExtra("siteName", site);
                 if(test)
                 {
@@ -162,7 +165,7 @@ public class AllUnitsActivity extends ListActivity {
                 }
                 else
                 {
-                    in.putExtra(TAG_NAME, allUnits.get(Integer.parseInt(pid)-1));
+                    in.putExtra(TAG_NAME, allUnits.get(Integer.parseInt(su)));
                 }
 
                 // starting new activity and expecting some response back
@@ -184,7 +187,7 @@ public class AllUnitsActivity extends ListActivity {
         });
     }
 
-    // Response from Edit Product Activity
+    // Response from Edit Unit Activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -201,7 +204,7 @@ public class AllUnitsActivity extends ListActivity {
     }
 
     /**
-     * Background Async Task to Load all product by making HTTP Request
+     * Background Async Task to Load all units by making HTTP Request
      * */
     class LoadAllUnits extends AsyncTask<String, String, String> {
 
@@ -224,11 +227,12 @@ public class AllUnitsActivity extends ListActivity {
         protected String doInBackground(String... args) {
             // Building Parameters
             HashMap params = new HashMap();
+
+            params.put("foreignKey", foreignKey);
+
             // getting JSON string from URL
             JSONObject json = jParser.makeHttpRequest(url_all_units, "GET", params);
 
-            //TODO: make it so it only gets the units from the site represented by PrimaryKey
-            params.put(TAG_PID, foreignKey);
 
             // Check your log cat for JSON reponse
             Log.d("All units: ", json.toString());
@@ -264,13 +268,13 @@ public class AllUnitsActivity extends ListActivity {
                         // adding each child node to HashMap key => value
                         map.put(TAG_PID, id);
                         map.put(TAG_NAME, name);
+                        map.put("Site Unit", i + "");
 
                         // adding HashList to ArrayList
                         unitsList.add(map);
                     }
                 } else {
-                    // no units found
-                    // Launch Add New unit Dialog
+                    //units don't exist
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -291,13 +295,19 @@ public class AllUnitsActivity extends ListActivity {
                     /**
                      * Updating parsed JSON data into ListView
                      * */
-                    ListAdapter adapter = new SimpleAdapter(
-                            AllUnitsActivity.this, unitsList,
-                            R.layout.list_item, new String[] { TAG_PID,
-                            TAG_NAME},
-                            new int[] { R.id.pid, R.id.name });
-                    // updating listview
-                    setListAdapter(adapter);
+                    if(unitsList.size()!=0) {
+                        ListAdapter adapter = new SimpleAdapter(
+                                AllUnitsActivity.this, unitsList,
+                                R.layout.list_item, new String[]{TAG_PID,
+                                TAG_NAME, "Site Unit"},
+                                new int[]{R.id.pid, R.id.name, R.id.su});
+                        // updating listview
+                        setListAdapter(adapter);
+                    }
+                    else
+                    {
+                        showDialog(null);
+                    }
                 }
             });
 
@@ -305,7 +315,7 @@ public class AllUnitsActivity extends ListActivity {
 
     }
         /**
-         * Background Async Task to Create new product
+         * Background Async Task to Create new unit
          * */
         class CreateNewUnit extends AsyncTask<String, String, String> {
 
@@ -329,7 +339,10 @@ public class AllUnitsActivity extends ListActivity {
 
                 // Building Parameters
                 HashMap params = new HashMap();
-                params.put("coordinates", unit.getDatum());
+                params.put("foreignKey", foreignKey);
+                params.put("datum", unit.getDatum());
+                params.put("nsDim", unit.getNsDimension());
+                params.put("ewDim", unit.getEwDimension());
                 params.put("excavators", unit.getExcavators());
                 params.put("dateOpened", unit.getDateOpened());
                 params.put("reasonForOpening", unit.getReasonForOpening());
@@ -347,16 +360,13 @@ public class AllUnitsActivity extends ListActivity {
                     int success = json.getInt(TAG_SUCCESS);
 
                     if (success == 1) {
-                        // successfully created product
-                        //TODO: Should this go to NewUnitDialog or AllUnitsActivity?
-                        //TODO: make this not getApplicationContext
-                        Intent i = new Intent(getApplicationContext(), AllUnitsActivity.class);
-                        startActivity(i);
-
+                        // successfully created unit
                         // closing this screen
+
                         finish();
+                        startActivity(getIntent());
                     } else {
-                        // failed to create product
+                        // failed to create unit
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -374,6 +384,7 @@ public class AllUnitsActivity extends ListActivity {
             }
 
         }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         // Make sure to call the super method so that the states of our views are saved
@@ -385,7 +396,7 @@ public class AllUnitsActivity extends ListActivity {
             outState.putBoolean("alert", true);
             outState.putString("Datum Coordinate", inputCoords.getText().toString());
             outState.putString("Excavators", inputExcs.getText().toString());
-            outState.putString("Date Opened", inputDate.getText().toString());
+            outState.putString("Date Opened", toDate(Integer.parseInt(inputYear.getText().toString()), Integer.parseInt(inputMonth.getText().toString()), Integer.parseInt(inputDate.getText().toString())));
             outState.putString("Reason", inputReas.getText().toString());
             outState.putString("NSDim", inputNSDims.getText().toString());
             outState.putString("EWDim", inputEWDims.getText().toString());
@@ -404,6 +415,8 @@ public class AllUnitsActivity extends ListActivity {
         alert = new AlertDialog.Builder(AllUnitsActivity.this);
         inputCoords = (EditText) unitLayout.findViewById(R.id.inputCoords);
         inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
+        inputYear = (EditText) unitLayout.findViewById(R.id.inputYear);
+        inputMonth = (EditText) unitLayout.findViewById(R.id.inputMonth);
         inputDate = (EditText) unitLayout.findViewById(R.id.inputDate);
         inputReas = (EditText) unitLayout.findViewById(R.id.inputReas);
         inputNSDims = (EditText) unitLayout.findViewById(R.id.inputNSDims);
@@ -413,7 +426,16 @@ public class AllUnitsActivity extends ListActivity {
         {
             inputCoords.setText(un.getDatum());
             inputExcs.setText(un.getExcavators());
-            inputDate.setText(un.getDateOpened());
+
+            //TODO: figure out if I want to change so that user can enter a partial date
+            int[] date = fromDate(un.getDateOpened());
+            String y=date[0]+"", m=date[1]+"", d=date[2]+"";
+            if(date[0]!=0)
+                inputYear.setText(y);
+            if(date[1]!=0)
+                inputMonth.setText(m);
+            if(date[2]!=0)
+                inputDate.setText(d);
             inputReas.setText(un.getReasonForOpening());
             inputNSDims.setText(un.getNsDimension());
             inputEWDims.setText(un.getEwDimension());
@@ -421,26 +443,61 @@ public class AllUnitsActivity extends ListActivity {
         alert.setTitle("Create A New Unit");
         alert.setPositiveButton("Create Unit", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                int y, m, d;
+                try
+                {
+                    y=Integer.parseInt(inputYear.getText().toString());
+                }
+                catch(NumberFormatException e)
+                {
+                    y=0;
+                }
+                try
+                {
+                    m=Integer.parseInt(inputMonth.getText().toString());
+                }
+                catch(NumberFormatException e)
+                {
+                    m=0;
+                }
+                try
+                {
+                    d=Integer.parseInt(inputDate.getText().toString());
+                }
+                catch(NumberFormatException e)
+                {
+                    d=0;
+                }
 
                 unit = new Unit(inputCoords.getText().toString(),
-                        inputDate.getText().toString(), inputNSDims.getText().toString(),
+                        toDate(y, m, d), inputNSDims.getText().toString(),
                         inputEWDims.getText().toString(), site, inputExcs.getText().toString(),
                         inputReas.getText().toString());
 
-                //if not testing, save to server
-                if (!test) {
+                if(!(inputCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
+                        && !(inputDate.getText().toString().equals("")) && !(inputNSDims.getText().toString().equals(""))
+                        && !(inputEWDims.getText().toString().equals("")) && !(inputExcs.getText().toString().equals("")) && !(inputReas.getText().toString().equals(""))) {
 
-                    // creating new unit in background thread
-                    new CreateNewUnit().execute();
-                } else {
-                    System.out.println(unit.toString());
-                    // just go to next activity
-                    CharSequence toastMessage = "Creating New Unit...";
-                    Toast toast = Toast.makeText(unitLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                    toast.show();
+                    //if not testing, save to server
+                    if (!test) {
 
+                        // creating new unit in background thread
+                        new CreateNewUnit().execute();
+                    } else {
+                        System.out.println(unit.toString());
+                        // just go to next activity
+                        CharSequence toastMessage = "Creating New Unit...";
+                        Toast toast = Toast.makeText(unitLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
+                        toast.show();
+
+                    }
+                    alert = null;
                 }
-                alert=null;
+                else
+                {
+                    Toast.makeText(unitLayout.getContext(), "You must fill out all fields before saving", Toast.LENGTH_SHORT).show();
+                    showDialog(unit);
+                }
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -453,5 +510,46 @@ public class AllUnitsActivity extends ListActivity {
         alert.setView(unitLayout);
         AlertDialog dialog = alert.create();
         dialog.show();
+    }
+
+    private String toDate(int year, int month, int day)
+    {
+        String m=month + "", d=day + "";
+        System.out.println("Converting to date! " + year + " " + m + " " + d);
+        if(year<1 || month<1 || day<1)
+        {
+            return "0000-00-00 00:00:00";
+        }
+        else {
+            if (month < 10) {
+                m = "0" + month;
+            }
+            if (day < 10) {
+                d = "0" + day;
+            }
+            return year + "-" + m + "-" + d + " 00:00:00";
+        }
+    }
+
+    private int[] fromDate(String date)
+    {
+        System.out.println("Converting " + date + " from date");
+        int[] ymd = new int[3];
+        date.replace(" 00:00:00", "");
+        int i=0;
+        try {
+            while (i < 3) {
+                ymd[i] = Integer.parseInt(date.split("-")[i]);
+                i++;
+            }
+        }catch(NumberFormatException e)
+        {
+            System.out.println("Error: date not valid");
+            ymd[0]=0;
+            ymd[1]=0;
+            ymd[2]=0;
+        }
+        System.out.println(ymd[0] + " " + ymd[1] + " " + ymd[2]);
+        return ymd;
     }
 }
