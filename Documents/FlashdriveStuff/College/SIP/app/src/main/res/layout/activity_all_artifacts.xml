@@ -10,7 +10,9 @@
         android:layout_height="wrap_content"
         android:id="@+id/artifactsLabel"
         android:textSize="32dp"
-        android:gravity="center"/>
+        android:gravity="center"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorText"/>
 
     <!-- Main ListView
          Always give id value as list(@android:id/list)
