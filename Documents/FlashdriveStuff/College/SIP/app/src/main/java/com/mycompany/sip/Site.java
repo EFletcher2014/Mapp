@@ -15,14 +15,16 @@ public class Site implements Parcelable {
     private String dateOpened;
     private String location;
     private String description;
+    private int pk;
 
-    public Site(String n, String num, String date, String loc, String desc)
+    public Site(String n, String num, String date, String loc, String desc, int p)
     {
         this.name=n;
         this.number=num;
         this.dateOpened=date;
         this.location=loc;
         this.description=desc;
+        this.pk=p;
     }
 
     public Site(Parcel in) {
@@ -114,6 +116,10 @@ public class Site implements Parcelable {
             return new Site[size];
         }
     };
+
+    public int getPk(){
+        return pk;
+    }
 
 
     //TODO: override .equals()

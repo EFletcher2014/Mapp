@@ -37,29 +37,30 @@ package com.mycompany.sip;
 public class AllSitesActivity extends ListActivity {
         // Progress Dialog
         private ProgressDialog pDialog;
+        SiteDatabaseHandler sdb = new SiteDatabaseHandler(this);
         ArrayList<Site> allSites = new ArrayList<>();
         boolean test=false;
         //TODO: Make this an arraylist so that even in testing sites can be added and deleted [FIGURE OUT HOW TO DELETE SITES]
-        Site[] testSites = {new Site("Fort St. Joseph", "20BE23", "11/03/1996", "location", "a site"),
-                new Site("Lyne Site", "20BE10", "11/1/1111", "location", "another site"),
-                new Site("Fort Michilimackinac", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("Fort Mackinac", "23MA23", "11/11/1011", "location", "yet another freaking site"),
-                new Site("Site A", "22ZZ23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("Fletcher Site", "3FL3", "11/11/1010", "location", "yet another freaking site"),
-                new Site("Jamestown", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("White City", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("Chichen Itza", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("Dan", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("foobar", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("Copenhagen", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("test site", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("goldfish crackers","22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("Kampsville Gardens", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("horrible reviews", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("yahoo", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("teotihuacan", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("n0", "22MA23", "11/11/1010", "location", "yet another freaking site"),
-                new Site("yes", "22MA23", "11/11/1010", "location", "yet another freaking site"),};
+        Site[] testSites = {new Site("Fort St. Joseph", "20BE23", "11/03/1996", "location", "a site", 0),
+                new Site("Lyne Site", "20BE10", "11/1/1111", "location", "another site", 1),
+                new Site("Fort Michilimackinac", "22MA23", "11/11/1010", "location", "yet another freaking site", 2),
+                new Site("Fort Mackinac", "23MA23", "11/11/1011", "location", "yet another freaking site", 3),
+                new Site("Site A", "22ZZ23", "11/11/1010", "location", "yet another freaking site", 4),
+                new Site("Fletcher Site", "3FL3", "11/11/1010", "location", "yet another freaking site", 5),
+                new Site("Jamestown", "22MA23", "11/11/1010", "location", "yet another freaking site", 6),
+                new Site("White City", "22MA23", "11/11/1010", "location", "yet another freaking site", 7),
+                new Site("Chichen Itza", "22MA23", "11/11/1010", "location", "yet another freaking site", 6),
+                new Site("Dan", "22MA23", "11/11/1010", "location", "yet another freaking site", 9),
+                new Site("foobar", "22MA23", "11/11/1010", "location", "yet another freaking site", 10),
+                new Site("Copenhagen", "22MA23", "11/11/1010", "location", "yet another freaking site", 11),
+                new Site("test site", "22MA23", "11/11/1010", "location", "yet another freaking site", 12),
+                new Site("goldfish crackers","22MA23", "11/11/1010", "location", "yet another freaking site", 13),
+                new Site("Kampsville Gardens", "22MA23", "11/11/1010", "location", "yet another freaking site", 14),
+                new Site("horrible reviews", "22MA23", "11/11/1010", "location", "yet another freaking site", 15),
+                new Site("yahoo", "22MA23", "11/11/1010", "location", "yet another freaking site", 16),
+                new Site("teotihuacan", "22MA23", "11/11/1010", "location", "yet another freaking site", 17),
+                new Site("n0", "22MA23", "11/11/1010", "location", "yet another freaking site", 18),
+                new Site("yes", "22MA23", "11/11/1010", "location", "yet another freaking site", 19),};
 
         // Creating JSON Parser object
         JSONParser jParser = new JSONParser();
@@ -122,7 +123,7 @@ public class AllSitesActivity extends ListActivity {
                         final String sNumb = savedInstanceState.getString("Site Number");
                         final String sLoca = savedInstanceState.getString("Location");
 
-                        showDialog(new Site(sName, sNumb, sDate, sLoca, sDesc));
+                        showDialog(new Site(sName, sNumb, sDate, sLoca, sDesc, -1));//TODO: can this be -1?
                     }
                 }
                 setContentView(R.layout.activity_get_all_sites);
@@ -280,7 +281,7 @@ public class AllSitesActivity extends ListActivity {
                                                 String description = c.getString(TAG_DESC);
                                                 String date = c.getString(TAG_DATE);
 
-                                                Site temp = new Site(name, siteNumber, date, location, description);
+                                                Site temp = new Site(name, siteNumber, date, location, description, Integer.parseInt(pk));
                                                 allSites.add(temp);
 
                                                 // creating new HashMap
@@ -292,6 +293,20 @@ public class AllSitesActivity extends ListActivity {
 
                                                 // adding HashList to ArrayList
                                                 sitesList.add(map);
+
+                                            //save to local database
+                                            if(sdb.updateSite(temp)==0)
+                                            {
+                                                System.out.println("Adding new site to SQLite DB");
+                                                sdb.addSite(temp);
+                                            }
+                                            else
+                                            {
+                                                System.out.println();
+                                            }
+                                            System.out.println(sdb.getSitesCount());
+                                            System.out.println(sdb.getSite(i));
+                                            System.out.println(sdb.getAllSites().toString());
                                         }
                                 } else {
                                         // no sites found
@@ -388,6 +403,9 @@ public class AllSitesActivity extends ListActivity {
                 e.printStackTrace();
             }
 
+            //TODO: figure out where this should go
+            sdb.addSite(site);
+
             return null;
         }
 
@@ -433,8 +451,8 @@ public class AllSitesActivity extends ListActivity {
         inputDesc = (EditText) siteLayout.findViewById(R.id.inputDesc);
         //inputDate = (DatePicker) siteLayout.findViewById(R.id.inputDate);
         inputDate = (EditText) siteLayout.findViewById(R.id.inputDate);
-        inputMonth = (EditText) siteLayout.findViewById(R.id.inputDate);
-        inputYear = (EditText) siteLayout.findViewById(R.id.inputDate);
+        inputMonth = (EditText) siteLayout.findViewById(R.id.inputMonth);
+        inputYear = (EditText) siteLayout.findViewById(R.id.inputYear);
         inputNumb = (EditText) siteLayout.findViewById(R.id.inputNumb);
         inputLoca = (EditText) siteLayout.findViewById(R.id.inputLoca);
 
@@ -485,7 +503,8 @@ public class AllSitesActivity extends ListActivity {
                 }
 
                 site = new Site(inputName.getText().toString(), inputNumb.getText().toString(),
-                        toDate(y, m, d), inputLoca.getText().toString(), inputDesc.getText().toString());
+                        toDate(y, m, d), inputLoca.getText().toString(), inputDesc.getText().toString(), -1);
+                //TODO: have CreateNewSite() return pk???
 
                 System.out.println("text: " + inputName.getText());
                 if(!(inputName.getText().toString().equals("")) && !(inputDesc.getText().toString().equals(""))
