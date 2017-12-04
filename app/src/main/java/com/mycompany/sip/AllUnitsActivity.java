@@ -105,6 +105,7 @@ public class AllUnitsActivity extends ListActivity {
         Intent openIntent = getIntent();
         foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
         site = openIntent.getParcelableExtra("siteName");
+        System.out.println(site);
         TextView siteNameText = (TextView) findViewById(R.id.siteName);
         siteNameText.setText(site.getName() + " Units");
 
@@ -236,64 +237,81 @@ public class AllUnitsActivity extends ListActivity {
             JSONObject json = jParser.makeHttpRequest(url_all_units, "GET", params);
 
 
-            // Check your log cat for JSON reponse
-            Log.d("All units: ", json.toString());
-
             try {
-                // Checking for SUCCESS TAG
-                int success = json.getInt(TAG_SUCCESS);
+                // Check your log cat for JSON reponse
+                Log.d("All units: ", json.toString());
 
-                if (success == 1) {
-                    // units found
-                    // Getting Array of units
-                    units = json.getJSONArray(TAG_UNITS);
+                try {
+                    // Checking for SUCCESS TAG
+                    int success = json.getInt(TAG_SUCCESS);
 
-                    // looping through All units
-                    for (int i = 0; i < units.length(); i++) {
-                        JSONObject c = units.getJSONObject(i);
+                    if (success == 1) {
+                        // units found
+                        // Getting Array of units
+                        units = json.getJSONArray(TAG_UNITS);
 
-                        // Storing each json item in variable
-                        String id = c.getString(TAG_PID);
-                        String name = c.getString(TAG_NAME);
-                        String nsDim = c.getString(TAG_NS);
-                        String ewDim = c.getString(TAG_EW);
-                        String date = c.getString(TAG_DATE);
-                        String excs = c.getString(TAG_EXCS);
-                        String reas = c.getString(TAG_REAS);
+                        // looping through All units
+                        for (int i = 0; i < units.length(); i++) {
+                            JSONObject c = units.getJSONObject(i);
 
-                        Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, Integer.parseInt(id));
-                        allUnits.add(temp);
+                            // Storing each json item in variable
+                            String id = c.getString(TAG_PID);
+                            String name = c.getString(TAG_NAME);
+                            String nsDim = c.getString(TAG_NS);
+                            String ewDim = c.getString(TAG_EW);
+                            String date = c.getString(TAG_DATE);
+                            String excs = c.getString(TAG_EXCS);
+                            String reas = c.getString(TAG_REAS);
+
+                            Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, Integer.parseInt(id));
+                            allUnits.add(temp);
+
+                            // creating new HashMap
+                            HashMap<String, String> map = new HashMap<String, String>();
+
+                            // adding each child node to HashMap key => value
+                            map.put(TAG_PID, id);
+                            map.put(TAG_NAME, name);
+                            map.put("Site Unit", i + "");
+
+                            // adding HashList to ArrayList
+                            unitsList.add(map);
+
+                            //save to local database
+                            if (ldb.updateUnit(temp, temp.getSite().getPk()) == 0) {
+                                System.out.println("Adding new unit to SQLite DB");
+                                ldb.addUnit(temp, temp.getSite().getPk());
+                            } else {
+                                System.out.println();
+                            }
+                            System.out.println(ldb.getUnitsCount());
+                            System.out.println(ldb.getUnit(i));
+                            System.out.println(ldb.getAllUnits().toString());
+                        }
+                    } else {
+                        //units don't exist
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }catch(NullPointerException e)
+            {
+                allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getPk());
+                for(int i=0; i<allUnits.size(); i++)
+                {
+                        Unit temp = allUnits.get(i);
 
                         // creating new HashMap
                         HashMap<String, String> map = new HashMap<String, String>();
 
                         // adding each child node to HashMap key => value
-                        map.put(TAG_PID, id);
-                        map.put(TAG_NAME, name);
+                        map.put(TAG_PID, temp.getPk() + "");
+                        map.put(TAG_NAME, temp.getDatum());
                         map.put("Site Unit", i + "");
 
                         // adding HashList to ArrayList
                         unitsList.add(map);
-
-                        //save to local database
-                        if(ldb.updateUnit(temp, temp.getSite().getPk())==0)
-                        {
-                            System.out.println("Adding new unit to SQLite DB");
-                            ldb.addUnit(temp, temp.getSite().getPk());
-                        }
-                        else
-                        {
-                            System.out.println();
-                        }
-                        System.out.println(ldb.getUnitsCount());
-                        System.out.println(ldb.getUnit(i));
-                        System.out.println(ldb.getAllUnits().toString());
-                    }
-                } else {
-                    //units don't exist
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
 
             return null;
@@ -369,28 +387,32 @@ public class AllUnitsActivity extends ListActivity {
                         "POST", params);
 
                 // check log cat fro response
-                Log.d("Create Response", json.toString());
-
-                // check for success tag
                 try {
-                    int success = json.getInt(TAG_SUCCESS);
+                    Log.d("Create Response", json.toString());
 
-                    if (success == 1) {
-                        // successfully created unit
-                        // closing this screen
+                    // check for success tag
+                    try {
+                        int success = json.getInt(TAG_SUCCESS);
 
-                        finish();
-                        startActivity(getIntent());
-                    } else {
-                        // failed to create unit
+                        if (success == 1) {
+                            // successfully created unit
+                            // closing this screen
+
+                            finish();
+                            startActivity(getIntent());
+                        } else {
+                            // failed to create unit
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+
+                    //Todo: should this go here?
+                    ldb.addUnit(unit, unit.getSite().getPk());
+                }catch(NullPointerException e)
+                {
+
                 }
-
-                //Todo: should this go here?
-                ldb.addUnit(unit, unit.getSite().getPk());
-
                 return null;
             }
 

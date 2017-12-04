@@ -1,6 +1,7 @@
 //All from androidhive 7/30/17
 package com.mycompany.sip;
 
+import java.lang.reflect.Array;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -228,66 +229,82 @@ public class AllArtifactsActivity extends ListActivity {
             // getting JSON string from URL
             JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
 
-            // Check your log cat for JSON reponse
-            Log.d("All artifacts: ", json.toString());
-
             try {
-                // Checking for SUCCESS TAG
-                int success = json.getInt(TAG_SUCCESS);
+                // Check your log cat for JSON reponse
+                Log.d("All artifacts: ", json.toString());
 
-                if (success == 1) {
-                    // artifacts found
-                    // Getting Array of artifacts
-                    artifacts = json.getJSONArray(TAG_ARTIFACTS);
+                try {
+                    // Checking for SUCCESS TAG
+                    int success = json.getInt(TAG_SUCCESS);
 
-                    // looping through All sites
-                    for (int i = 0; i < artifacts.length(); i++) {
-                        JSONObject c = artifacts.getJSONObject(i);
+                    if (success == 1) {
+                        // artifacts found
+                        // Getting Array of artifacts
+                        artifacts = json.getJSONArray(TAG_ARTIFACTS);
 
-                        // Storing each json item in variable
-                        String id = c.getString(TAG_PID);
-                        String anum = c.getString(TAG_ANUM);
-                        System.out.println(anum);
-                        int cnum = c.getInt(TAG_CNUM);
-                        String cont = c.getString(TAG_CONT);
+                        // looping through All sites
+                        for (int i = 0; i < artifacts.length(); i++) {
+                            JSONObject c = artifacts.getJSONObject(i);
 
-                        Artifact temp = new Artifact(site, unit, level, anum, cnum, cont, Integer.parseInt(id));
-                        String name = temp.toString();
-                        System.out.println(temp.toString());
-                        allArtifacts.add(temp);
+                            // Storing each json item in variable
+                            String id = c.getString(TAG_PID);
+                            String anum = c.getString(TAG_ANUM);
+                            System.out.println(anum);
+                            int cnum = c.getInt(TAG_CNUM);
+                            String cont = c.getString(TAG_CONT);
 
-                        // creating new HashMap
-                        HashMap<String, String> map = new HashMap<String, String>();
+                            Artifact temp = new Artifact(site, unit, level, anum, cnum, cont, Integer.parseInt(id));
+                            String name = temp.toString();
+                            System.out.println(temp.toString());
+                            allArtifacts.add(temp);
 
-                        // adding each child node to HashMap key => value
-                        map.put(TAG_PID, id);
-                        map.put("name", name);
-                        map.put("Level Artifact", i + "");
+                            // creating new HashMap
+                            HashMap<String, String> map = new HashMap<String, String>();
 
-                        // adding HashList to ArrayList
-                        artifactsList.add(map);
+                            // adding each child node to HashMap key => value
+                            map.put(TAG_PID, id);
+                            map.put("name", name);
+                            map.put("Level Artifact", i + "");
 
-                        //save to local database
-                        if(ldb.updateArtifact(temp, temp.getLevel().getPk())==0)
-                        {
-                            System.out.println("Adding new artifact to SQLite DB");
-                            ldb.addArtifact(temp, temp.getLevel().getPk());
+                            // adding HashList to ArrayList
+                            artifactsList.add(map);
+
+                            //save to local database
+                            if (ldb.updateArtifact(temp, temp.getLevel().getPk()) == 0) {
+                                System.out.println("Adding new artifact to SQLite DB");
+                                ldb.addArtifact(temp, temp.getLevel().getPk());
+                            } else {
+                                System.out.println();
+                            }
+                            System.out.println(ldb.getArtifactsCount());
+                            System.out.println(ldb.getArtifact(i));
+                            System.out.println(ldb.getAllArtifacts().toString());
                         }
-                        else
-                        {
-                            System.out.println();
-                        }
-                        System.out.println(ldb.getArtifactsCount());
-                        System.out.println(ldb.getArtifact(i));
-                        System.out.println(ldb.getAllArtifacts().toString());
+                    } else {
+                        // no artifacts found
                     }
-                } else {
-                    // no artifacts found
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            }catch(NullPointerException e)
+            {
+                allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(level.getPk());
+                for(int i=0; i<allArtifacts.size(); i++)
+                {
+                    Artifact temp = allArtifacts.get(i);
 
+                    // creating new HashMap
+                    HashMap<String, String> map = new HashMap<String, String>();
+
+                    // adding each child node to HashMap key => value
+                    map.put(TAG_PID, temp.getPk() + "");
+                    map.put("name", temp.toString());
+                    map.put("Level Artifact", i + "");
+
+                    // adding HashList to ArrayList
+                    artifactsList.add(map);
+                }
+            }
             return null;
         }
 

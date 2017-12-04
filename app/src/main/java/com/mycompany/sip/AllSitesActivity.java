@@ -269,72 +269,95 @@ public class AllSitesActivity extends ListActivity {
                  * getting All sites from url
                  * */
                 protected String doInBackground(String... args) {
-                        // Building Parameters
+                    // Building Parameters
                     HashMap params = new HashMap();
-                        // getting JSON string from URL
-                        JSONObject json = jParser.makeHttpRequest(url_all_sites, "GET", params);
+                    // getting JSON string from URL
+                    JSONObject json = jParser.makeHttpRequest(url_all_sites, "GET", params);
 
-                        // Check your log cat for JSON reponse
+                    // Check your log cat for JSON reponse
+                    try {
                         Log.d("All sites: ", json.toString());
-
                         try {
-                                // Checking for SUCCESS TAG
-                                int success = json.getInt(TAG_SUCCESS);
+                            // Checking for SUCCESS TAG
+                            int success = json.getInt(TAG_SUCCESS);
 
-                                if (success == 1) {
-                                        // sites found
-                                        // Getting Array of sites
-                                        sites = json.getJSONArray(TAG_SITES);
+                            if (success == 1) {
+                                // sites found
+                                // Getting Array of sites
+                                sites = json.getJSONArray(TAG_SITES);
 
-                                        // looping through All sites
-                                        for (int i = 0; i < sites.length(); i++) {
-                                                JSONObject c = sites.getJSONObject(i);
+                                // looping through All sites
+                                for (int i = 0; i < sites.length(); i++) {
+                                    JSONObject c = sites.getJSONObject(i);
 
-                                                // Storing each json item in variable
-                                                String pk = c.getString(TAG_PID);
-                                                String name = c.getString(TAG_NAME);
-                                                String siteNumber = c.getString(TAG_NUM);
-                                                String location = c.getString(TAG_LOC);
-                                                String description = c.getString(TAG_DESC);
-                                                String date = c.getString(TAG_DATE);
+                                    // Storing each json item in variable
+                                    String pk = c.getString(TAG_PID);
+                                    String name = c.getString(TAG_NAME);
+                                    String siteNumber = c.getString(TAG_NUM);
+                                    String location = c.getString(TAG_LOC);
+                                    String description = c.getString(TAG_DESC);
+                                    String date = c.getString(TAG_DATE);
 
-                                                //Creating model object named temp
-                                                Site temp = new Site(name, siteNumber, date, location, description, Integer.parseInt(pk));
-                                                allSites.add(temp); //Adding temp to list of sites
+                                    //Creating model object named temp
+                                    Site temp = new Site(name, siteNumber, date, location, description, Integer.parseInt(pk));
+                                    allSites.add(temp); //Adding temp to list of sites
 
-                                                // creating new HashMap
-                                                HashMap<String, String> map = new HashMap<String, String>();
+                                    // creating new HashMap
+                                    HashMap<String, String> map = new HashMap<String, String>();
 
-                                                // for each site, saving its pk and name to the hashmap for the listview
-                                                map.put(TAG_PID, pk);
-                                                map.put(TAG_NAME, name);
+                                    // for each site, saving its pk and name to the hashmap for the listview
+                                    map.put(TAG_PID, pk);
+                                    map.put(TAG_NAME, name);
 
-                                                // adding HashList to ArrayList
-                                                sitesList.add(map);
+                                    // adding HashList to ArrayList
+                                    sitesList.add(map);
 
-                                            //save to local database
-                                            if(ldb.updateSite(temp)==0)//If the site doesn't exist already
-                                            {
-                                                System.out.println("Adding new site to SQLite DB");
-                                                ldb.addSite(temp);
-                                            }
-                                            else
-                                            {
-                                                System.out.println();
-                                            }
-                                            System.out.println(ldb.getSitesCount());
-                                            System.out.println(ldb.getSite(i));
-                                            System.out.println(ldb.getAllSites().toString());
-                                        }
-                                } else {
-                                        // no sites found
-                                        // Launch Add New product Dialog
+                                    //save to local database
+                                    if(ldb.updateSite(temp)==0)//If the site doesn't exist already
+                                    {
+                                        System.out.println("Adding new site to SQLite DB");
+                                        ldb.addSite(temp);
+                                    }
+                                    else
+                                    {
+                                        System.out.println();
+                                    }
+                                    System.out.println(ldb.getSitesCount());
+                                    System.out.println(ldb.getSite(i));
+                                    System.out.println(ldb.getAllSites().toString());
                                 }
+                            } else {
+                                // no sites found
+                                // Launch Add New product Dialog
+                            }
                         } catch (JSONException e) {
-                                e.printStackTrace();
+                            e.printStackTrace();
                         }
 
                         return null;
+                    }catch(NullPointerException e)
+                    {
+                        //Server isn't running/reachable, so just get stuff from local one
+                        System.out.println("do the thing");
+                        System.out.println(ldb.getSitesCount());
+                        for(int i = 0; i<ldb.getSitesCount(); i++)
+                        {
+                            if(ldb.getSite(i)!=null) {
+                                allSites.add(ldb.getSite(i));
+                                Site temp = allSites.get(allSites.size()-1);
+                                // creating new HashMap
+                                HashMap<String, String> map = new HashMap<String, String>();
+
+                                // for each site, saving its pk and name to the hashmap for the listview
+                                map.put(TAG_PID, temp.getPk() + "");
+                                map.put(TAG_NAME, temp.getName());
+
+                                // adding HashList to ArrayList
+                                sitesList.add(map);
+                            }
+                        }
+                    }
+                    return null;
                 }
 
                 /**

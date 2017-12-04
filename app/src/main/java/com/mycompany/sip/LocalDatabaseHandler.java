@@ -74,7 +74,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             + KEY_BD + " REAL, " + KEY_ED + " REAL, " + KEY_DATESTARTED + " TEXT, " + KEY_EXCMETH + " TEXT)";
 
     String CREATE_ARTIFACTS_TABLE = "CREATE TABLE " + TABLE_ARTIFACTS + "("
-            + KEY_PK + " INTEGER PRIMARY KEY, " + KEY_PK + " INTEGER, "
+            + KEY_PK + " INTEGER PRIMARY KEY, " + KEY_FK + " INTEGER, "
             + KEY_ANUM + " TEXT, " + KEY_CNUM + " INTEGER, " + KEY_CONTENTS + " TEXT)";
 
     public LocalDatabaseHandler(Context context) {
@@ -129,9 +129,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         Site site = null;
 
-        System.out.println(cursor);
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
-            System.out.println(cursor.getCount());
             //TODO: make sure this is the correct order
             site = new Site(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getString(3), cursor.getString(4), Integer.parseInt(cursor.getString(0)));
         }
@@ -229,9 +227,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         Unit unit = null;
 
-        System.out.println(cursor);
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
-            System.out.println(cursor.getCount());
             //TODO: make sure this is the correct order
             unit = new Unit(cursor.getString(2), cursor.getString(5), cursor.getString(3), cursor.getString(4), getSite(Integer.parseInt(cursor.getString(1))), cursor.getString(6), cursor.getString(7), Integer.parseInt(cursor.getString(0)));
         }
@@ -267,6 +263,34 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         return unitList;
     }
 
+    // Getting All units
+    public List<Unit> getAllUnitsFromSite(int fk) {
+        List<Unit> unitList = new ArrayList<Unit>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_UNITS + " WHERE " + KEY_FK + " = " + fk;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+
+                //TODO: is cursor.getString(8) the right one? Set in Server
+                Unit unit = new Unit(cursor.getString(2), cursor.getString(5), cursor.getString(3), cursor.getString(4), getSite(Integer.parseInt(cursor.getString(1))), cursor.getString(6), cursor.getString(7), Integer.parseInt(cursor.getString(0)));
+
+                // Adding site to list
+                unitList.add(unit);
+            } while (cursor.moveToNext());
+        }
+
+
+        // return unit list
+        cursor.close();
+        return unitList;
+    }
+
     //Getting unit count
     public int getUnitsCount(){
         String countQuery = "SELECT  * FROM " + TABLE_UNITS;
@@ -290,7 +314,6 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_EXCS, unit.getExcavators());
         values.put(KEY_REAS, unit.getReasonForOpening());
 
-        System.out.println(values);
 
         // updating row
         //TODO: add pk to unit?
@@ -326,9 +349,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         Level level = null;
 
-        System.out.println(cursor);
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
-            System.out.println(cursor.getCount());
             //TODO: make this correct
             Unit un = getUnit(Integer.parseInt(cursor.getString(1)));
             level = new Level(Integer.parseInt(cursor.getString(2)), Double.parseDouble(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), un.getSite(), un, cursor.getString(5), cursor.getString(6), ""/*server does not have notes yet, but MO does*/, Integer.parseInt(cursor.getString(0)));
@@ -367,6 +388,35 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         return levelList;
     }
 
+    // Getting All levels
+    public List<Level> getAllLevelsFromUnit(int fk) {
+        List<Level> levelList = new ArrayList<Level>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_LEVELS + " WHERE " + KEY_FK + " = " + fk;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+
+                //TODO: make this correct
+
+                Unit un = getUnit(Integer.parseInt(cursor.getString(1)));
+                Level level = new Level(Integer.parseInt(cursor.getString(2)), Double.parseDouble(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), un.getSite(), un, cursor.getString(5), cursor.getString(6), ""/*server does not have notes yet, but MO does*/, Integer.parseInt(cursor.getString(0)));
+
+                // Adding site to list
+                levelList.add(level);
+            } while (cursor.moveToNext());
+        }
+
+        // return level list
+        cursor.close();
+        return levelList;
+    }
+
     //Getting level count
     public int getLevelsCount(){
         String countQuery = "SELECT  * FROM " + TABLE_LEVELS;
@@ -380,7 +430,6 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     //Updating single level
     public int updateLevel(Level level, int fk){
         SQLiteDatabase db = this.getWritableDatabase();
-        System.out.println(db.toString());
 
         ContentValues values = new ContentValues();
         values.put(KEY_FK, fk); //Foreign Key
@@ -391,7 +440,6 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_EXCMETH, level.getExcavationMethod());
         //values.put(KEY_NOTES, level.getNotes());
 
-        System.out.println(values);
 
         // updating row
         //TODO: add pk to level?
@@ -426,9 +474,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         Artifact artifact = null;
 
-        System.out.println(cursor);
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
-            System.out.println(cursor.getCount());
             //TODO: make this correct
             Level l = getLevel(Integer.parseInt(cursor.getString(1)));
             artifact = new Artifact(l.getSite(), l.getUnit(), l, cursor.getString(2), Integer.parseInt(cursor.getString(3)), cursor.getString(4), Integer.parseInt(cursor.getString(0)));
@@ -444,6 +490,33 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                //TODO: make this correct
+                Level l = getLevel(Integer.parseInt(cursor.getString(1)));
+                Artifact artifact = new Artifact(l.getSite(), l.getUnit(), l, cursor.getString(2), Integer.parseInt(cursor.getString(3)), cursor.getString(4), Integer.parseInt(cursor.getString(0)));
+
+                // Adding artifact to list
+                artifactList.add(artifact);
+            } while (cursor.moveToNext());
+        }
+
+        // return artifact list
+        cursor.close();
+        return artifactList;
+    }
+
+    // Getting All artifacts
+    public List<Artifact> getAllArtifactsFromLevel(int fk) {
+        List<Artifact> artifactList = new ArrayList<Artifact>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS + " WHERE " + KEY_FK + " = " + fk;
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
