@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="WindowTitleBackground">
+        <item name="android:background">@color/colorPrimaryDark</item>
+    </style>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:buttonStyle">@style/ButtonColor</item>
+        <item name="android:colorBackground">@color/colorPrimaryLight</item>
+        <item name="android:textColorPrimary">@color/colorPrimaryText</item>
+    </style>
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:buttonStyle">@style/ButtonColor</item>
+    </style>
+    <style name="titleTheme" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:colorBackground">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorText</item>
+        <item name="android:textSize">@dimen/titleSize</item>
+    </style>
+    <style name="ButtonColor" parent="@style/Widget.AppCompat.Button.Colored">
+        <item name="android:textColor">@color/colorText</item>
+    </style>
+</resources>

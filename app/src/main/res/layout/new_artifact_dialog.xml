@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Accession number:"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="#"
+        android:id="@+id/accNum"
+        android:inputType="number"
+        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Catalog number:"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="##-#"
+        android:id="@+id/catNum"
+        android:inputType="number"
+        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contents:"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:hint="Describe artifact here"
+        android:id="@+id/contents"/>
+    <!--should add something to add a picture of the artifact too and maybe save coordinates-->
+</LinearLayout>

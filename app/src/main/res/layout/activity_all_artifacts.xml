@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <!-- Added by Emily Flether 8/29/17-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/artifactsLabel"
+        android:textSize="32dp"
+        android:gravity="center"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/colorText"/>
+
+    <!-- Main ListView
+         Always give id value as list(@android:id/list)
+        TODO: is this gonna cause problems?
+    -->
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/newArtifactBtn"
+        android:text="Create New Artifact"/>
+
+</LinearLayout>
