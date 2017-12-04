@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Mapp</string>
+    <string name="site_number">Site#</string>
+    <string name="unit_number">Unit#</string>
+    <string name="level_number">Level#</string>
+    <string name="button_hint">Click here to map artifacts/features on image</string>
+    <string name="title_activity_select">selectActivity</string>
+    <string name="savecontent">Click here to save your work</string>
+    <string name="photo_button_hint">Click here to select an image of your unit</string>
+    <string name="artifact_button_hint">Click here to add a new feature or artifact</string>
+    <string name="no_draw_hint">Please return to previous screen and select an image of your unit</string>
+</resources>
