@@ -272,7 +272,7 @@ public class AllArtifactsActivity extends ListActivity {
                             //save to local database
                             if (ldb.updateArtifact(temp, temp.getLevel().getPk()) == 0) {
                                 System.out.println("Adding new artifact to SQLite DB");
-                                ldb.addArtifact(temp, temp.getLevel().getPk());
+                                ldb.addArtifact(temp);
                             } else {
                                 System.out.println();
                             }
@@ -395,7 +395,7 @@ public class AllArtifactsActivity extends ListActivity {
             }
 
             //TODO: is this in the right spot?
-            ldb.addArtifact(artifact, artifact.getLevel().getPk());
+            ldb.addArtifact(artifact);
 
             return null;
         }

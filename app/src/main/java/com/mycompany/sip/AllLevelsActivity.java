@@ -279,7 +279,7 @@ public class AllLevelsActivity extends ListActivity {
                             System.out.println(temp.getUnit().getPk());
                             if (ldb.updateLevel(temp, temp.getUnit().getPk()) == 0) {
                                 System.out.println("Adding new level to SQLite DB");
-                                ldb.addLevel(temp, temp.getUnit().getPk());
+                                ldb.addLevel(temp);
                             } else {
                                 System.out.println();
                             }

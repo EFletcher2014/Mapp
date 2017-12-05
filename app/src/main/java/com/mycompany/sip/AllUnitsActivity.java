@@ -278,14 +278,15 @@ public class AllUnitsActivity extends ListActivity {
                             unitsList.add(map);
 
                             //save to local database
-                            if (ldb.updateUnit(temp, temp.getSite().getPk()) == 0) {
-                                System.out.println("Adding new unit to SQLite DB");
-                                ldb.addUnit(temp, temp.getSite().getPk());
+                            if (ldb.updateUnit(temp) == 0) {
+                                System.out.println("Adding new unit " + temp + " to SQLite DB");
+                                System.out.println(temp.getPk() + " " + ldb.getUnit(temp.getPk()));
+                                ldb.addUnit(temp);
                             } else {
-                                System.out.println();
+                                System.out.println("Unit " + temp + " already exists and was updated");
                             }
                             System.out.println(ldb.getUnitsCount());
-                            System.out.println(ldb.getUnit(i));
+                            System.out.println(ldb.getUnit(temp.getPk()) + " " + temp.getPk());
                             System.out.println(ldb.getAllUnits().toString());
                         }
                     } else {
@@ -408,7 +409,7 @@ public class AllUnitsActivity extends ListActivity {
                     }
 
                     //Todo: should this go here?
-                    ldb.addUnit(unit, unit.getSite().getPk());
+                    ldb.addUnit(unit);
                 }catch(NullPointerException e)
                 {
 

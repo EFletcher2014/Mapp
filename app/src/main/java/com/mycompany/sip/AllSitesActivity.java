@@ -313,17 +313,19 @@ public class AllSitesActivity extends ListActivity {
                                     sitesList.add(map);
 
                                     //save to local database
-                                    if(ldb.updateSite(temp)==0)//If the site doesn't exist already
+                                    if(ldb.updateSite(temp)==0)//ldb.getSite(temp.getPk())==null)//If the site doesn't exist already
                                     {
-                                        System.out.println("Adding new site to SQLite DB");
+                                        System.out.println("Adding new site " + temp + " to SQLite DB");
+                                        System.out.println(temp.getPk() + " " + ldb.getSite(temp.getPk()));
                                         ldb.addSite(temp);
                                     }
                                     else
                                     {
-                                        System.out.println();
+                                        System.out.println("Site " + temp + " already exists and was updated!");
+                                        //ldb.updateSite(temp);
                                     }
                                     System.out.println(ldb.getSitesCount());
-                                    System.out.println(ldb.getSite(i));
+                                    System.out.println(ldb.getSite(temp.getPk()));
                                     System.out.println(ldb.getAllSites().toString());
                                 }
                             } else {
@@ -342,8 +344,7 @@ public class AllSitesActivity extends ListActivity {
                         System.out.println(ldb.getSitesCount());
                         for(int i = 0; i<ldb.getSitesCount(); i++)
                         {
-                            if(ldb.getSite(i)!=null) {
-                                allSites.add(ldb.getSite(i));
+                                allSites.add(ldb.getSite(i+1));
                                 Site temp = allSites.get(allSites.size()-1);
                                 // creating new HashMap
                                 HashMap<String, String> map = new HashMap<String, String>();
@@ -354,7 +355,6 @@ public class AllSitesActivity extends ListActivity {
 
                                 // adding HashList to ArrayList
                                 sitesList.add(map);
-                            }
                         }
                     }
                     return null;

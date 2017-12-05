@@ -108,6 +108,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        values.put(KEY_PK, site.getPk());
         values.put(KEY_NAME, site.getName()); // Site name
         values.put(KEY_NUMBER, site.getNumber()); // Site Number
         values.put(KEY_LOC, site.getLocation());
@@ -200,11 +201,12 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
     //TODO: add methods for units, levels, and artifacts
     //Adding new unit
-    public void addUnit(Unit unit, int fk){
+    public void addUnit(Unit unit){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_FK, fk); //Foreign Key
+        values.put(KEY_PK, unit.getPk());
+        values.put(KEY_FK, unit.getSite().getPk()); //Foreign Key
         values.put(KEY_DATUM, unit.getDatum()); // Datum
         values.put(KEY_NSDIM, unit.getNsDimension());
         values.put(KEY_EWDIM, unit.getEwDimension());
@@ -302,11 +304,11 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Updating single unit
-    public int updateUnit(Unit unit, int fk){
+    public int updateUnit(Unit unit){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_FK, fk);
+        values.put(KEY_FK, unit.getSite().getPk());
         values.put(KEY_DATUM, unit.getDatum()); // Datum
         values.put(KEY_NSDIM, unit.getNsDimension());
         values.put(KEY_EWDIM, unit.getEwDimension());
@@ -322,11 +324,12 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Adding new level
-    public void addLevel(Level level, int fk){
+    public void addLevel(Level level){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_FK, fk); //Foreign Key
+        values.put(KEY_PK, level.getPk());
+        values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
         values.put(KEY_LVLNUM, level.getNumber()); // Level Number
         values.put(KEY_BD, level.getBegDepth());
         values.put(KEY_ED, level.getEndDepth());
@@ -450,11 +453,12 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Adding new artifact
-    public void addArtifact(Artifact artifact, int fk){
+    public void addArtifact(Artifact artifact){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_FK, fk); //Foreign Key
+        values.put(KEY_PK, artifact.getPk());
+        values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
         values.put(KEY_ANUM, artifact.getAccessionNumber()); // Artifact Accession Number
         values.put(KEY_CNUM, artifact.getCatalogNumber());
         values.put(KEY_CONTENTS, artifact.getContents());

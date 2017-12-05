@@ -399,7 +399,7 @@ public class MapHome extends AppCompatActivity {
             }
 
             //TODO: is this the right place?
-            ldb.addLevel(level, level.getUnit().getPk());
+            ldb.addLevel(level);
 
             return null;
         }
