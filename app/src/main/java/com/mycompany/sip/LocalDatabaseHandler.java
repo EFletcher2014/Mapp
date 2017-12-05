@@ -108,7 +108,8 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_PK, site.getPk());
+        if(site.getPk()!=-1)
+            values.put(KEY_PK, site.getPk());
         values.put(KEY_NAME, site.getName()); // Site name
         values.put(KEY_NUMBER, site.getNumber()); // Site Number
         values.put(KEY_LOC, site.getLocation());
@@ -205,7 +206,8 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_PK, unit.getPk());
+        if(unit.getPk()!=-1)
+            values.put(KEY_PK, unit.getPk());
         values.put(KEY_FK, unit.getSite().getPk()); //Foreign Key
         values.put(KEY_DATUM, unit.getDatum()); // Datum
         values.put(KEY_NSDIM, unit.getNsDimension());
@@ -328,7 +330,8 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_PK, level.getPk());
+        if(level.getPk()!=-1)
+            values.put(KEY_PK, level.getPk());
         values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
         values.put(KEY_LVLNUM, level.getNumber()); // Level Number
         values.put(KEY_BD, level.getBegDepth());
@@ -457,7 +460,8 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_PK, artifact.getPk());
+        if(artifact.getPk()!=-1)
+            values.put(KEY_PK, artifact.getPk());
         values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
         values.put(KEY_ANUM, artifact.getAccessionNumber()); // Artifact Accession Number
         values.put(KEY_CNUM, artifact.getCatalogNumber());

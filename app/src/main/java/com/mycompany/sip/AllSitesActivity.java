@@ -342,10 +342,10 @@ public class AllSitesActivity extends ListActivity {
                         //Server isn't running/reachable, so just get stuff from local one
                         System.out.println("do the thing");
                         System.out.println(ldb.getSitesCount());
-                        for(int i = 0; i<ldb.getSitesCount(); i++)
+                        allSites = (ArrayList) ldb.getAllSites();
+                        for(int i = 0; i<allSites.size(); i++)
                         {
-                                allSites.add(ldb.getSite(i+1));
-                                Site temp = allSites.get(allSites.size()-1);
+                                Site temp = allSites.get(i);
                                 // creating new HashMap
                                 HashMap<String, String> map = new HashMap<String, String>();
 
@@ -431,30 +431,44 @@ public class AllSitesActivity extends ListActivity {
 
             System.out.println(json);
 
-            // check log cat for response
-            Log.d("Create Response", json.toString());
-
-            // check for success tag
             try {
-                int success = json.getInt(TAG_SUCCESS);
+                // check log cat for response
+                Log.d("Create Response", json.toString());
 
-                if (success == 1) {
-                    // successfully created site
-                    // closing this screen
-                    finish();
+                // check for success tag
+                try {
+                    int success = json.getInt(TAG_SUCCESS);
 
-                    //restarting activity so list will include new site
-                    startActivity(getIntent());
-                } else {
-                    // failed to create site
+                    if (success == 1) {
+                        // successfully created site
+                        // closing this screen
+                        finish();
+
+                        //restarting activity so list will include new site
+                        startActivity(getIntent());
+                    } else {
+                        // failed to create site
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
-            //TODO: figure out where this should go
-            //Saves site to local SQLite database
-            ldb.addSite(site);
+                //TODO: figure out where this should go
+                //Saves site to local SQLite database
+                //ldb.addSite(site);
+            }catch(NullPointerException e)
+            {
+                //Server is unreachable, save to local server instead
+                ldb.addSite(site); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+                                    //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
+                                    //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
+
+                // closing this screen
+                finish();
+
+                //restarting activity so list will include new site
+                startActivity(getIntent());
+            }
 
             return null;
         }

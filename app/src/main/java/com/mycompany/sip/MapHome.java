@@ -377,29 +377,38 @@ public class MapHome extends AppCompatActivity {
             JSONObject json = jsonParser.makeHttpRequest(url_create_level,
                     "POST", params);
 
-            // check log cat fro response
-            Log.d("Create Response", json.toString());
-
-            // check for success tag
             try {
-                int success = json.getInt(TAG_SUCCESS);
+                // check log cat fro response
+                Log.d("Create Response", json.toString());
 
-                if (success == 1) {
+                // check for success tag
+                try {
+                    int success = json.getInt(TAG_SUCCESS);
 
-                    // closing this screen
-                    //finish();
-                    //startActivity(getIntent());
-                    madeLevel=true;
-                } else {
-                    // failed to create level
-                    madeLevel=false;
+                    if (success == 1) {
+
+                        // closing this screen
+                        //finish();
+                        //startActivity(getIntent());
+                        madeLevel = true;
+                    } else {
+                        // failed to create level
+                        madeLevel = false;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
+            }catch(NullPointerException e)
+            {
+                System.out.println("Adding level " + level + " to SQLite database");
+                ldb.addLevel(level);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+                                    //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
+                                    //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
+                                    //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
+                                    //TODO: when we're updating...But then we have to do more PHP stuff I think
+                System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getPk()));
+                madeLevel = true;
             }
-
-            //TODO: is this the right place?
-            ldb.addLevel(level);
 
             return null;
         }
@@ -414,6 +423,9 @@ public class MapHome extends AppCompatActivity {
             {
                 Toast.makeText(getApplicationContext(), "Saved level successfully", Toast.LENGTH_LONG).show();
                 madeLevel=false;
+
+                setResult(Activity.RESULT_OK);
+                finish();
             }
             else
             {

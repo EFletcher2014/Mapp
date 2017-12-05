@@ -172,7 +172,7 @@ public class AllLevelsActivity extends ListActivity {
                 //i.putExtra("unitNumber", unit);
                 // Closing all previous activities
                 i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(i);
+                startActivityForResult(i, 333);
             }
         });
 
@@ -182,7 +182,7 @@ public class AllLevelsActivity extends ListActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 333)
+        /*if(requestCode == 333)
         {
             if(resultCode == RESULT_OK)
             {
@@ -190,7 +190,7 @@ public class AllLevelsActivity extends ListActivity {
                 //finish();
                 //startActivity(getIntent());
             }
-        }
+        }*/
         // if result code 100
         if (resultCode == RESULT_OK) {
             // if result code 100 is received
@@ -226,6 +226,7 @@ public class AllLevelsActivity extends ListActivity {
          * getting All levels from url
          * */
         protected String doInBackground(String... args) {
+            levelsList = new ArrayList<HashMap<String, String>>();
             // Building Parameters
             HashMap params = new HashMap();
 
@@ -302,6 +303,7 @@ public class AllLevelsActivity extends ListActivity {
                 }
             }catch(NullPointerException e)
             {
+                System.out.println("Coudln't connect to remote server, loading levels from local sever instead");
                 allLevels = (ArrayList) ldb.getAllLevelsFromUnit(unit.getPk());
                 for(int i=0; i<allLevels.size(); i++)
                 {

@@ -408,11 +408,18 @@ public class AllUnitsActivity extends ListActivity {
                         e.printStackTrace();
                     }
 
-                    //Todo: should this go here?
-                    ldb.addUnit(unit);
                 }catch(NullPointerException e)
                 {
+                    ldb.addUnit(unit); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+                                        //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
+                                        //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
+                                        //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
+                                        //TODO: when we're updating...But then we have to do more PHP stuff I think
+                    // closing this screen
+                    finish();
 
+                    //restarting activity so list will include new site
+                    startActivity(getIntent());
                 }
                 return null;
             }

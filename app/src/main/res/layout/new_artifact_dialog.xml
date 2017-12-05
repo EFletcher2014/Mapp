@@ -9,10 +9,10 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="#"
         android:id="@+id/accNum"
+        android:hint="##-#"
         android:inputType="number"
-        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,10 +20,10 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="##-#"
         android:id="@+id/catNum"
+        android:hint="#"
         android:inputType="number"
-        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -"/>
+        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
