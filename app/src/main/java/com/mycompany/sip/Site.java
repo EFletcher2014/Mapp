@@ -123,6 +123,15 @@ public class Site implements Parcelable {
         return pk;
     }
 
-
-    //TODO: override .equals()
+    @Override
+    public boolean equals(Object o)
+    {
+        try {
+            String num = ((Site) o).getNumber();
+            return this.getNumber().equals(num);
+        }catch(Exception e)
+        {
+            return false;
+        }
+    }
 }

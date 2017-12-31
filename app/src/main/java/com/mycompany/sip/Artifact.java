@@ -80,6 +80,18 @@ public class Artifact{
         accessionNumber=a;
     }
 
-
-    //TODO: override .equals()
+    @Override
+    public boolean equals(Object o)
+    {
+        try {
+            Artifact temp = ((Artifact) o);
+            String site = temp.getSite().getNumber();
+            String unit = temp.getUnit().getDatum();
+            int level = temp.getLevel().getNumber();
+            return (this.getAccessionNumber().equals(temp.getAccessionNumber()) && this.getCatalogNumber()==temp.getCatalogNumber() && this.getSite().getNumber().equals(site) && this.getUnit().getDatum().equals(unit) && this.getLevel().getNumber()==level);
+        }catch(Exception e)
+        {
+            return false;
+        }
+    }
 }

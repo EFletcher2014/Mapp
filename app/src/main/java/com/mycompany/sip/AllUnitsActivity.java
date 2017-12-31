@@ -1,6 +1,7 @@
 //All from androidhive 7/30/17
 package com.mycompany.sip;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import org.json.JSONArray;
@@ -26,12 +27,26 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.mycompany.sip.Global.*;
+
+import static com.mycompany.sip.Global.TAG_DATEOPEN;
+import static com.mycompany.sip.Global.TAG_EW;
+import static com.mycompany.sip.Global.TAG_EXCS;
+import static com.mycompany.sip.Global.TAG_NS;
+import static com.mycompany.sip.Global.TAG_PID;
+import static com.mycompany.sip.Global.TAG_REAS;
+import static com.mycompany.sip.Global.TAG_SUCCESS;
+import static com.mycompany.sip.Global.TAG_UNITNAME;
+import static com.mycompany.sip.Global.TAG_UNITS;
+import static com.mycompany.sip.Global.url_all_units;
+import static com.mycompany.sip.Global.url_create_unit;
 
 public class AllUnitsActivity extends ListActivity {
     // Progress Dialog
     private ProgressDialog pDialog;
 
     LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
+    RemoteDatabaseHandler rdb = new RemoteDatabaseHandler(this);
 
     // Creating JSON Parser object
     JSONParser jParser = new JSONParser();
@@ -39,24 +54,6 @@ public class AllUnitsActivity extends ListActivity {
 
     ArrayList<HashMap<String, String>> unitsList;
 
-    // url to get all units list
-    //TODO: Get real URL
-    private static String url_all_units = "http://75.134.106.101:80/mapp/get_all_units.php";
-
-    //TODO: get actual URL
-    // url to create new unit
-    private static String url_create_unit = "http://75.134.106.101:80/mapp/create_new_unit.php";
-
-    // JSON Node names
-    private static final String TAG_SUCCESS = "success";
-    private static final String TAG_UNITS = "units";
-    private static final String TAG_PID = "PrimaryKey";
-    private static final String TAG_NAME = "datum";
-    private static final String TAG_NS = "nsDim";
-    private static final String TAG_EW = "ewDim";
-    private static final String TAG_DATE = "dateOpened";
-    private static final String TAG_EXCS = "excavators";
-    private static final String TAG_REAS = "reasonForOpening";
     private static Site site;
     private static Unit unit;
 
@@ -126,7 +123,7 @@ public class AllUnitsActivity extends ListActivity {
 
                 // adding each child node to HashMap key => value
                 testMap.put(TAG_PID, i + "");
-                testMap.put(TAG_NAME, datum);
+                testMap.put(TAG_UNITNAME, datum);
 
                 // adding HashList to ArrayList
                 unitsList.add(testMap);
@@ -135,7 +132,7 @@ public class AllUnitsActivity extends ListActivity {
             ListAdapter adapter = new SimpleAdapter(
                     AllUnitsActivity.this, unitsList,
                     R.layout.list_item, new String[]{TAG_PID,
-                    TAG_NAME},
+                    TAG_UNITNAME},
                     new int[]{R.id.pid, R.id.name});
             // updating listview
             setListAdapter(adapter);
@@ -164,11 +161,11 @@ public class AllUnitsActivity extends ListActivity {
                 in.putExtra("siteName", site);
                 if(test)
                 {
-                    in.putExtra(TAG_NAME, testUnits[Integer.parseInt(pid)]);
+                    in.putExtra(TAG_UNITNAME, testUnits[Integer.parseInt(pid)]);
                 }
                 else
                 {
-                    in.putExtra(TAG_NAME, allUnits.get(Integer.parseInt(su)));
+                    in.putExtra(TAG_UNITNAME, allUnits.get(Integer.parseInt(su)));
                 }
 
                 // starting new activity and expecting some response back
@@ -222,98 +219,116 @@ public class AllUnitsActivity extends ListActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
+            new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**
          * getting All units from url
          * */
         protected String doInBackground(String... args) {
-            // Building Parameters
-            HashMap params = new HashMap();
-
-            params.put("foreignKey", foreignKey);
-
-            // getting JSON string from URL
-            JSONObject json = jParser.makeHttpRequest(url_all_units, "GET", params);
-
-
-            try {
-                // Check your log cat for JSON reponse
-                Log.d("All units: ", json.toString());
-
-                try {
-                    // Checking for SUCCESS TAG
-                    int success = json.getInt(TAG_SUCCESS);
-
-                    if (success == 1) {
-                        // units found
-                        // Getting Array of units
-                        units = json.getJSONArray(TAG_UNITS);
-
-                        // looping through All units
-                        for (int i = 0; i < units.length(); i++) {
-                            JSONObject c = units.getJSONObject(i);
-
-                            // Storing each json item in variable
-                            String id = c.getString(TAG_PID);
-                            String name = c.getString(TAG_NAME);
-                            String nsDim = c.getString(TAG_NS);
-                            String ewDim = c.getString(TAG_EW);
-                            String date = c.getString(TAG_DATE);
-                            String excs = c.getString(TAG_EXCS);
-                            String reas = c.getString(TAG_REAS);
-
-                            Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, Integer.parseInt(id));
-                            allUnits.add(temp);
-
-                            // creating new HashMap
-                            HashMap<String, String> map = new HashMap<String, String>();
-
-                            // adding each child node to HashMap key => value
-                            map.put(TAG_PID, id);
-                            map.put(TAG_NAME, name);
-                            map.put("Site Unit", i + "");
-
-                            // adding HashList to ArrayList
-                            unitsList.add(map);
-
-                            //save to local database
-                            if (ldb.updateUnit(temp) == 0) {
-                                System.out.println("Adding new unit " + temp + " to SQLite DB");
-                                System.out.println(temp.getPk() + " " + ldb.getUnit(temp.getPk()));
-                                ldb.addUnit(temp);
-                            } else {
-                                System.out.println("Unit " + temp + " already exists and was updated");
-                            }
-                            System.out.println(ldb.getUnitsCount());
-                            System.out.println(ldb.getUnit(temp.getPk()) + " " + temp.getPk());
-                            System.out.println(ldb.getAllUnits().toString());
-                        }
-                    } else {
-                        //units don't exist
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }catch(NullPointerException e)
+            allUnits = rdb.loadAllUnits(site);
+            for(int i=0; i<allUnits.size(); i++)
             {
-                allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getPk());
-                for(int i=0; i<allUnits.size(); i++)
-                {
-                        Unit temp = allUnits.get(i);
+                Unit temp = allUnits.get(i);
 
-                        // creating new HashMap
-                        HashMap<String, String> map = new HashMap<String, String>();
+                // creating new HashMap
+                HashMap<String, String> map = new HashMap<String, String>();
 
-                        // adding each child node to HashMap key => value
-                        map.put(TAG_PID, temp.getPk() + "");
-                        map.put(TAG_NAME, temp.getDatum());
-                        map.put("Site Unit", i + "");
+                // adding each child node to HashMap key => value
+                map.put(TAG_PID, temp.getPk() + "");
+                map.put(TAG_UNITNAME, temp.getDatum());
+                map.put("Site Unit", i + "");
 
-                        // adding HashList to ArrayList
-                        unitsList.add(map);
-                }
+                // adding HashList to ArrayList
+                unitsList.add(map);
             }
+
+//            // Building Parameters
+//            HashMap params = new HashMap();
+//
+//            params.put("foreignKey", foreignKey);
+//
+//            // getting JSON string from URL
+//            JSONObject json = jParser.makeHttpRequest(url_all_units, "GET", params);
+
+
+//            try {
+//                // Check your log cat for JSON reponse
+//                Log.d("All units: ", json.toString());
+//
+//                try {
+//                    // Checking for SUCCESS TAG
+//                    int success = json.getInt(TAG_SUCCESS);
+//
+//                    if (success == 1) {
+//                        // units found
+//                        // Getting Array of units
+//                        units = json.getJSONArray(TAG_UNITS);
+//
+//                        // looping through All units
+//                        for (int i = 0; i < units.length(); i++) {
+//                            JSONObject c = units.getJSONObject(i);
+//
+//                            // Storing each json item in variable
+//                            String id = c.getString(TAG_PID);
+//                            String name = c.getString(TAG_UNITNAME);
+//                            String nsDim = c.getString(TAG_NS);
+//                            String ewDim = c.getString(TAG_EW);
+//                            String date = c.getString(TAG_DATEOPEN);
+//                            String excs = c.getString(TAG_EXCS);
+//                            String reas = c.getString(TAG_REAS);
+//
+//                            Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, Integer.parseInt(id));
+//                            allUnits.add(temp);
+//
+//                            // creating new HashMap
+//                            HashMap<String, String> map = new HashMap<String, String>();
+//
+//                            // adding each child node to HashMap key => value
+//                            map.put(TAG_PID, id);
+//                            map.put(TAG_UNITNAME, name);
+//                            map.put("Site Unit", i + "");
+//
+//                            // adding HashList to ArrayList
+//                            unitsList.add(map);
+//
+//                            //save to local database
+//                            if (ldb.updateUnit(temp) == 0) {
+//                                System.out.println("Adding new unit " + temp + " to SQLite DB");
+//                                System.out.println(temp.getPk() + " " + ldb.getUnit(temp.getPk()));
+//                                ldb.addUnit(temp);
+//                            } else {
+//                                System.out.println("Unit " + temp + " already exists and was updated");
+//                            }
+//                            System.out.println(ldb.getUnitsCount());
+//                            System.out.println(ldb.getUnit(temp.getPk()) + " " + temp.getPk());
+//                            System.out.println(ldb.getAllUnits().toString());
+//                        }
+//                    } else {
+//                        //units don't exist
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }catch(NullPointerException e)
+//            {
+//                allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getPk());
+//                for(int i=0; i<allUnits.size(); i++)
+//                {
+//                        Unit temp = allUnits.get(i);
+//
+//                        // creating new HashMap
+//                        HashMap<String, String> map = new HashMap<String, String>();
+//
+//                        // adding each child node to HashMap key => value
+//                        map.put(TAG_PID, temp.getPk() + "");
+//                        map.put(TAG_UNITNAME, temp.getDatum());
+//                        map.put("Site Unit", i + "");
+//
+//                        // adding HashList to ArrayList
+//                        unitsList.add(map);
+//                }
+//            }
 
             return null;
         }
@@ -334,7 +349,7 @@ public class AllUnitsActivity extends ListActivity {
                         ListAdapter adapter = new SimpleAdapter(
                                 AllUnitsActivity.this, unitsList,
                                 R.layout.list_item, new String[]{TAG_PID,
-                                TAG_NAME, "Site Unit"},
+                                TAG_UNITNAME, "Site Unit"},
                                 new int[]{R.id.pid, R.id.name, R.id.su});
                         // updating listview
                         setListAdapter(adapter);
@@ -365,14 +380,24 @@ public class AllUnitsActivity extends ListActivity {
                 pDialog.setIndeterminate(false);
                 pDialog.setCancelable(true);
                 pDialog.show();
+                new UpdateDBs(getApplicationContext()).execute();
             }
 
             /**
              * Creating unit
              * */
             protected String doInBackground(String... args) {
+                if (rdb.createNewUnit(unit)) {
+                    // successfully created unit
+                    // closing this screen
+                    finish();
 
-                // Building Parameters
+                    //restarting activity so list will include new unit
+                    startActivity(getIntent());
+                } else {
+                    // failed to create unit
+                }
+                /*// Building Parameters
                 HashMap params = new HashMap();
                 params.put("foreignKey", foreignKey);
                 params.put("datum", unit.getDatum());
@@ -420,7 +445,7 @@ public class AllUnitsActivity extends ListActivity {
 
                     //restarting activity so list will include new site
                     startActivity(getIntent());
-                }
+                }*/
                 return null;
             }
 

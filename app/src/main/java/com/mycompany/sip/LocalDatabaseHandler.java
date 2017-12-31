@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
@@ -19,6 +20,11 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     // Database Version
 
     private static final String LOG = "DatabaseHelper";
+
+    private static ArrayList<Long> unsavedSites;
+    private static ArrayList<Long> unsavedUnits;
+    private static ArrayList<Long> unsavedLevels;
+    private static ArrayList<Long> unsavedArtifacts;
 
     private static int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "mapp";
@@ -36,6 +42,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_LOC = "location";
     private static final String KEY_DESC = "description";
     private static final String KEY_DATE = "dateDiscovered";
+    private static final String KEY_SAVED = "isSavedRemotely";
 
     //Units Table Column names
     private static final String KEY_FK = "foreignKey";
@@ -88,6 +95,10 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_UNITS_TABLE);
         db.execSQL(CREATE_LEVELS_TABLE);
         db.execSQL(CREATE_ARTIFACTS_TABLE);
+        unsavedSites = new ArrayList<>();
+        unsavedUnits = new ArrayList<>();
+        unsavedLevels = new ArrayList<>();
+        unsavedArtifacts = new ArrayList<>();
     }
 
     // Upgrading database
@@ -108,8 +119,9 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        if(site.getPk()!=-1)
+        if(site.getPk()!=-1) {
             values.put(KEY_PK, site.getPk());
+        }
         values.put(KEY_NAME, site.getName()); // Site name
         values.put(KEY_NUMBER, site.getNumber()); // Site Number
         values.put(KEY_LOC, site.getLocation());
@@ -117,7 +129,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_DATE, site.getDateOpened());
 
         // Inserting Row
-        System.out.println("HERE!!!!!!!!!!!" + db.insert(TABLE_SITES, null, values));
+        db.insert(TABLE_SITES, null, values);
         db.close(); // Closing database connection
     }
 
@@ -207,7 +219,9 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         if(unit.getPk()!=-1)
+        {
             values.put(KEY_PK, unit.getPk());
+        }
         values.put(KEY_FK, unit.getSite().getPk()); //Foreign Key
         values.put(KEY_DATUM, unit.getDatum()); // Datum
         values.put(KEY_NSDIM, unit.getNsDimension());
@@ -331,7 +345,9 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         if(level.getPk()!=-1)
+        {
             values.put(KEY_PK, level.getPk());
+        }
         values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
         values.put(KEY_LVLNUM, level.getNumber()); // Level Number
         values.put(KEY_BD, level.getBegDepth());
@@ -461,7 +477,9 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         if(artifact.getPk()!=-1)
+        {
             values.put(KEY_PK, artifact.getPk());
+        }
         values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
         values.put(KEY_ANUM, artifact.getAccessionNumber()); // Artifact Accession Number
         values.put(KEY_CNUM, artifact.getCatalogNumber());
@@ -570,5 +588,45 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         //TODO: add pk to artifact?
         return db.update(TABLE_ARTIFACTS, values, KEY_PK + " = ?",
                 new String[] { String.valueOf(artifact.getPk()) });
+    }
+
+    //Updating entire database
+    public void update(ArrayList sites, ArrayList units, ArrayList levels, ArrayList artifacts)
+    {
+        System.out.println("Sites to update to local: " + sites);
+        unsavedSites = new ArrayList<>();
+        unsavedUnits = new ArrayList<>();
+        unsavedLevels = new ArrayList<>();
+        unsavedArtifacts = new ArrayList<>();
+
+        this.getWritableDatabase().delete(TABLE_SITES, null, null);
+        this.getWritableDatabase().delete(TABLE_UNITS, null, null);
+        this.getWritableDatabase().delete(TABLE_LEVELS, null, null);
+        this.getWritableDatabase().delete(TABLE_ARTIFACTS, null, null);
+
+
+        for (int i=0; i<sites.size(); i++)
+        {
+            System.out.println("Updating local site: " + i);
+            this.addSite((Site) sites.get(i));
+        }
+
+        for (int i=0; i<units.size(); i++)
+        {
+            this.addUnit((Unit) units.get(i));
+        }
+
+        for (int i=0; i<levels.size(); i++)
+        {
+            this.addLevel((Level) levels.get(i));
+        }
+
+        for(int i=0; i<artifacts.size(); i++)
+        {
+            this.addArtifact((Artifact) artifacts.get(i));
+        }
+
+        System.out.println("Sites after updating local: " + getAllSites());
+
     }
 }

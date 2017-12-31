@@ -29,11 +29,14 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import static com.mycompany.sip.Global.*;
+
 public class AllArtifactsActivity extends ListActivity {
     // Progress Dialog
     private ProgressDialog pDialog;
 
     LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
+    RemoteDatabaseHandler rdb = new RemoteDatabaseHandler(this);
 
     // Creating JSON Parser object
     JSONParser jParser = new JSONParser();
@@ -60,19 +63,6 @@ public class AllArtifactsActivity extends ListActivity {
     Artifact[] testArtifacts = {new Artifact(site, unit, level, "17-2", 17, "seed bead", 0),
             new Artifact(site, unit, level, "17-2", 16, "projectile point", 1),
             new Artifact(site, unit, level, "17-2", 27, "flint flake", 2)};
-
-    // url to get all artifacts list
-    private static String url_all_artifacts = "http://75.134.106.101:80/mapp/get_all_artifacts.php";
-    private static String url_create_artifact = "http://75.134.106.101:80/mapp/create_new_artifact.php";
-
-    // JSON Node names
-    //TODO: get correct variables (once server is running)
-    private static final String TAG_SUCCESS = "success";
-    private static final String TAG_ARTIFACTS = "artifacts";
-    private static final String TAG_PID = "PrimaryKey";
-    private static final String TAG_ANUM = "accNum";
-    private static final String TAG_CNUM = "catNum";
-    private static final String TAG_CONT = "contents";
 
     // artifacts JSONArray
     JSONArray artifacts = null;
@@ -215,13 +205,30 @@ public class AllArtifactsActivity extends ListActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
+            new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**
          * getting All artifacts from url
          * */
         protected String doInBackground(String... args) {
-            // Building Parameters
+            allArtifacts = rdb.loadAllArtifacts(level);
+            for(int i=0; i<allArtifacts.size(); i++)
+            {
+                Artifact temp = allArtifacts.get(i);
+
+                // creating new HashMap
+                HashMap<String, String> map = new HashMap<String, String>();
+
+                // adding each child node to HashMap key => value
+                map.put(TAG_PID, temp.getPk() + "");
+                map.put("name", temp.toString());
+                map.put("Level Artifact", i + "");
+
+                // adding HashList to ArrayList
+                artifactsList.add(map);
+            }
+            /*// Building Parameters
             HashMap params = new HashMap();
 
             params.put("foreignKey", foreignKey);
@@ -304,7 +311,7 @@ public class AllArtifactsActivity extends ListActivity {
                     // adding HashList to ArrayList
                     artifactsList.add(map);
                 }
-            }
+            }*/
             return null;
         }
 
@@ -356,14 +363,24 @@ public class AllArtifactsActivity extends ListActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show();
+            new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**
          * Creating artifact
          * */
         protected String doInBackground(String... args) {
+            if (rdb.createNewArtifact(artifact)) {
+                // successfully created artifact
+                // closing this screen
+                finish();
 
-            // Building Parameters
+                //restarting activity so list will include new artifact
+                startActivity(getIntent());
+            } else {
+                // failed to create artifact
+            }
+            /*// Building Parameters
             HashMap params = new HashMap();
             params.put("foreignKey", foreignKey);
             params.put("accNum", artifact.getAccessionNumber());
@@ -407,7 +424,7 @@ public class AllArtifactsActivity extends ListActivity {
                 //restarting activity so list will include new site
                 startActivity(getIntent());
             }
-
+*/
             return null;
         }
 

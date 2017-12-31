@@ -35,12 +35,17 @@ package com.mycompany.sip;
         import android.widget.TextView;
         import android.widget.Toast;
 
+        import static com.mycompany.sip.Global.*;
+
 public class AllSitesActivity extends ListActivity {
         // Progress Dialog--from AndroidHive -EF
         private ProgressDialog pDialog;
 
         //Handler for local SQLite database to backup data to device
         LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
+
+        //Handler for remote database
+        RemoteDatabaseHandler rdb = new RemoteDatabaseHandler(this);
 
         //ArrayList to store all sites on the server for display
         ArrayList<Site> allSites = new ArrayList<>();
@@ -79,22 +84,6 @@ public class AllSitesActivity extends ListActivity {
         ArrayList<HashMap<String, String>> sitesList;
 
     //TODO: HANDLE BEING OFFLINE
-
-        // url to get all sites list
-        private static String url_all_sites = "http://75.134.106.101:80/mapp/get_all_sites.php";
-
-        // url to create new site
-        private static String url_create_site = "http://75.134.106.101:80/mapp/create_new_site.php";
-
-        // JSON Node names--column headings in database, which allow JSON to parse data
-        private static final String TAG_PID = "PrimaryKey";
-        private static final String TAG_SUCCESS = "success";
-        private static final String TAG_SITES = "sites";
-        private static final String TAG_NUM = "siteNumber";
-        private static final String TAG_NAME = "siteName";
-        private static final String TAG_LOC = "location";
-        private static final String TAG_DESC = "description";
-        private static final String TAG_DATE = "dateDiscovered";
 
         //Format needed to save a date to MySQL
         private static SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
@@ -160,7 +149,7 @@ public class AllSitesActivity extends ListActivity {
 
                     // adding each child node to HashMap key => value
                     testMap.put(TAG_PID, i + "");
-                    testMap.put(TAG_NAME, name);
+                    testMap.put(TAG_SITENAME, name);
 
                     // adding HashList to ArrayList
                     sitesList.add(testMap);
@@ -171,7 +160,7 @@ public class AllSitesActivity extends ListActivity {
                 ListAdapter adapter = new SimpleAdapter(
                         AllSitesActivity.this, sitesList,
                         R.layout.list_item, new String[] { TAG_PID,
-                        TAG_NAME},
+                        TAG_SITENAME},
                         new int[] { R.id.pid, R.id.name });
                 // updating listview
                 setListAdapter(adapter);
@@ -201,11 +190,12 @@ public class AllSitesActivity extends ListActivity {
 
                                 if(test)
                                 {
-                                    in.putExtra(TAG_NAME, testSites[Integer.parseInt(pid)]);//Get from test sites
+                                    in.putExtra(TAG_SITENAME, testSites[Integer.parseInt(pid)]);//Get from test sites
                                 }
                                 else
                                 {
-                                    in.putExtra(TAG_NAME, allSites.get(Integer.parseInt(pid)-1));//Get from the server sites
+                                    Site temp = new Site("", "", "", "", "", Integer.parseInt(pid));
+                                    in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(temp)));//Get from the server sites
                                 }
 
                                 // starting unit activity
@@ -263,86 +253,19 @@ public class AllSitesActivity extends ListActivity {
                         pDialog.setIndeterminate(false);
                         pDialog.setCancelable(false);
                         pDialog.show();
+                        //I'm putting this here because I want it to execute in the background after
+                        //the pDialog is gone. However, I'm nervous that the remDB could go offline
+                        //between the time RemoteDatabaseHandler.online is set to true and this command
+                        //I'll handle that in UpdateDBs though
+                        new UpdateDBs(getApplicationContext()).execute();
                 }
 
                 /**
                  * getting All sites from url
                  * */
                 protected String doInBackground(String... args) {
-                    // Building Parameters
-                    HashMap params = new HashMap();
-                    // getting JSON string from URL
-                    JSONObject json = jParser.makeHttpRequest(url_all_sites, "GET", params);
-
-                    // Check your log cat for JSON reponse
-                    try {
-                        Log.d("All sites: ", json.toString());
-                        try {
-                            // Checking for SUCCESS TAG
-                            int success = json.getInt(TAG_SUCCESS);
-
-                            if (success == 1) {
-                                // sites found
-                                // Getting Array of sites
-                                sites = json.getJSONArray(TAG_SITES);
-
-                                // looping through All sites
-                                for (int i = 0; i < sites.length(); i++) {
-                                    JSONObject c = sites.getJSONObject(i);
-
-                                    // Storing each json item in variable
-                                    String pk = c.getString(TAG_PID);
-                                    String name = c.getString(TAG_NAME);
-                                    String siteNumber = c.getString(TAG_NUM);
-                                    String location = c.getString(TAG_LOC);
-                                    String description = c.getString(TAG_DESC);
-                                    String date = c.getString(TAG_DATE);
-
-                                    //Creating model object named temp
-                                    Site temp = new Site(name, siteNumber, date, location, description, Integer.parseInt(pk));
-                                    allSites.add(temp); //Adding temp to list of sites
-
-                                    // creating new HashMap
-                                    HashMap<String, String> map = new HashMap<String, String>();
-
-                                    // for each site, saving its pk and name to the hashmap for the listview
-                                    map.put(TAG_PID, pk);
-                                    map.put(TAG_NAME, name);
-
-                                    // adding HashList to ArrayList
-                                    sitesList.add(map);
-
-                                    //save to local database
-                                    if(ldb.updateSite(temp)==0)//ldb.getSite(temp.getPk())==null)//If the site doesn't exist already
-                                    {
-                                        System.out.println("Adding new site " + temp + " to SQLite DB");
-                                        System.out.println(temp.getPk() + " " + ldb.getSite(temp.getPk()));
-                                        ldb.addSite(temp);
-                                    }
-                                    else
-                                    {
-                                        System.out.println("Site " + temp + " already exists and was updated!");
-                                        //ldb.updateSite(temp);
-                                    }
-                                    System.out.println(ldb.getSitesCount());
-                                    System.out.println(ldb.getSite(temp.getPk()));
-                                    System.out.println(ldb.getAllSites().toString());
-                                }
-                            } else {
-                                // no sites found
-                                // Launch Add New product Dialog
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-
-                        return null;
-                    }catch(NullPointerException e)
-                    {
-                        //Server isn't running/reachable, so just get stuff from local one
-                        System.out.println("do the thing");
-                        System.out.println(ldb.getSitesCount());
-                        allSites = (ArrayList) ldb.getAllSites();
+                    allSites = rdb.LoadAllSites();
+                    System.out.println("Sites recovered: " + allSites);
                         for(int i = 0; i<allSites.size(); i++)
                         {
                                 Site temp = allSites.get(i);
@@ -351,12 +274,105 @@ public class AllSitesActivity extends ListActivity {
 
                                 // for each site, saving its pk and name to the hashmap for the listview
                                 map.put(TAG_PID, temp.getPk() + "");
-                                map.put(TAG_NAME, temp.getName());
+                                map.put(TAG_SITENAME, temp.getName());
 
                                 // adding HashList to ArrayList
                                 sitesList.add(map);
                         }
-                    }
+//                    // Building Parameters
+//                    HashMap params = new HashMap();
+//                    // getting JSON string from URL
+//                    JSONObject json = jParser.makeHttpRequest(url_all_sites, "GET", params);
+
+                    // Check your log cat for JSON reponse
+//                    try {
+//                        Log.d("All sites: ", json.toString());
+//                        try {
+//                            // Checking for SUCCESS TAG
+//                            int success = json.getInt(TAG_SUCCESS);
+//
+//                            if (success == 1) {
+//                                // sites found
+//                                // Getting Array of sites
+//                                sites = json.getJSONArray(TAG_SITES);
+//
+//                                // looping through All sites
+//                                for (int i = 0; i < sites.length(); i++) {
+//                                    JSONObject c = sites.getJSONObject(i);
+//
+//                                    // Storing each json item in variable
+//                                    String pk = c.getString(TAG_PID);
+//                                    String name = c.getString(TAG_SITENAME);
+//                                    String siteNumber = c.getString(TAG_SITENUM);
+//                                    String location = c.getString(TAG_LOC);
+//                                    String description = c.getString(TAG_DESC);
+//                                    String date = c.getString(TAG_DATEDISC);
+//
+//                                    //Creating model object named temp
+//                                    Site temp = new Site(name, siteNumber, date, location, description, Integer.parseInt(pk));
+//                                    allSites.add(temp); //Adding temp to list of sites
+//
+//                                    // creating new HashMap
+//                                    HashMap<String, String> map = new HashMap<String, String>();
+//
+//                                    // for each site, saving its pk and name to the hashmap for the listview
+//                                    map.put(TAG_PID, pk);
+//                                    map.put(TAG_SITENAME, name);
+//
+//                                    // adding HashList to ArrayList
+//                                    sitesList.add(map);
+//
+//                                    //Backup local changes to remote server
+//                                    //TODO: should be done async, to ensure all changes are saved, not just the ones being accessed
+//
+//                                    //save to local database
+//                                    if(ldb.getSite(temp.getPk())==null)//If the site doesn't exist already
+//                                    {
+//                                        System.out.println("Adding new site " + temp + " to SQLite DB");
+//                                        System.out.println(temp.getPk() + " " + ldb.getSite(temp.getPk()));
+//                                        ldb.addSite(temp);
+//                                    }*/
+//                                    /*else
+//                                    {
+//                                        System.out.println("Site " + temp + " already exists and was updated!");
+//                                        //TODO: Should I ever need to update from the remote server? I don't think so
+//                                        //ldb.updateSite(temp);
+//                                    }*/
+//
+//                                    //TODO: Add any SQLite entries to the remote server, and update any remote entries
+//                                    System.out.println(ldb.getSitesCount());
+//                                    System.out.println(ldb.getSite(temp.getPk()));
+//                                    System.out.println(ldb.getAllSites().toString());
+//                                }
+//                            } else {
+//                                // no sites found
+//                                // Launch Add New product Dialog
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//
+//                        return null;
+//                    }catch(NullPointerException e)
+//                    {
+//                        //Server isn't running/reachable, so just get stuff from local one
+//                        System.out.println("do the thing");
+//                        System.out.println(ldb.getSitesCount());
+//                        allSites = (ArrayList) ldb.getAllSites();
+//                        for(int i = 0; i<allSites.size(); i++)
+//                        {
+//                                Site temp = allSites.get(i);
+//                                // creating new HashMap
+//                                HashMap<String, String> map = new HashMap<String, String>();
+//
+//                                // for each site, saving its pk and name to the hashmap for the listview
+//                                map.put(TAG_PID, temp.getPk() + "");
+//                                map.put(TAG_SITENAME, temp.getName());
+//
+//                                // adding HashList to ArrayList
+//                                sitesList.add(map);
+//                        }
+//                    }
                     return null;
                 }
 
@@ -376,14 +392,13 @@ public class AllSitesActivity extends ListActivity {
                                         ListAdapter adapter = new SimpleAdapter(
                                                 AllSitesActivity.this, sitesList,
                                                 R.layout.list_item, new String[] { TAG_PID,
-                                                TAG_NAME},
+                                                TAG_SITENAME},
                                                 new int[] { R.id.pid, R.id.name }); //listview entries will contain site's pk and name
 
                                         // updating listview
                                         setListAdapter(adapter);
                                 }
                         });
-
                 }
 
         }
@@ -412,34 +427,7 @@ public class AllSitesActivity extends ListActivity {
          * Creating site
          * */
         protected String doInBackground(String... args) {
-
-            // Building Parameters
-            HashMap params = new HashMap();
-
-            //Getting data from site, which was created by new site dialog
-            //TODO: could this data be changed before/during execute, causing problems?
-            params.put("siteName", site.getName());
-            params.put("siteNumber", site.getNumber());
-            params.put("location", site.getLocation());
-            params.put("description", site.getDescription());
-            params.put("dateDiscovered", site.getDateOpened());
-
-            // getting JSON Object
-            // Note that create site url accepts POST method
-            JSONObject json = jsonParser.makeHttpRequest(url_create_site,
-                    "POST", params);
-
-            System.out.println(json);
-
-            try {
-                // check log cat for response
-                Log.d("Create Response", json.toString());
-
-                // check for success tag
-                try {
-                    int success = json.getInt(TAG_SUCCESS);
-
-                    if (success == 1) {
+            if (rdb.CreateNewSite(site)) {
                         // successfully created site
                         // closing this screen
                         finish();
@@ -449,26 +437,62 @@ public class AllSitesActivity extends ListActivity {
                     } else {
                         // failed to create site
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                //TODO: figure out where this should go
-                //Saves site to local SQLite database
-                //ldb.addSite(site);
-            }catch(NullPointerException e)
-            {
-                //Server is unreachable, save to local server instead
-                ldb.addSite(site); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
-                                    //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
-                                    //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
-
-                // closing this screen
-                finish();
-
-                //restarting activity so list will include new site
-                startActivity(getIntent());
-            }
+//            // Building Parameters
+//            HashMap params = new HashMap();
+//
+//            //Getting data from site, which was created by new site dialog
+//            //TODO: could this data be changed before/during execute, causing problems?
+//            params.put("siteName", site.getName());
+//            params.put("siteNumber", site.getNumber());
+//            params.put("location", site.getLocation());
+//            params.put("description", site.getDescription());
+//            params.put("dateDiscovered", site.getDateOpened());
+//
+//            // getting JSON Object
+//            // Note that create site url accepts POST method
+//            JSONObject json = jsonParser.makeHttpRequest(url_create_site,
+//                    "POST", params);
+//
+//            System.out.println(json);
+//
+//            try {
+//                // check log cat for response
+//                Log.d("Create Response", json.toString());
+//
+//                // check for success tag
+//                try {
+//                    int success = json.getInt(TAG_SUCCESS);
+//
+//                    if (success == 1) {
+//                        // successfully created site
+//                        // closing this screen
+//                        finish();
+//
+//                        //restarting activity so list will include new site
+//                        startActivity(getIntent());
+//                    } else {
+//                        // failed to create site
+//                    }
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//
+//                //TODO: figure out where this should go
+//                //Saves site to local SQLite database
+//                //ldb.addSite(site);
+//            }catch(NullPointerException e)
+//            {
+//                //Server is unreachable, save to local server instead
+//                ldb.addSite(site); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+//                                    //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
+//                                    //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
+//
+//                // closing this screen
+//                finish();
+//
+//                //restarting activity so list will include new site
+//                startActivity(getIntent());
+//            }
 
             return null;
         }
@@ -479,6 +503,11 @@ public class AllSitesActivity extends ListActivity {
         protected void onPostExecute(String file_url) {
             // dismiss the dialog once done
             pDialog.dismiss();
+                //I'm putting this here because I want it to execute in the background after
+                //the pDialog is gone. However, I'm nervous that the remDB could go offline
+                //between the time RemoteDatabaseHandler.online is set to true and this command
+                //I'll handle that in UpdateDBs though
+                new UpdateDBs(getApplicationContext()).execute();
         }
 
     }

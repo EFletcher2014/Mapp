@@ -154,7 +154,16 @@ public class Level implements Parcelable {
         }
     };
 
-
-    //TODO: override .equals()
+    @Override
+    public boolean equals(Object o)
+    {
+        try {
+            int num = ((Level) o).getNumber();
+            return (this.getNumber()==num && this.getUnit().equals(((Level) o).getUnit()));
+        }catch(Exception e)
+        {
+            return false;
+        }
+    }
 
 }

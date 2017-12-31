@@ -41,6 +41,8 @@ import java.util.*;
 import java.util.Date;
 import org.json.*;
 
+import static com.mycompany.sip.Global.*;
+
 //TODO: allow this to save a new level and also edit an old one
 
 public class MapHome extends AppCompatActivity {
@@ -48,16 +50,10 @@ public class MapHome extends AppCompatActivity {
     private ProgressDialog pDialog;
 
     LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
+    RemoteDatabaseHandler rdb = new RemoteDatabaseHandler(this);
 
     private static int SELECT_PICTURE = 1;
     JSONParser jsonParser = new JSONParser();
-
-    // url to create new product
-    private static String url_update_level = "http://75.134.106.101/mapp/update_level.php";
-    private static String url_create_level = "http://75.134.106.101/mapp/create_new_level.php";
-
-    // JSON Node names
-    private static final String TAG_SUCCESS = "success";
   
     private Uri selectedImageUri = null;
     private String userName = "root";
@@ -348,13 +344,15 @@ public class MapHome extends AppCompatActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show();
+            new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**
          * Creating level
          * */
         protected String doInBackground(String... args) {
-
+            madeLevel=rdb.createNewLevel(level);
+/*
             // Building Parameters
             HashMap params = new HashMap();
 
@@ -408,7 +406,7 @@ public class MapHome extends AppCompatActivity {
                                     //TODO: when we're updating...But then we have to do more PHP stuff I think
                 System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getPk()));
                 madeLevel = true;
-            }
+            }*/
 
             return null;
         }
@@ -456,7 +454,7 @@ public class MapHome extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
                 alert=null;
                 Intent intent = new Intent();
-                setResult(Activity.RESULT_OK, intent);
+                setResult(Activity.RESULT_CANCELED, intent);
                 finish();
             }
 

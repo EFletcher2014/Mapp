@@ -146,5 +146,16 @@ public class Unit implements Parcelable {
         }
     };
 
-    //TODO: override .equals()
+    @Override
+    public boolean equals(Object o)
+    {
+        try {
+            String site = ((Unit) o).getSite().getNumber();
+            String num = ((Unit) o).getDatum();
+            return (this.getSite().getNumber().equals(site) && this.getDatum().equals(num));
+        }catch(Exception e)
+        {
+            return false;
+        }
+    }
 }

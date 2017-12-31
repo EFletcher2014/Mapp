@@ -26,32 +26,20 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import static com.mycompany.sip.Global.*;
 
 public class AllLevelsActivity extends ListActivity {
     // Progress Dialog
     private ProgressDialog pDialog;
 
     LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
+    RemoteDatabaseHandler rdb = new RemoteDatabaseHandler(this);
 
     // Creating JSON Parser object
     JSONParser jParser = new JSONParser();
 
     ArrayList<HashMap<String, String>> levelsList;
 
-    // url to get all levels list
-    //TODO: Get real URL
-    private static String url_all_levels = "http://75.134.106.101:80/mapp/get_all_levels.php";
-
-    // JSON Node names
-    //TODO: get correct variables (once server is running)
-    private static final String TAG_SUCCESS = "success";
-    private static final String TAG_LEVELS = "levels";
-    private static final String TAG_NUM = "lvlNum";
-    private static final String TAG_PID = "PrimaryKey";
-    private static final String TAG_BD = "begDepth";
-    private static final String TAG_ED = "endDepth";
-    private static final String TAG_DATE = "dateStarted";
-    private static final String TAG_EXCM = "excavationMethod";
     private static Site site;
     private static Unit unit;
     private static Level level;
@@ -202,6 +190,11 @@ public class AllLevelsActivity extends ListActivity {
             new LoadAllLevels().execute();
         }
 
+        if(resultCode == RESULT_CANCELED)//if user canceled without saving a new level
+        {
+            //do nothing, just stay on current empty list of levels
+        }
+
     }
 
     /**
@@ -220,15 +213,33 @@ public class AllLevelsActivity extends ListActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
+            new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**
          * getting All levels from url
          * */
         protected String doInBackground(String... args) {
+            allLevels = rdb.loadAllLevels(unit);
             levelsList = new ArrayList<HashMap<String, String>>();
+
+            for(int i=0; i<allLevels.size(); i++)
+            {
+                Level temp = allLevels.get(i);
+
+                // creating new HashMap
+                HashMap<String, String> map = new HashMap<String, String>();
+
+                // adding each child node to HashMap key => value
+                map.put(TAG_PID, temp.getPk() + "");
+                map.put("name", temp.toString());
+                map.put("Unit Level", i + "");
+
+                // adding HashList to ArrayList
+                levelsList.add(map);
+            }
             // Building Parameters
-            HashMap params = new HashMap();
+            /*HashMap params = new HashMap();
 
             params.put("foreignKey", foreignKey);
 
@@ -254,7 +265,7 @@ public class AllLevelsActivity extends ListActivity {
 
                             // Storing each json item in variable
                             String id = c.getString(TAG_PID);
-                            int num = c.getInt(TAG_NUM);
+                            int num = c.getInt(TAG_LVLNUM);
                             Double bd = c.getDouble(TAG_BD);
                             Double ed = c.getDouble(TAG_ED);
                             String date = c.getString(TAG_DATE);
@@ -292,11 +303,11 @@ public class AllLevelsActivity extends ListActivity {
                         // no levels found
                         // Launch Add New level Activity
                         //TODO: Change it so it isn't getApplicationContext
-                        /*Intent i = new Intent(getApplicationContext(),
+                        *//*Intent i = new Intent(getApplicationContext(),
                                 MapHome.class);
                         // Closing all previous activities
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(i);*/
+                        startActivity(i);*//*
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -320,7 +331,7 @@ public class AllLevelsActivity extends ListActivity {
                     // adding HashList to ArrayList
                     levelsList.add(map);
                 }
-            }
+            }*/
             return null;
         }
 
@@ -357,6 +368,7 @@ public class AllLevelsActivity extends ListActivity {
                             // Closing all previous activities
                             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivityForResult(i, 333);
+                            Toast.makeText(getApplicationContext(), "No levels have been created for this unit yet. You can create one here.", Toast.LENGTH_LONG).show();
                     }
                 }
             });
