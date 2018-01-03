@@ -14,8 +14,10 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -398,7 +400,14 @@ public class AllLevelsActivity extends ListActivity {
     {
         LayoutInflater inflater = getLayoutInflater();
         final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
-        alert = new AlertDialog.Builder(AllLevelsActivity.this);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            alert = new AlertDialog.Builder(AllLevelsActivity.this);
+        }
         alert.setTitle("Level " + lvl.toString());
         System.out.println("You should have a dialog");
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {

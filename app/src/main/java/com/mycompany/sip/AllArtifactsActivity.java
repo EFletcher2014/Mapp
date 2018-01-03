@@ -15,8 +15,10 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -460,7 +462,14 @@ public class AllArtifactsActivity extends ListActivity {
     {
         LayoutInflater inflater = getLayoutInflater();
         final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
-        alert = new AlertDialog.Builder(AllArtifactsActivity.this);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            alert = new AlertDialog.Builder(AllArtifactsActivity.this);
+        }
         accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
         catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
         contents = (EditText) artifactLayout.findViewById(R.id.contents);

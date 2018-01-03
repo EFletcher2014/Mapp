@@ -14,8 +14,10 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
@@ -486,7 +488,14 @@ public class AllUnitsActivity extends ListActivity {
     {
         LayoutInflater inflater = getLayoutInflater();
         final View unitLayout = inflater.inflate(R.layout.new_unit_dialog, null);
-        alert = new AlertDialog.Builder(AllUnitsActivity.this);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            alert = new AlertDialog.Builder(AllUnitsActivity.this);
+        }
         inputCoords = (EditText) unitLayout.findViewById(R.id.inputCoords);
         inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
         inputYear = (EditText) unitLayout.findViewById(R.id.inputYear);

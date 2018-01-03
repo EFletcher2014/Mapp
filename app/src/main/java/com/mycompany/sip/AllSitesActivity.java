@@ -19,9 +19,14 @@ package com.mycompany.sip;
         import android.app.ProgressDialog;
         import android.content.DialogInterface;
         import android.content.Intent;
+        import android.graphics.Color;
         import android.os.AsyncTask;
+        import android.os.Build;
         import android.os.Bundle;
+        import android.support.v4.content.ContextCompat;
+        import android.support.v4.content.res.ResourcesCompat;
         import android.util.Log;
+        import android.view.ContextThemeWrapper;
         import android.view.LayoutInflater;
         import android.view.View;
         import android.widget.AdapterView;
@@ -195,7 +200,7 @@ public class AllSitesActivity extends ListActivity {
                                 else
                                 {
                                     Site temp = new Site("", "", "", "", "", Integer.parseInt(pid));
-                                    in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(temp)));//Get from the server sites
+                                    in.putExtra(TAG_SITENAME, ldb.getSite(Integer.parseInt(pid)));//Get from the server sites
                                 }
 
                                 // starting unit activity
@@ -544,7 +549,14 @@ public class AllSitesActivity extends ListActivity {
     {
         LayoutInflater inflater = getLayoutInflater();
         final View siteLayout = inflater.inflate(R.layout.new_site_dialog, null);
-        alert = new AlertDialog.Builder(AllSitesActivity.this);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            alert = new AlertDialog.Builder(AllSitesActivity.this);
+        }
         inputName = (EditText) siteLayout.findViewById(R.id.inputName);
         inputDesc = (EditText) siteLayout.findViewById(R.id.inputDesc);
         //inputDate = (DatePicker) siteLayout.findViewById(R.id.inputDate);
@@ -651,6 +663,7 @@ public class AllSitesActivity extends ListActivity {
         // this is set the view from XML inside AlertDialog
         alert.setView(siteLayout);
         AlertDialog dialog = alert.create();
+        //dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(siteLayout.getContext(), R.color.colorAccent));
         dialog.show();
     }
 

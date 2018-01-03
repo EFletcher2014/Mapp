@@ -5,6 +5,7 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@color/colorPrimaryDark</item>
         <item name="android:buttonStyle">@style/ButtonColor</item>
+        <item name="android:alertDialogTheme">@style/AlertDialogTheme</item>
     </style>
     <style name="ButtonColor" parent="@style/Base.Widget.AppCompat.Button.Colored">
         <item name="android:textColor">@color/colorText</item>
@@ -20,10 +21,22 @@
         <item name="android:colorBackground">@color/colorPrimaryLight</item>
         <item name="android:textColorPrimary">@color/colorPrimaryText</item>
         <item name="android:navigationBarColor">@color/colorPrimaryDark</item>
+        <item name="android:windowTitleStyle">@style/AlertTitle</item>
+    </style>
+    <style name="AlertTitle">
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:scrollHorizontally">true</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.DialogWindowTitle</item>
     </style>
     <style name="titleTheme" parent="ThemeOverlay.AppCompat.Light">
         <item name="android:background">@color/colorPrimary</item>
         <item name="android:textColor">@color/colorText</item>
         <item name="android:textSize">@dimen/titleSize</item>
+    </style>
+    <style name="AlertDialogTheme" parent = "Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
     </style>
 </resources>

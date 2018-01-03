@@ -15,11 +15,13 @@ import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -448,7 +450,14 @@ public class MapHome extends AppCompatActivity {
     {
         LayoutInflater inflater = getLayoutInflater();
         final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
-        alert = new AlertDialog.Builder(MapHome.this);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            alert = new AlertDialog.Builder(MapHome.this);
+        }
         alert.setTitle("Cancel?");
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
