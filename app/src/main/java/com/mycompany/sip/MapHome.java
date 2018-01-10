@@ -310,8 +310,17 @@ public class MapHome extends AppCompatActivity {
              if(resultCode == RESULT_OK) {
                  System.out.println("URIing");
                  selectedImageUri = data.getParcelableExtra("newURI");
+
+                 final int takeFlags = (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+// Check for the freshest data.
+                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                     getContentResolver().takePersistableUriPermission(selectedImageUri, takeFlags);
+                 }
+
                  System.out.println(selectedImageUri);
                  unitImage.setImageURI(selectedImageUri);
+                 level.setImagePath(selectedImageUri + ""); //level image path is set to a Uri
+                 System.out.println("imagePath " + selectedImageUri + " " + level.getImagePath());
                  //Bitmap temp = ((BitmapDrawable)unitImage.getDrawable()).getBitmap();
                  //unitImage.setImageBitmap(rotateBitmap(temp, rotation));
              }
@@ -323,6 +332,8 @@ public class MapHome extends AppCompatActivity {
                      switcher.showNext();
                  }
                  selectedImageUri = data.getData();
+                 level.setImagePath(selectedImageUri + ""); //level image path is set to a Uri
+                 System.out.println("imagePath " + selectedImageUri + " " + level.getImagePath());
                  imageReference = selectedImageUri.toString();
                  System.out.println("selectedImageUri is" + selectedImageUri);
                  unitImage.setImageURI(selectedImageUri);
@@ -498,7 +509,10 @@ public class MapHome extends AppCompatActivity {
                 //Get Picture
                 Intent pictureIntent = new Intent();
                 pictureIntent.setType("image/*");
-                pictureIntent.setAction(Intent.ACTION_GET_CONTENT);
+                //pictureIntent.setAction(Intent.ACTION_GET_CONTENT);
+                pictureIntent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+                pictureIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                pictureIntent.setType("image/*");
                 startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
                 alert1=null;
                 dialog.cancel();

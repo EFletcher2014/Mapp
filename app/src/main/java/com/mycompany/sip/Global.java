@@ -24,6 +24,9 @@ public class Global {
     // url to create new level
     public static String url_create_level = "http://75.134.106.101/mapp/create_new_level.php";
 
+    // url to upload image
+    public static String url_upload_image = "http://75.134.106.101/mapp/upload_image.php";
+
     // url to get all artifacts list
     public static String url_all_artifacts = "http://75.134.106.101:80/mapp/get_all_artifacts.php";
     
@@ -56,6 +59,7 @@ public class Global {
     public static final String TAG_ED = "endDepth";
     public static final String TAG_DATE = "dateStarted";
     public static final String TAG_EXCM = "excavationMethod";
+    public static final String TAG_IMPATH = "imagePath";
 
     // Artifact JSON Node names
     public static final String TAG_ARTIFACTS = "artifacts";

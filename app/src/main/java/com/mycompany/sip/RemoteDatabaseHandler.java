@@ -1,12 +1,29 @@
 package com.mycompany.sip;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -18,8 +35,12 @@ import static com.mycompany.sip.Global.*;
 
 public class RemoteDatabaseHandler {
     LocalDatabaseHandler ldb;
+    Context con;
 
     public Boolean online = true;
+
+    //Upload stuff
+    int serverResponseCode = 0;
 
     // Creating JSON Parser object
     JSONParser jParser = new JSONParser();
@@ -29,7 +50,8 @@ public class RemoteDatabaseHandler {
     //TODO: If offline and updating, don't want to add more entries to local db
     public RemoteDatabaseHandler(Context c)
     {
-        ldb = new LocalDatabaseHandler(c);
+        con = c;
+        ldb = new LocalDatabaseHandler(con);
     }
     public ArrayList LoadAllSites()
     {
@@ -303,6 +325,8 @@ public class RemoteDatabaseHandler {
                     for (int i = 0; i < levels.length(); i++) {
                         JSONObject c = levels.getJSONObject(i);
 
+                        //TODO: entire thing breaks if any input is null--figure out which input can be null, and make sure the user knows which ones can't
+
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
                         int num = c.getInt(TAG_LVLNUM);
@@ -310,9 +334,36 @@ public class RemoteDatabaseHandler {
                         Double ed = c.getDouble(TAG_ED);
                         String date = c.getString(TAG_DATE);
                         String excm = c.getString(TAG_EXCM);
+                        String imPath = null;
+                        try {
+                            imPath = c.getString(TAG_IMPATH);
+                            System.out.println("received level path: " + imPath);
+                        }catch(JSONException e)
+                        {
+                            System.out.println("No image path sent");
+                            e.printStackTrace();
+                        }
 
                         Level temp = new Level(num, bd, ed, unit.getSite(), unit, date, excm, "", Integer.parseInt(id));
                         allLevels.add(temp);
+                        temp.setImagePath(imPath);
+
+                        //If user selected an image, save that to server too
+                        try {
+                            if (imPath != null && !imPath.equals("")) {
+                                Uri tempUri = Uri.parse(imPath);
+                                if (tempUri != null) //if the level has a Uri saved as its path instead of a url
+                                {
+                                    System.out.println("Calling uploadImage");
+                                    uploadImage(tempUri, temp);
+                                }
+                            }
+                        } catch(NullPointerException e)
+                        {
+                            //for some reason I think this was throwing a null pointer
+                            System.out.println("Attempting to upload an image threw a nullpointerexception");
+                        }
+
                         String name = temp.toString();
                     }
                 } else {
@@ -355,7 +406,8 @@ public class RemoteDatabaseHandler {
         params.put("dateStarted", level.getDateStarted());
         params.put("excavationMethod", level.getExcavationMethod());
         //TODO: add notes to the database
-        //TODO: add picture to the database
+        params.put("imagePath", level.getImagePath());
+        System.out.println("level path: " + level.getImagePath());
 
         // getting JSON Object
         // Note that create site url accepts POST method
@@ -371,7 +423,6 @@ public class RemoteDatabaseHandler {
                 int success = json.getInt(TAG_SUCCESS);
 
                 if (success == 1) {
-
                     // closing this screen
                     //finish();
                     //startActivity(getIntent());
@@ -397,6 +448,184 @@ public class RemoteDatabaseHandler {
             return true;
         }
         return false;
+    }
+
+    public int uploadImage(Uri currPath, Level lvl)
+    {
+        JSONObject jObj=null;
+        StringBuilder result=null;
+
+        String filePath = currPath.getPath();
+        String fileName = getFileName(currPath);
+        String[] tmp = fileName.split(".");
+        String bareFileName = "";
+        try {
+            bareFileName = tmp[0];
+        }
+        catch (ArrayIndexOutOfBoundsException e)
+        {
+            System.out.println("Weird file name, no period found");
+            bareFileName = fileName;
+        }
+        System.out.println("currPath " + currPath);
+        System.out.println("filePath " + filePath);
+
+        HttpURLConnection conn = null;
+        DataOutputStream dos = null;
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
+        String boundary = "*****";
+        int bytesRead, bytesAvailable, bufferSize;
+        byte[] buffer;
+        int maxBufferSize = 1 * 1024 * 1024;
+        File sourceFile = null;
+        try {
+            sourceFile = new File(filePath);
+            System.out.println("Got file from path");
+        }catch(Exception e)
+        {
+            System.out.println("URI error: " + e);
+        }
+
+        if (sourceFile == null /*|| !sourceFile.isFile()*/) {
+
+            Log.e("uploadFile", "Source File not exist :"
+                    +filePath);
+
+            String msg = ("Source File not exist path: "
+                    +filePath);
+            System.out.println(msg);
+            System.out.println("File at path: " + sourceFile + " " + sourceFile.isFile());
+
+            return 0;
+
+        }
+        else if(sourceFile != null)
+        {
+            try {
+
+                // open a URL connection to the Servlet
+                InputStream fileInputStream = con.getContentResolver().openInputStream(currPath);
+                System.out.println("inputstream: " + fileInputStream.available());
+                //FileInputStream fileInputStream = new FileInputStream(sourceFile);
+
+                //adding PrimaryKey to url
+                String temp = url_upload_image + "?" + "PrimaryKey=" + lvl.getPk() + "";
+                URL url = new URL(temp);
+                System.out.println("file upload url: " + url);
+
+
+                System.out.println("sending file path to server");
+                // Open a HTTP  connection to  the URL
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setDoInput(true); // Allow Inputs
+                conn.setDoOutput(true); // Allow Outputs
+                conn.setUseCaches(false); // Don't use a Cached Copy
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Connection", "Keep-Alive");
+                conn.setRequestProperty("ENCTYPE", "multipart/form-data");
+                conn.setRequestProperty("Cache-Control", "no-cache");
+                conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+                //conn.setRequestProperty("uploaded_file", filePath);
+                dos = new DataOutputStream(conn.getOutputStream());
+
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+                System.out.println("image name???: " + getFileName(currPath));
+                dos.writeBytes("Content-Disposition: form-data; name=\"image\";filename=\""
+                                + fileName + "\"" + lineEnd);
+
+                        dos.writeBytes(lineEnd);
+
+                // create a buffer of  maximum size
+                bytesAvailable = fileInputStream.available();
+
+                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                buffer = new byte[bufferSize];
+
+                // read file and write it into form...
+                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                while (bytesRead > 0) {
+
+                    dos.write(buffer, 0, bufferSize);
+                    bytesAvailable = fileInputStream.available();
+                    System.out.println("inputstream: " + fileInputStream.available());
+                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                }
+
+                fileInputStream.close();
+
+                // send multipart form data necesssary after file data...
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+
+
+                //close the streams //
+                dos.flush();
+                dos.close();
+
+                // Responses from the server (code and message)
+                serverResponseCode = conn.getResponseCode();
+                String serverResponseMessage = conn.getResponseMessage();
+
+                Log.i("uploadFile", "HTTP Response is : "
+                        + serverResponseMessage + ": " + serverResponseCode);
+
+                if(serverResponseCode == 200){
+
+                    String msg = "File Upload Completed.\n\n See uploaded file here : \n\n"
+                            +" http://www.androidexample.com/media/uploads/";
+                    System.out.println(msg);
+                }
+                System.out.println("sent file from path");
+
+                try {
+                    //Receive the response from the server
+                    InputStream in = new BufferedInputStream(conn.getInputStream());
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                    result = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    Log.d("JSON Parser", "result: " + result.toString());
+                    System.out.println("Path result 1: " + result.toString());
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if(result==null)
+                {
+                    System.out.println("Failed to connect to server");
+                }
+                else {
+                    jObj = new JSONObject(result.toString());
+                    System.out.println("Path result: " + jObj.toString());
+                }
+                conn.disconnect();
+            } catch (MalformedURLException ex) {
+
+                ex.printStackTrace();
+                String msg = ("MalformedURLException Exception : check script url.");
+                System.out.println(msg + " path");
+
+                Log.e("Upload file to server", "error: " + ex.getMessage(), ex);
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                String msg = ("Got Exception : see logcat path");
+                Log.e("Upload file to server", "Exception : "
+                        + e.getMessage(), e);
+            }
+            return serverResponseCode;
+
+        } // End else block
+        return 0;
     }
 
     public ArrayList loadAllArtifacts(Level level)
@@ -515,5 +744,27 @@ public class RemoteDatabaseHandler {
         {
             return false;
         }
+    }
+
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = con.getApplicationContext().getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 }

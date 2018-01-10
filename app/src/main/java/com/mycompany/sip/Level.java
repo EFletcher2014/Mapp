@@ -17,6 +17,7 @@ public class Level implements Parcelable {
     private String excavationMethod;
     private String notes="";
     private int pk=-1;
+    private String imagePath = "";
 
     public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM, String no, int p)
     {
@@ -153,6 +154,16 @@ public class Level implements Parcelable {
             return new Level[size];
         }
     };
+
+    public void setImagePath(String path)
+    {
+        this.imagePath=path;
+    }
+
+    public String getImagePath()
+    {
+        return this.imagePath;
+    }
 
     @Override
     public boolean equals(Object o)

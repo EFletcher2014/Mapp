@@ -593,7 +593,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     //Updating entire database
     public void update(ArrayList sites, ArrayList units, ArrayList levels, ArrayList artifacts)
     {
-        System.out.println("Sites to update to local: " + sites);
+        //System.out.println("Sites to update to local: " + sites);
         unsavedSites = new ArrayList<>();
         unsavedUnits = new ArrayList<>();
         unsavedLevels = new ArrayList<>();
@@ -607,7 +607,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         for (int i=0; i<sites.size(); i++)
         {
-            System.out.println("Updating local site: " + i);
+            //System.out.println("Updating local site: " + i);
             this.addSite((Site) sites.get(i));
         }
 
@@ -626,7 +626,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             this.addArtifact((Artifact) artifacts.get(i));
         }
 
-        System.out.println("Sites after updating local: " + getAllSites());
+        //System.out.println("Sites after updating local: " + getAllSites());
 
     }
 }
