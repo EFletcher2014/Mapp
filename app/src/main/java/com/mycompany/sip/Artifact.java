@@ -2,6 +2,8 @@ package com.mycompany.sip;
 
 import android.os.Parcelable;
 
+import java.sql.Timestamp;
+
 /**
  * Created by Emily Fletcher on 8/30/2017.
  * Model Object for Artifacts
@@ -15,8 +17,22 @@ public class Artifact{
     private int catalogNumber;
     private String contents;
     private int pk;
+    private int remotePK;
+    private Timestamp firstCreated;
+    private Timestamp lastUpdated;
 
-    public Artifact(Site s, Unit u, Level l, String acc, int cat, String con, int p)
+    public Artifact(Site s, Unit u, Level l, String acc, int cat, int p, Timestamp created)
+    {
+        site=s;
+        unit=u;
+        level=l;
+        accessionNumber=acc;
+        catalogNumber=cat;
+        pk=p;
+        firstCreated=created;
+    }
+
+    public Artifact(Site s, Unit u, Level l, String acc, int cat, String con, int p, int rpk, Timestamp created, Timestamp updated)
     {
         site=s;
         unit=u;
@@ -25,9 +41,14 @@ public class Artifact{
         catalogNumber=cat;
         contents=con;
         pk=p;
+        remotePK=rpk;
+        firstCreated=created;
+        lastUpdated=updated;
     }
 
     public int getPk() {return pk; }
+
+    public int getRemotePK() {return remotePK; }
 
     public Site getSite()
     {
@@ -59,6 +80,11 @@ public class Artifact{
         return contents;
     }
 
+    public Timestamp getFirstCreated() { return firstCreated; }
+
+    public Timestamp getLastUpdated() { return lastUpdated; }
+
+
     @Override
     public String toString()
     {
@@ -79,6 +105,8 @@ public class Artifact{
     {
         accessionNumber=a;
     }
+
+    public void setLastUpdated(Timestamp t) { lastUpdated=t; }
 
     @Override
     public boolean equals(Object o)

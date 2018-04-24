@@ -3,6 +3,8 @@ package com.mycompany.sip;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.sql.Timestamp;
+
 /**
  * Created by Emily Fletcher on 8/30/2017.
  * Model Object for levels made parcelable 9/2/17
@@ -17,9 +19,22 @@ public class Level implements Parcelable {
     private String excavationMethod;
     private String notes="";
     private int pk=-1;
+    private int remotePK;
     private String imagePath = "";
+    private Timestamp firstCreated;
+    private Timestamp lastUpdated;
 
-    public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM, String no, int p)
+    public Level (int n, double bD, Site s, Unit u, int p, Timestamp created)
+    {
+        this.number=n;
+        this.begDepth=bD;
+        this.site=s;
+        this.unit=u;
+        this.pk=p;
+        this.firstCreated=created;
+    }
+
+    public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM, String no, int p, int rpk, Timestamp created, Timestamp updated)
     {
         this.number=n;
         this.begDepth=bD;
@@ -31,6 +46,9 @@ public class Level implements Parcelable {
         this.notes=no;
         System.out.println(notes);
         this.pk=p;
+        this.remotePK=rpk;
+        this.firstCreated=created;
+        this.lastUpdated=updated;
     }
 
     public Level(Parcel in)
@@ -45,9 +63,14 @@ public class Level implements Parcelable {
         this.excavationMethod=in.readString();
         this.notes=in.readString();
         this.pk=in.readInt();
+        this.remotePK=in.readInt();
+        this.firstCreated=in.readParcelable(Timestamp.class.getClassLoader());
+        this.lastUpdated=in.readParcelable(Timestamp.class.getClassLoader());
     }
 
     public int getPk() { return pk; }
+
+    public int getRemotePK() { return remotePK; }
 
     public int getNumber()
     {
@@ -94,6 +117,10 @@ public class Level implements Parcelable {
         return notes;
     }
 
+    public Timestamp getFirstCreated() { return firstCreated; }
+
+    public Timestamp getLastUpdated() { return lastUpdated; }
+
     @Override
     public String toString()
     {
@@ -125,6 +152,9 @@ public class Level implements Parcelable {
         notes=no;
     }
 
+    public void setLastUpdated(java.sql.Timestamp t) { lastUpdated=t; }
+
+
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
@@ -137,6 +167,9 @@ public class Level implements Parcelable {
         dest.writeString(excavationMethod);
         dest.writeString(notes);
         dest.writeInt(pk);
+        dest.writeInt(remotePK);
+        dest.writeParcelable((Parcelable)firstCreated, flags);
+        dest.writeParcelable((Parcelable)lastUpdated, flags);
     }
 
     @Override

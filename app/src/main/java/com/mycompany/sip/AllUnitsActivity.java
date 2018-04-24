@@ -73,9 +73,9 @@ public class AllUnitsActivity extends ListActivity {
 
     boolean test=false;
     ArrayList<Unit> allUnits = new ArrayList<>();
-    Unit[] testUnits = {new Unit("N24W11", "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 1),
-            new Unit("N23E9",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 2),
-            new Unit("N24W6",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 3)};
+    Unit[] testUnits = {new Unit("N24W11", "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 1, null, null),
+            new Unit("N23E9",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 2, null, null),
+            new Unit("N24W6",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 3, null, null)};
 
     //units JSONArray
     JSONArray units = null;
@@ -96,7 +96,7 @@ public class AllUnitsActivity extends ListActivity {
                 final String  nsd = savedInstanceState.getString("NSDim");
                 final String ewd = savedInstanceState.getString("EWDim");
 
-                showDialog(new Unit(coords, date, nsd, ewd, site, excs, reas, -1));
+                showDialog(new Unit(coords, date, nsd, ewd, site, excs, reas, -1, null, null));
             }
         }
 
@@ -555,7 +555,7 @@ public class AllUnitsActivity extends ListActivity {
                 unit = new Unit(inputCoords.getText().toString(),
                         toDate(y, m, d), inputNSDims.getText().toString(),
                         inputEWDims.getText().toString(), site, inputExcs.getText().toString(),
-                        inputReas.getText().toString(), -1);
+                        inputReas.getText().toString(), -1, null, null);
 
                 if(!(inputCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
                         && !(inputDate.getText().toString().equals("")) && !(inputNSDims.getText().toString().equals(""))

@@ -55,9 +55,9 @@ public class AllLevelsActivity extends ListActivity {
 
 
     boolean test=false;
-    Level[] testLevels = {new Level(1, 10.0, 15.0, site, unit, "11/03/1996", "shovel skimmed", "we did things", 1),
-            new Level(2, 15.0, 20.0, site, unit, "07/22/17", "troweling", "more things", 2),
-            new Level(3, 20.0, 25.0, site, unit, "08/2/17", "backhoe", "more things", 3)};
+    Level[] testLevels = {new Level(1, 10.0, 15.0, site, unit, "11/03/1996", "shovel skimmed", "we did things", 1, null, null),
+            new Level(2, 15.0, 20.0, site, unit, "07/22/17", "troweling", "more things", 2, null, null),
+            new Level(3, 20.0, 25.0, site, unit, "08/2/17", "backhoe", "more things", 3, null, null)};
 
     // levels JSONArray
     JSONArray levels = null;
@@ -155,7 +155,7 @@ public class AllLevelsActivity extends ListActivity {
                 // Launch Add New product Activity
                 Intent i = new Intent(view.getContext(),
                         MapHome.class);
-                i.putExtra("depth", new Level(allLevels.size()+1, -1, -1, site, unit, "", "", "", -1));
+                i.putExtra("depth", new Level(allLevels.size()+1, -1, -1, site, unit, "", "", "", -1, null, null));
                 //i.putExtra("ForeignKey", foreignKey);
                 //i.putExtra("lvlNum", allLevels.size()+1);
                 //i.putExtra("siteName", site);
@@ -362,7 +362,7 @@ public class AllLevelsActivity extends ListActivity {
                     {
                             Intent i = new Intent(findViewById(R.id.newLevelBtn).getContext(),
                                     MapHome.class);
-                            i.putExtra("depth", new Level(allLevels.size() + 1, -1, -1, site, unit, "", "", "", -1));
+                            i.putExtra("depth", new Level(allLevels.size() + 1, -1, -1, site, unit, "", "", "", -1, null, null));
                             //i.putExtra("ForeignKey", foreignKey);
                             //i.putExtra("lvlNum", 1);
                             //i.putExtra("siteName", site);

@@ -1,5 +1,7 @@
 package com.mycompany.sip;
 
+import java.sql.Timestamp;
+
 /**
  * Created by Emily on 12/7/2017.
  */
@@ -42,6 +44,8 @@ public class Global {
     public static final String TAG_LOC = "location";
     public static final String TAG_DESC = "description";
     public static final String TAG_DATEDISC = "dateDiscovered";
+    public static final String TAG_DATEUPDATED = "dateUpdated";
+    public static final String TAG_DATECREATED = "dateCreated";
 
     // Unit JSON Node names
     public static final String TAG_UNITS = "units";
@@ -59,6 +63,7 @@ public class Global {
     public static final String TAG_ED = "endDepth";
     public static final String TAG_DATE = "dateStarted";
     public static final String TAG_EXCM = "excavationMethod";
+    public static final String TAG_NOTES = "notes";
     public static final String TAG_IMPATH = "imagePath";
 
     // Artifact JSON Node names
@@ -66,4 +71,22 @@ public class Global {
     public static final String TAG_ANUM = "accNum";
     public static final String TAG_CNUM = "catNum";
     public static final String TAG_CONT = "contents";
+
+    // Timestamps for online/offline
+    public static Timestamp onlineSince;
+    public static Timestamp offlineSince;
+
+    // Set onlineSince
+    public static Timestamp setOnlineSince(Timestamp time)
+    {
+        onlineSince = time;
+        return onlineSince;
+    }
+
+    // Set offlineSince
+    public static Timestamp setOfflineSince(Timestamp time)
+    {
+        offlineSince = time;
+        return offlineSince;
+    }
 }

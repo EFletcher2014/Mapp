@@ -3,6 +3,8 @@ package com.mycompany.sip;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.sql.Timestamp;
+
 /**
  * Created by Emily Fletcher on 8/30/2017.
  * Model Object for Sites
@@ -16,8 +18,18 @@ public class Site implements Parcelable {
     private String location;
     private String description;
     private int pk;
+    private int remotePK;
+    private Timestamp lastUpdated;
+    private Timestamp firstCreated;
 
-    public Site(String n, String num, String date, String loc, String desc, int p)
+    public Site(String n, String num, int pk, Timestamp created)
+    {
+        this.name=n;
+        this.number=num;
+        this.pk=pk;
+        this.firstCreated=created;
+    }
+    public Site(String n, String num, String date, String loc, String desc, int p, int rpk, Timestamp created, Timestamp updated)
     {
         this.name=n;
         this.number=num;
@@ -25,6 +37,9 @@ public class Site implements Parcelable {
         this.location=loc;
         this.description=desc;
         this.pk=p;
+        this.remotePK=rpk;
+        this.firstCreated=created;
+        this.lastUpdated=updated;
     }
 
     public Site(Parcel in) {
@@ -34,6 +49,9 @@ public class Site implements Parcelable {
         this.location = in.readString();
         this.description = in.readString();
         this.pk = in.readInt();
+        this.remotePK = in.readInt();
+        this.firstCreated=in.readParcelable(Timestamp.class.getClassLoader());
+        this.lastUpdated=in.readParcelable(Timestamp.class.getClassLoader());
     }
 
     public String getName()
@@ -60,6 +78,10 @@ public class Site implements Parcelable {
     {
         return description;
     }
+
+    public Timestamp getFirstCreated() { return firstCreated; }
+
+    public Timestamp getLastUpdated() { return lastUpdated; }
 
     @Override
     public String toString()
@@ -92,6 +114,8 @@ public class Site implements Parcelable {
         description=des;
     }
 
+    public void setLastUpdated(Timestamp t) { lastUpdated=t; }
+
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
@@ -101,6 +125,9 @@ public class Site implements Parcelable {
         dest.writeString(location);
         dest.writeString(description);
         dest.writeInt(pk);
+        dest.writeInt(remotePK);
+        dest.writeParcelable((Parcelable) firstCreated, flags);
+        dest.writeParcelable((Parcelable) lastUpdated, flags);
     }
 
     @Override
@@ -122,6 +149,8 @@ public class Site implements Parcelable {
     public int getPk(){
         return pk;
     }
+
+    public int getRemotePK() { return remotePK; }
 
     @Override
     public boolean equals(Object o)

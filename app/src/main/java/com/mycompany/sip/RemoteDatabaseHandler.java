@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,7 +25,12 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 import static com.mycompany.sip.Global.*;
@@ -36,6 +42,7 @@ import static com.mycompany.sip.Global.*;
 public class RemoteDatabaseHandler {
     LocalDatabaseHandler ldb;
     Context con;
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public Boolean online = true;
 
@@ -53,7 +60,7 @@ public class RemoteDatabaseHandler {
         con = c;
         ldb = new LocalDatabaseHandler(con);
     }
-    public ArrayList LoadAllSites()
+    public ArrayList LoadAllSites(Timestamp offline)
     {
         JSONArray sites = null;
         ArrayList<Site> allSites = new ArrayList<>();
@@ -63,6 +70,13 @@ public class RemoteDatabaseHandler {
 
         // Building Parameters
         HashMap params = new HashMap();
+
+        //if a timestamp was passed, get all sites updated after that time
+        if(offline!=null)
+        {
+            params.put("lastOnline", offline);
+        }
+
         // getting JSON string from URL
         JSONObject json = jParser.makeHttpRequest(url_all_sites, "GET", params);
 
@@ -89,10 +103,18 @@ public class RemoteDatabaseHandler {
                         String location = c.getString(TAG_LOC);
                         String description = c.getString(TAG_DESC);
                         String date = c.getString(TAG_DATEDISC);
+                        String dateUpdated = c.getString(TAG_DATEUPDATED);
+                        String dateCreated = c.getString(TAG_DATECREATED);
 
                         //Creating model object named temp
-                        Site temp = new Site(name, siteNumber, date, location, description, Integer.parseInt(pk));
-                        allSites.add(temp); //Adding temp to list of sites
+                        Site temp = null;
+                        try {
+                            temp = new Site(name, siteNumber, date, location, description, -1, Integer.parseInt(pk), (Timestamp) sdf.parse(dateCreated), (Timestamp) sdf.parse(dateUpdated));
+                            allSites.add(temp); //Adding temp to list of sites
+                        }catch(ParseException e)
+                        {
+                            System.out.println(e);
+                        }
                     }
                 } else {
                     // no sites found
@@ -121,7 +143,7 @@ public class RemoteDatabaseHandler {
 
         //Getting data from site, which was created by new site dialog
         //TODO: could this data be changed before/during execute, causing problems?
-        params.put("PrimaryKey", site.getPk());
+        params.put("PrimaryKey", site.getRemotePK());
         params.put("siteName", site.getName());
         params.put("siteNumber", site.getNumber());
         params.put("location", site.getLocation());
@@ -142,6 +164,7 @@ public class RemoteDatabaseHandler {
             // check for success tag
             try {
                 int success = json.getInt(TAG_SUCCESS);
+                //TODO: get pk and pass it to updatedbs so it can be saved to the ldb
 
                 if (success == 1) {
                     // successfully created site
@@ -173,14 +196,23 @@ public class RemoteDatabaseHandler {
         return false;
     }
 
-    public ArrayList loadAllUnits(Site site)
+    public ArrayList loadAllUnits(Site site, Timestamp offline)
     {
         JSONArray units = null;
         ArrayList<Unit> allUnits = new ArrayList<>();
         // Building Parameters
         HashMap params = new HashMap();
-
-        params.put("foreignKey", site.getPk());
+        if(site!=null) { //if a site was passed, get all units associated with that site
+            params.put("foreignKey", site.getRemotePK());
+        }
+        else
+        {
+            //if a timestamp was passed, get all units updated after that time
+            if(offline!=null)
+            {
+                params.put("lastOnline", offline);
+            }
+        }
 
         // getting JSON string from URL
         JSONObject json = jParser.makeHttpRequest(url_all_units, "GET", params);
@@ -210,8 +242,11 @@ public class RemoteDatabaseHandler {
                             String date = c.getString(TAG_DATEOPEN);
                             String excs = c.getString(TAG_EXCS);
                             String reas = c.getString(TAG_REAS);
+                            String dateCreated = c.getString(TAG_DATECREATED);
+                            String dateUpdated = c.getString(TAG_DATEUPDATED);
 
-                            Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, Integer.parseInt(id));
+                            //TODO: If this works, change for sites
+                            Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                             allUnits.add(temp);
 
                             //save to local database
@@ -236,8 +271,8 @@ public class RemoteDatabaseHandler {
             }catch(NullPointerException e)
             {
                 online=false;
-                System.out.println("Getting all local units from Site: " + site.getPk());
-                allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getPk());
+                System.out.println("Getting all local units from Site: " + site.getRemotePK());
+                allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getRemotePK());
                 System.out.println(allUnits);
             }
             return allUnits;
@@ -247,8 +282,8 @@ public class RemoteDatabaseHandler {
     {
         // Building Parameters
         HashMap params = new HashMap();
-        params.put("PrimaryKey", unit.getPk());
-        params.put("foreignKey", unit.getSite().getPk());
+        params.put("PrimaryKey", unit.getRemotePK());
+        params.put("foreignKey", unit.getSite().getRemotePK()); //TODO: What if site isn't saved yet?
         params.put("datum", unit.getDatum());
         params.put("nsDim", unit.getNsDimension());
         params.put("ewDim", unit.getEwDimension());
@@ -296,14 +331,24 @@ public class RemoteDatabaseHandler {
         return false;
     }
 
-    public ArrayList loadAllLevels(Unit unit)
+    public ArrayList loadAllLevels(Unit unit, Timestamp offline)
     {
         ArrayList<Level> allLevels = new ArrayList<>();
         JSONArray levels = null;
 
         HashMap params = new HashMap();
 
-        params.put("foreignKey", unit.getPk());
+        if(unit!=null) { //if a unit was passed, get all levels associated with that unit
+            params.put("foreignKey", unit.getRemotePK());
+        }
+        else
+        {
+            //if a timestamp was passed, get all levels updated after that time
+            if(offline!=null)
+            {
+                params.put("lastOnline", offline);
+            }
+        }
 
         // getting JSON string from URL
         JSONObject json = jParser.makeHttpRequest(url_all_levels, "GET", params);
@@ -334,7 +379,10 @@ public class RemoteDatabaseHandler {
                         Double ed = c.getDouble(TAG_ED);
                         String date = c.getString(TAG_DATE);
                         String excm = c.getString(TAG_EXCM);
+                        String n = c.getString(TAG_NOTES);
                         String imPath = null;
+                        String dateCreated = c.getString(TAG_DATECREATED);
+                        String dateUpdated = c.getString(TAG_DATEUPDATED);
                         try {
                             imPath = c.getString(TAG_IMPATH);
                             System.out.println("received level path: " + imPath);
@@ -344,7 +392,7 @@ public class RemoteDatabaseHandler {
                             e.printStackTrace();
                         }
 
-                        Level temp = new Level(num, bd, ed, unit.getSite(), unit, date, excm, "", Integer.parseInt(id));
+                        Level temp = new Level(num, bd, ed, unit.getSite(), unit, date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                         allLevels.add(temp);
                         temp.setImagePath(imPath);
 
@@ -384,7 +432,7 @@ public class RemoteDatabaseHandler {
         {
             online=false;
             System.out.println("Coudln't connect to remote server, loading levels from local sever instead");
-            allLevels = (ArrayList) ldb.getAllLevelsFromUnit(unit.getPk());
+            allLevels = (ArrayList) ldb.getAllLevelsFromUnit(unit.getRemotePK());
         }
         return allLevels;
     }
@@ -395,17 +443,17 @@ public class RemoteDatabaseHandler {
         // Building Parameters
         HashMap params = new HashMap();
 
-        if(level.getPk()!=-1)//if not a new level, update existing. TODO: edit php to include this
+        if(level.getRemotePK()!=-1)//if not a new level in remote, update existing.
         {
-            params.put("PrimaryKey", level.getPk());
+            params.put("PrimaryKey", level.getRemotePK());
         }
-        params.put("foreignKey", level.getUnit().getPk());
+        params.put("foreignKey", level.getUnit().getRemotePK());  //TODO: what if unit isn't saved yet?
         params.put("lvlNum", level.getNumber());
         params.put("begDepth", level.getBegDepth());
         params.put("endDepth", level.getEndDepth());
         params.put("dateStarted", level.getDateStarted());
         params.put("excavationMethod", level.getExcavationMethod());
-        //TODO: add notes to the database
+        params.put("notes", level.getNotes());
         params.put("imagePath", level.getImagePath());
         System.out.println("level path: " + level.getImagePath());
 
@@ -444,7 +492,7 @@ public class RemoteDatabaseHandler {
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
-            System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getPk()));
+            System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
             return true;
         }
         return false;
@@ -510,7 +558,7 @@ public class RemoteDatabaseHandler {
                 //FileInputStream fileInputStream = new FileInputStream(sourceFile);
 
                 //adding PrimaryKey to url
-                String temp = url_upload_image + "?" + "PrimaryKey=" + lvl.getPk() + "";
+                String temp = url_upload_image + "?" + "PrimaryKey=" + lvl.getRemotePK() + "";
                 URL url = new URL(temp);
                 System.out.println("file upload url: " + url);
 
@@ -628,14 +676,24 @@ public class RemoteDatabaseHandler {
         return 0;
     }
 
-    public ArrayList loadAllArtifacts(Level level)
+    public ArrayList loadAllArtifacts(Level level, Timestamp offline)
     {
         ArrayList<Artifact> allArtifacts = new ArrayList<>();
         JSONArray artifacts = null;
         // Building Parameters
         HashMap params = new HashMap();
 
-        params.put("foreignKey", level.getPk());
+        if(level!=null) { //if a level was passed, get all artifacts associated with that level
+        params.put("foreignKey", level.getRemotePK());
+        }
+        else
+        {
+            //if a timestamp was passed, get all artifacts updated after that time
+            if(offline!=null)
+            {
+                params.put("lastOnline", offline);
+            }
+        }
 
         // getting JSON string from URL
         JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
@@ -662,8 +720,10 @@ public class RemoteDatabaseHandler {
                         String anum = c.getString(TAG_ANUM);
                         int cnum = c.getInt(TAG_CNUM);
                         String cont = c.getString(TAG_CONT);
+                        String dateCreated = c.getString(TAG_DATECREATED);
+                        String dateUpdated = c.getString(TAG_DATEUPDATED);
 
-                        Artifact temp = new Artifact(level.getSite(), level.getUnit(), level, anum, cnum, cont, Integer.parseInt(id));
+                        Artifact temp = new Artifact(level.getSite(), level.getUnit(), level, anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                         allArtifacts.add(temp);
                     }
                 } else {
@@ -676,7 +736,7 @@ public class RemoteDatabaseHandler {
         }catch(NullPointerException e)
         {
             online=false;
-            allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(level.getPk());
+            allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(level.getRemotePK());
         }
         return allArtifacts;
     }
@@ -685,8 +745,8 @@ public class RemoteDatabaseHandler {
     {
         // Building Parameters
         HashMap params = new HashMap();
-        params.put("PrimaryKey", artifact.getPk());
-        params.put("foreignKey", artifact.getLevel().getPk());
+        params.put("PrimaryKey", artifact.getRemotePK());
+        params.put("foreignKey", artifact.getLevel().getRemotePK()); //TODO: What if level isn't saved yet?
         params.put("accNum", artifact.getAccessionNumber());
         params.put("catNum", artifact.getCatalogNumber());
         params.put("contents", artifact.getContents());
@@ -734,14 +794,24 @@ public class RemoteDatabaseHandler {
     {
         HashMap params = new HashMap();
         // getting JSON string from URL
+        //TODO: pick something which will be faster
         JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
 
         try {
             // Check your log cat for JSON reponse
             Log.d("All artifacts: ", json.toString());
+            if(!onlineSince.after(new Timestamp(0))) {   //if onlineSince is 00-00-0000 00:00:00 then server wasn't previously online
+                Global.setOnlineSince(new Timestamp(System.currentTimeMillis()));    //set new timestamp for time online TODO: this isn't perfect
+                //new UpdateDBs.execute();                                                                           //Update first, then set OfflineSince to 00-00-0000 00:00:00
+                Global.setOfflineSince(new Timestamp(0));
+            }
             return true;
         }catch(NullPointerException e)
         {
+            if(!offlineSince.after(new Timestamp(0))) {    //if offlineSince is 00-00-0000 00:00:00 then server wasn't previously offline
+                Global.setOnlineSince(new Timestamp(0));   //set onlineSince to
+                Global.setOfflineSince(new Timestamp(System.currentTimeMillis()));
+            }
             return false;
         }
     }
@@ -766,5 +836,24 @@ public class RemoteDatabaseHandler {
             }
         }
         return result;
+    }
+
+    //Get image from server
+    public void getImage(URL url, Level lvl)
+    {
+        try
+        {
+            InputStream is = (InputStream) url.getContent();
+
+            //TODO: find a way to create unique names
+            String filename = lvl.getSite().getNumber() + lvl.getUnit().getDatum() + lvl.getNumber();
+
+            FileOutputStream outputStream = con.openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(is.read()); //TODO: use buffers
+            outputStream.close();
+        } catch(IOException e)
+        {
+            System.out.println("Could not get file from url");
+        }
     }
 }
