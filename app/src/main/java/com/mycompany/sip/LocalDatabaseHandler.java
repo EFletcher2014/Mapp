@@ -145,7 +145,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Adding new site
-    public void addSite(Site site){
+    public long addSite(Site site){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -158,8 +158,9 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_DATE, site.getDateOpened());
 
         // Inserting Row
-        db.insert(TABLE_SITES, null, values);
+        long temp = db.insert(TABLE_SITES, null, values);
         db.close(); // Closing database connection
+        return temp;
     }
 
     //Getting single site
@@ -252,9 +253,16 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_DESC, site.getDescription());
         values.put(KEY_DATE, site.getDateOpened());
 
-        // updating row
-        return db.update(TABLE_SITES, values, KEY_PK + " = ?",
+        int success = db.update(TABLE_SITES, values, KEY_PK + " = ?",
                 new String[] { String.valueOf(site.getPk()) });
+
+        if(success < 1)
+        {
+            success=(int)addSite(site);
+        }
+
+        // updating row
+        return success;
     }
 
 
@@ -268,7 +276,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
     //TODO: add methods for units, levels, and artifacts
     //Adding new unit
-    public void addUnit(Unit unit){
+    public long addUnit(Unit unit){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -283,8 +291,10 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_REAS, unit.getReasonForOpening());
 
         // Inserting Row
-        db.insert(TABLE_UNITS, null, values);
+        long temp = db.insert(TABLE_UNITS, null, values);
         db.close(); // Closing database connection
+
+        return temp;
     }
 
     //Getting single unit
@@ -414,11 +424,17 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_EXCS, unit.getExcavators());
         values.put(KEY_REAS, unit.getReasonForOpening());
 
+        int success = db.update(TABLE_UNITS, values, KEY_PK + " = ?",
+                new String[] { String.valueOf(unit.getPk()) });
+
+        if(success < 1)
+        {
+            success = (int) addUnit(unit);
+        }
 
         // updating row
         //TODO: add pk to unit?
-        return db.update(TABLE_UNITS, values, KEY_PK + " = ?",
-                new String[] { String.valueOf(unit.getPk()) });
+        return success;
     }
 
     //Adding new level

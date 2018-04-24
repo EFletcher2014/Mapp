@@ -46,7 +46,7 @@ public class JSONParser {
             i++;
         }
 
-        if (method.equals("POST")) {
+        if (method.equals("POST") || method.equals("PUT")) { //trying to save space because post and put are simlar
             //added by Emily Fletcher 10/12/17, was in GET method but not POST
             if (sbParams.length() != 0) {
                 url += "?" + sbParams.toString();
@@ -62,7 +62,7 @@ public class JSONParser {
 
                 conn.setDoOutput(true);
 
-                conn.setRequestMethod("POST");
+                conn.setRequestMethod((method.equals("POST")? "POST" : "PUT")); //if method is post, put post. Otherwise, put
 
                 conn.setRequestProperty("Accept-Charset", charset);
 

@@ -14,17 +14,26 @@ public class Global {
     // url to create new site
     public static String url_create_site = "http://75.134.106.101:80/mapp/create_new_site.php";
 
+    // url to update site
+    public static String url_update_site = "http://75.134.106.101:80/mapp/update_site.php";
+
     // url to get all units list
     public static String url_all_units = "http://75.134.106.101:80/mapp/get_all_units.php";
 
     // url to create a new unit
     public static String url_create_unit = "http://75.134.106.101:80/mapp/create_new_unit.php";
 
+    // url to update unit
+    public static String url_update_unit = "http://75.134.106.101:80/mapp/update_unit.php";
+
     // url to get all levels list
     public static String url_all_levels = "http://75.134.106.101:80/mapp/get_all_levels.php";
     
     // url to create new level
     public static String url_create_level = "http://75.134.106.101/mapp/create_new_level.php";
+
+    // url to update level
+    public static String url_update_level = "http://75.134.106.101:80/mapp/update_level.php";
 
     // url to upload image
     public static String url_upload_image = "http://75.134.106.101/mapp/upload_image.php";
@@ -34,6 +43,9 @@ public class Global {
     
     // url to create new artifact
     public static String url_create_artifact = "http://75.134.106.101:80/mapp/create_new_artifact.php";
+
+    // url to update artifact
+    public static String url_update_artifact = "http://75.134.106.101:80/mapp/update_artifact.php";
     
     // Site JSON Node names--column headings in database, which allow JSON to parse data
     public static final String TAG_PID = "PrimaryKey";

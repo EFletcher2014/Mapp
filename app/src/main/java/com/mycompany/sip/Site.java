@@ -152,6 +152,7 @@ public class Site implements Parcelable {
 
     public int getRemotePK() { return remotePK; }
 
+    public void setRemotePK(int rpk) { remotePK = rpk; }
     @Override
     public boolean equals(Object o)
     {

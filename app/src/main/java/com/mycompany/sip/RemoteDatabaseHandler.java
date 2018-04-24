@@ -136,14 +136,13 @@ public class RemoteDatabaseHandler {
             return allSites;
     }
 
-    public boolean CreateNewSite(Site site)
+    public int CreateNewSite(Site site)
     {
         // Building Parameters
         HashMap params = new HashMap();
 
         //Getting data from site, which was created by new site dialog
         //TODO: could this data be changed before/during execute, causing problems?
-        params.put("PrimaryKey", site.getRemotePK());
         params.put("siteName", site.getName());
         params.put("siteNumber", site.getNumber());
         params.put("location", site.getLocation());
@@ -153,7 +152,7 @@ public class RemoteDatabaseHandler {
         // getting JSON Object
         // Note that create site url accepts POST method
         JSONObject json = jsonParser.makeHttpRequest(url_create_site,
-                "POST", params);
+                "POST", params); //TODO: make this variable, based on if PK is set and if sitenum is a duplicate
 
         System.out.println(json);
 
@@ -167,13 +166,15 @@ public class RemoteDatabaseHandler {
                 //TODO: get pk and pass it to updatedbs so it can be saved to the ldb
 
                 if (success == 1) {
+                    int pk = json.getInt(TAG_PID);
                     // successfully created site
                     // closing this screen
                     online=true;
-                    return true;
+
+                    return pk;
                 } else {
                     // failed to create site
-                    return false;
+                    return -2;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -191,9 +192,69 @@ public class RemoteDatabaseHandler {
             ldb.addSite(site); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
             //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
-            return true;
+            return -1;
         }
-        return false;
+        return -2;
+    }
+
+    public int updateSite(Site site)
+    {
+        // Building Parameters
+        HashMap params = new HashMap();
+
+        //Getting data from site, which was created by new site dialog
+        //TODO: could this data be changed before/during execute, causing problems?
+        params.put("PrimaryKey", site.getRemotePK());
+        params.put("siteName", site.getName());
+        params.put("siteNumber", site.getNumber());
+        params.put("location", site.getLocation());
+        params.put("description", site.getDescription());
+        params.put("dateDiscovered", site.getDateOpened());
+
+        // getting JSON Object
+        // Note that update site url accepts POST method
+        JSONObject json = jsonParser.makeHttpRequest(url_update_site,
+                "PUT", params);
+
+        System.out.println(json);
+
+        try {
+            // check log cat for response
+            Log.d("Create Response", json.toString());
+
+            // check for success tag
+            try {
+                int success = json.getInt(TAG_SUCCESS);
+                //TODO: get pk and pass it to updatedbs so it can be saved to the ldb
+
+                if (success == 1) {
+                    int pk = json.getInt(TAG_PID);
+                    // successfully updated site
+                    // closing this screen
+                    online=true;
+
+                    return pk;
+                } else {
+                    // failed to update site
+                    return -2;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            //TODO: figure out where this should go
+            //Saves site to local SQLite database
+            //ldb.addSite(site);
+
+        }catch(NullPointerException e)
+        {
+            online=false;
+//            //Server is unreachable, save to local server instead
+//            System.out.println("Adding site to local server, remote server not accessible.");
+//            ldb.addSite(site);
+            return -1;
+        }
+        return -2;
     }
 
     public ArrayList loadAllUnits(Site site, Timestamp offline)
@@ -278,11 +339,10 @@ public class RemoteDatabaseHandler {
             return allUnits;
     }
 
-    public boolean createNewUnit(Unit unit)
+    public int createNewUnit(Unit unit)
     {
         // Building Parameters
         HashMap params = new HashMap();
-        params.put("PrimaryKey", unit.getRemotePK());
         params.put("foreignKey", unit.getSite().getRemotePK()); //TODO: What if site isn't saved yet?
         params.put("datum", unit.getDatum());
         params.put("nsDim", unit.getNsDimension());
@@ -303,15 +363,16 @@ public class RemoteDatabaseHandler {
             // check for success tag
             try {
                 int success = json.getInt(TAG_SUCCESS);
+                int rpk = json.getInt(TAG_PID);
 
                 if (success == 1) {
                     // successfully created unit
                     // closing this screen
                     online=true;
-                    return true;
+                    return rpk;
                 } else {
                     // failed to create unit
-                    return false;
+                    return -2;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -326,9 +387,59 @@ public class RemoteDatabaseHandler {
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
             // closing this screen
-            return true;
+            return -1;
         }
-        return false;
+        return -2;
+    }
+
+    public int updateUnit(Unit unit)
+    {
+        // Building Parameters
+        HashMap params = new HashMap();
+        params.put("PrimaryKey", unit.getRemotePK());
+        params.put("foreignKey", unit.getSite().getRemotePK()); //TODO: What if site isn't saved yet?
+        params.put("datum", unit.getDatum());
+        params.put("nsDim", unit.getNsDimension());
+        params.put("ewDim", unit.getEwDimension());
+        params.put("excavators", unit.getExcavators());
+        params.put("dateOpened", unit.getDateOpened());
+        params.put("reasonForOpening", unit.getReasonForOpening());
+
+        // getting JSON Object
+        // Note that update site url accepts POST method
+        JSONObject json = jsonParser.makeHttpRequest(url_update_unit,
+                "PUT", params);
+
+        // check log cat fro response
+        try {
+            Log.d("Create Response", json.toString());
+
+            // check for success tag
+            try {
+                int success = json.getInt(TAG_SUCCESS);
+                int rpk = json.getInt(TAG_PID);
+
+                if (success == 1) {
+                    // successfully updated unit
+                    // closing this screen
+                    online=true;
+                    return rpk;
+                } else {
+                    // failed to updated unit
+                    return -2;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }catch(NullPointerException e)
+        {
+            online=false;
+            //ldb.addUnit(unit);
+            // closing this screen
+            return -1;
+        }
+        return -2;
     }
 
     public ArrayList loadAllLevels(Unit unit, Timestamp offline)
@@ -437,16 +548,12 @@ public class RemoteDatabaseHandler {
         return allLevels;
     }
 
-    public boolean createNewLevel(Level level)
+    public int createNewLevel(Level level)
     {
 
         // Building Parameters
         HashMap params = new HashMap();
 
-        if(level.getRemotePK()!=-1)//if not a new level in remote, update existing.
-        {
-            params.put("PrimaryKey", level.getRemotePK());
-        }
         params.put("foreignKey", level.getUnit().getRemotePK());  //TODO: what if unit isn't saved yet?
         params.put("lvlNum", level.getNumber());
         params.put("begDepth", level.getBegDepth());
@@ -469,16 +576,17 @@ public class RemoteDatabaseHandler {
             // check for success tag
             try {
                 int success = json.getInt(TAG_SUCCESS);
+                int rpk = json.getInt(TAG_PID);
 
                 if (success == 1) {
                     // closing this screen
                     //finish();
                     //startActivity(getIntent());
                     online=true;
-                    return true;
+                    return rpk;
                 } else {
                     // failed to create level
-                    return false;
+                    return -2;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -493,9 +601,66 @@ public class RemoteDatabaseHandler {
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
             System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
-            return true;
+            return -1;
         }
-        return false;
+        return -1;
+    }
+
+    public int updateLevel(Level level)
+    {
+
+        // Building Parameters
+        HashMap params = new HashMap();
+
+        if(level.getRemotePK()!=-1)//if not a new level in remote, update existing.
+        {
+            params.put("PrimaryKey", level.getRemotePK());
+        }
+        params.put("foreignKey", level.getUnit().getRemotePK());  //TODO: what if unit isn't saved yet?
+        params.put("lvlNum", level.getNumber());
+        params.put("begDepth", level.getBegDepth());
+        params.put("endDepth", level.getEndDepth());
+        params.put("dateStarted", level.getDateStarted());
+        params.put("excavationMethod", level.getExcavationMethod());
+        params.put("notes", level.getNotes());
+        params.put("imagePath", level.getImagePath());
+        System.out.println("level path: " + level.getImagePath());
+
+        // getting JSON Object
+        // Note that update site url accepts POST method
+        JSONObject json = jsonParser.makeHttpRequest(url_update_level,
+                "PUT", params);
+
+        try {
+            // check log cat fro response
+            Log.d("Create Response", json.toString());
+
+            // check for success tag
+            try {
+                int success = json.getInt(TAG_SUCCESS);
+                int rpk = json.getInt(TAG_PID);
+
+                if (success == 1) {
+                    // closing this screen
+                    //finish();
+                    //startActivity(getIntent());
+                    online=true;
+                    return rpk;
+                } else {
+                    // failed to update level
+                    return -2;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }catch(NullPointerException e)
+        {
+            online=false;
+            System.out.println("Adding level " + level + " to SQLite database");
+            //System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
+            return -1;
+        }
+        return -1;
     }
 
     public int uploadImage(Uri currPath, Level lvl)
@@ -741,11 +906,11 @@ public class RemoteDatabaseHandler {
         return allArtifacts;
     }
 
-    public boolean createNewArtifact(Artifact artifact)
+    public int createNewArtifact(Artifact artifact)
     {
         // Building Parameters
         HashMap params = new HashMap();
-        params.put("PrimaryKey", artifact.getRemotePK());
+
         params.put("foreignKey", artifact.getLevel().getRemotePK()); //TODO: What if level isn't saved yet?
         params.put("accNum", artifact.getAccessionNumber());
         params.put("catNum", artifact.getCatalogNumber());
@@ -763,14 +928,15 @@ public class RemoteDatabaseHandler {
             // check for success tag
             try {
                 int success = json.getInt(TAG_SUCCESS);
+                int rpk = json.getInt(TAG_PID);
 
                 if (success == 1) {
                     online=true;
                     // closing this screen
-                    return true;
+                    return rpk;
                 } else {
                     // failed to create artifact
-                    return false;
+                    return -2;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -784,9 +950,55 @@ public class RemoteDatabaseHandler {
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
             // closing this screen
-            return true;
+            return -1;
         }
-        return false;
+        return -2;
+
+    }
+
+    public int updateArtifact(Artifact artifact)
+    {
+        // Building Parameters
+        HashMap params = new HashMap();
+        params.put("PrimaryKey", artifact.getRemotePK());
+        params.put("foreignKey", artifact.getLevel().getRemotePK()); //TODO: What if level isn't saved yet?
+        params.put("accNum", artifact.getAccessionNumber());
+        params.put("catNum", artifact.getCatalogNumber());
+        params.put("contents", artifact.getContents());
+
+        // getting JSON Object
+        // Note that update site url accepts POST method
+        JSONObject json = jsonParser.makeHttpRequest(url_update_artifact,
+                "PUT", params);
+
+        try {
+            // check log cat fro response
+            Log.d("Create Response", json.toString());
+
+            // check for success tag
+            try {
+                int success = json.getInt(TAG_SUCCESS);
+                int rpk = json.getInt(TAG_PID);
+
+                if (success == 1) {
+                    online=true;
+                    // closing this screen
+                    return rpk;
+                } else {
+                    // failed to update artifact
+                    return -2;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }catch(NullPointerException e)
+        {
+            online=false;
+            //ldb.addArtifact(artifact);
+            // closing this screen
+            return -1;
+        }
+        return -2;
 
     }
 

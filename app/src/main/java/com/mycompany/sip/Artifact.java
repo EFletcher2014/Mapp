@@ -108,6 +108,8 @@ public class Artifact{
 
     public void setLastUpdated(Timestamp t) { lastUpdated=t; }
 
+    public void setRemotePK(int pk) { remotePK = pk; }
+
     @Override
     public boolean equals(Object o)
     {

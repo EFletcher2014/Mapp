@@ -139,54 +139,210 @@ class UpdateDBs extends AsyncTask<String, String, String>
             //Loop through all sites to create or update entries
             while(allLocSites.size()>0)
             {
-                if(allLocSites.get(0).getRemotePK()<0)
+                Boolean contains = false;
+                int loc = -1;
+                for(int j=0; j<allRemSites.size(); j++)
                 {
-                    allRemSites.add(allLocSites.get(0)); //TODO: figure out how to save the remote key to the local db here
-                    allLocSites.remove(0);
-                }
-                else
-                {
-                    Boolean contains = false;
-                    int loc = -1;
-                    for(int j=0; j<allRemSites.size(); j++)
-                    {
-                        if(allRemSites.get(j).getRemotePK()==(allLocSites.get(0).getRemotePK()))
-                        {
-                            contains=true;
-                            loc = j;
-                            break;
-                        }
+                    if((allLocSites.get(0).getRemotePK()>-1 && allRemSites.get(j).getRemotePK()==(allLocSites.get(0).getRemotePK()))
+                            || allLocSites.get(0).equals(allRemSites.get(j)))
+                    {//if sites have the same rpk or same site number, they are the same
+                        contains=true;
+                        loc = j;
+                        break;
                     }
+                }
 
-                    if(contains)
+                if(contains) //if site was updated both locally and remotely while offline
+                {
+                    if(allRemSites.get(loc).getLastUpdated().after(allLocSites.get(0).getLastUpdated())) //if remote site was updated most recently
                     {
-                        if(allRemSites.get(loc).getLastUpdated().after(allLocSites.get(0).getLastUpdated()))
-                        {
-                            ldb.updateSite(allRemSites.get(loc));
-                            allRemSites.remove(loc);
-                        }
-                        else
-                        {
-                            rdb.CreateNewSite(allLocSites.get(0)); //TODO: figure out how to save the remote key to the local db here
-                            allLocSites.remove(0);
-                        }
+                        ldb.updateSite(allRemSites.get(loc)); //update the local site to match it
                     }
                     else
                     {
-                        rdb.CreateNewSite(allLocSites.get(0));
-                        allLocSites.remove(0);
+                        int temppk=rdb.updateSite(allLocSites.get(0)); //otherwise, update remote site to match local
+                        if(temppk>-1) //this means the update worked
+                        {
+                            allLocSites.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                            ldb.updateSite(allLocSites.get(0));
+                        }
+                    }
+                    allRemSites.remove(loc); //was already synced, remove
+                }
+                else { //if local site wasn't also updated remotely
+                    int temppk=rdb.updateSite(allLocSites.get(0)); //update it remotely
+                    if(temppk>-1) //this means the update worked
+                    {
+                        allLocSites.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                        ldb.updateSite(allLocSites.get(0));
                     }
                 }
+                allLocSites.remove(0); //was already synced, remove
             }
 
+            //If any remote sites are left over (weren't also updated locally while offline) update those now
             for(int j=0; j<allRemSites.size(); j++)
             {
-                ldb.addSite(allRemSites.get(j));
+                ldb.updateSite(allRemSites.get(j));
 
             }
             allRemSites.clear();
 
-            //TODO: repeat for units, levels, artifacts
+            //Loop through all units to create or update entries
+            while(allLocUnits.size()>0)
+            {
+                Boolean contains = false;
+                int loc = -1;
+                for(int j=0; j<allRemUnits.size(); j++)
+                {
+                    if((allLocUnits.get(0).getRemotePK()>-1 && allRemUnits.get(j).getRemotePK()==(allLocUnits.get(0).getRemotePK()))
+                            || allLocUnits.get(0).equals(allRemUnits.get(j)))
+                    {//if units have the same rpk or same site number, they are the same
+                        contains=true;
+                        loc = j;
+                        break;
+                    }
+                }
+
+                if(contains) //if site was updated both locally and remotely while offline
+                {
+                    if(allRemUnits.get(loc).getLastUpdated().after(allLocUnits.get(0).getLastUpdated())) //if remote site was updated most recently
+                    {
+                        ldb.updateUnit(allRemUnits.get(loc)); //update the local site to match it
+                    }
+                    else
+                    {
+                        int temppk=rdb.updateUnit(allLocUnits.get(0)); //otherwise, update remote site to match local
+                        if(temppk>-1) //this means the update worked
+                        {
+                            allLocUnits.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                            ldb.updateUnit(allLocUnits.get(0));
+                        }
+                    }
+                    allRemUnits.remove(loc); //was already synced, remove
+                }
+                else { //if local site wasn't also updated remotely
+                    int temppk=rdb.updateUnit(allLocUnits.get(0)); //update it remotely
+                    if(temppk>-1) //this means the update worked
+                    {
+                        allLocUnits.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                        ldb.updateUnit(allLocUnits.get(0));
+                    }
+                }
+                allLocUnits.remove(0); //was already synced, remove
+            }
+
+            //If any remote units are left over (weren't also updated locally while offline) update those now
+            for(int j=0; j<allRemUnits.size(); j++)
+            {
+                ldb.updateUnit(allRemUnits.get(j));
+
+            }
+            allRemUnits.clear();
+
+            //Loop through all levels to create or update entries
+            while(allLocLevels.size()>0)
+            {
+                Boolean contains = false;
+                int loc = -1;
+                for(int j=0; j<allRemLevels.size(); j++)
+                {
+                    if((allLocLevels.get(0).getRemotePK()>-1 && allRemLevels.get(j).getRemotePK()==(allLocLevels.get(0).getRemotePK()))
+                            || allLocLevels.get(0).equals(allRemLevels.get(j)))
+                    {//if levels have the same rpk or same site number, they are the same
+                        contains=true;
+                        loc = j;
+                        break;
+                    }
+                }
+
+                if(contains) //if site was updated both locally and remotely while offline
+                {
+                    if(allRemLevels.get(loc).getLastUpdated().after(allLocLevels.get(0).getLastUpdated())) //if remote site was updated most recently
+                    {
+                        ldb.updateLevel(allRemLevels.get(loc)); //update the local site to match it
+                    }
+                    else
+                    {
+                        int temppk=rdb.updateLevel(allLocLevels.get(0)); //otherwise, update remote site to match local
+                        if(temppk>-1) //this means the update worked
+                        {
+                            allLocLevels.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                            ldb.updateLevel(allLocLevels.get(0));
+                        }
+                    }
+                    allRemLevels.remove(loc); //was already synced, remove
+                }
+                else { //if local site wasn't also updated remotely
+                    int temppk=rdb.updateLevel(allLocLevels.get(0)); //update it remotely
+                    if(temppk>-1) //this means the update worked
+                    {
+                        allLocLevels.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                        ldb.updateLevel(allLocLevels.get(0));
+                    }
+                }
+                allLocLevels.remove(0); //was already synced, remove
+            }
+
+            //If any remote levels are left over (weren't also updated locally while offline) update those now
+            for(int j=0; j<allRemLevels.size(); j++)
+            {
+                ldb.updateLevel(allRemLevels.get(j));
+
+            }
+            allRemLevels.clear();
+
+            //Loop through all artifacts to create or update entries
+            while(allLocArtifacts.size()>0)
+            {
+                Boolean contains = false;
+                int loc = -1;
+                for(int j=0; j<allRemArtifacts.size(); j++)
+                {
+                    if((allLocArtifacts.get(0).getRemotePK()>-1 && allRemArtifacts.get(j).getRemotePK()==(allLocArtifacts.get(0).getRemotePK()))
+                            || allLocArtifacts.get(0).equals(allRemArtifacts.get(j)))
+                    {//if artifacts have the same rpk or same site number, they are the same
+                        contains=true;
+                        loc = j;
+                        break;
+                    }
+                }
+
+                if(contains) //if site was updated both locally and remotely while offline
+                {
+                    if(allRemArtifacts.get(loc).getLastUpdated().after(allLocArtifacts.get(0).getLastUpdated())) //if remote site was updated most recently
+                    {
+                        ldb.updateArtifact(allRemArtifacts.get(loc)); //update the local site to match it
+                    }
+                    else
+                    {
+                        int temppk=rdb.updateArtifact(allLocArtifacts.get(0)); //otherwise, update remote site to match local
+                        if(temppk>-1) //this means the update worked
+                        {
+                            allLocArtifacts.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                            ldb.updateArtifact(allLocArtifacts.get(0));
+                        }
+                    }
+                    allRemArtifacts.remove(loc); //was already synced, remove
+                }
+                else { //if local site wasn't also updated remotely
+                    int temppk=rdb.updateArtifact(allLocArtifacts.get(0)); //update it remotely
+                    if(temppk>-1) //this means the update worked
+                    {
+                        allLocArtifacts.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                        ldb.updateArtifact(allLocArtifacts.get(0));
+                    }
+                }
+                allLocArtifacts.remove(0); //was already synced, remove
+            }
+
+            //If any remote artifacts are left over (weren't also updated locally while offline) update those now
+            for(int j=0; j<allRemArtifacts.size(); j++)
+            {
+                ldb.updateArtifact(allRemArtifacts.get(j));
+
+            }
+            allRemArtifacts.clear();
 
 
 

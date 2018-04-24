@@ -72,6 +72,8 @@ public class Level implements Parcelable {
 
     public int getRemotePK() { return remotePK; }
 
+    public void setRemotePK(int pk) { remotePK = pk; }
+
     public int getNumber()
     {
         return number;

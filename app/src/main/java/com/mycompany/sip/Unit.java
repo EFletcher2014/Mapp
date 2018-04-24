@@ -143,6 +143,8 @@ public class Unit implements Parcelable {
 
     public void setLastUpdated(Timestamp t) { lastUpdated=t; }
 
+    public void setRemotePK(int pk) { remotePK = pk; }
+
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
