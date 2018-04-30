@@ -23,6 +23,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     // Database Version
 
     private static final String LOG = "DatabaseHelper";
+    private static Timestamp lastUpdated = new Timestamp(0);
 
     private static ArrayList<Long> unsavedSites;
     private static ArrayList<Long> unsavedUnits;
@@ -94,25 +95,52 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
 
     //Trigger Create Statements
-    String UPDATE_SITES_TRIGGER = "CREATE TRIGGER update AFTER UPDATE ON sites FOR EACH ROW BEGIN UPDATE sites SET " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
-    String CREATE_SITES_TRIGGER = "CREATE TRIGGER update AFTER INSERT ON sites FOR EACH ROW BEGIN UPDATE sites SET " + KEY_DATECREATED + " = " + new Timestamp(System.currentTimeMillis()) + " " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
+    String UPDATE_SITES_TRIGGER = "CREATE TRIGGER updateTimestamp AFTER UPDATE ON " + TABLE_SITES
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_SITES + " SET " + KEY_DATEUPDATED + " = current_timestamp"
+            + " WHERE " + KEY_PK + " = old." + KEY_PK + ";" + " END";
+    String CREATE_SITES_TRIGGER = "CREATE TRIGGER createTimestamp AFTER INSERT ON " + TABLE_SITES
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_SITES + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
+            + "WHERE " + KEY_PK + " = new." + KEY_PK + ";" + " END";
 
-    String UPDATE_UNITS_TRIGGER = "CREATE TRIGGER update AFTER UPDATE ON units FOR EACH ROW BEGIN UPDATE units SET " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
-    String CREATE_UNITS_TRIGGER = "CREATE TRIGGER update AFTER INSERT ON units FOR EACH ROW BEGIN UPDATE units SET " + KEY_DATECREATED + " = " + new Timestamp(System.currentTimeMillis()) + " " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
+    String UPDATE_UNITS_TRIGGER = "CREATE TRIGGER unitUpdateTimestamp AFTER UPDATE ON " + TABLE_UNITS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_UNITS + " SET " + KEY_DATEUPDATED + " = current_timestamp"
+            + " WHERE " + KEY_PK + " = old." + KEY_PK + ";" + " END";
+    String CREATE_UNITS_TRIGGER = "CREATE TRIGGER unitCreateTimestamp AFTER INSERT ON " + TABLE_UNITS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_UNITS + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
+            + "WHERE " + KEY_PK + " = new." + KEY_PK + ";" + " END";
 
-    String UPDATE_LEVELS_TRIGGER = "CREATE TRIGGER update AFTER UPDATE ON levels FOR EACH ROW BEGIN UPDATE levels SET " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
-    String CREATE_LEVELS_TRIGGER = "CREATE TRIGGER update AFTER INSERT ON levels FOR EACH ROW BEGIN UPDATE levels SET " + KEY_DATECREATED + " = " + new Timestamp(System.currentTimeMillis()) + " " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
+    String UPDATE_LEVELS_TRIGGER = "CREATE TRIGGER levelUpdateTimestamp AFTER UPDATE ON " + TABLE_LEVELS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_LEVELS + " SET " + KEY_DATEUPDATED + " = current_timestamp"
+            + " WHERE " + KEY_PK + " = old." + KEY_PK + ";" + " END";
+    String CREATE_LEVELS_TRIGGER = "CREATE TRIGGER levelCreateTimestamp AFTER INSERT ON " + TABLE_LEVELS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_LEVELS + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
+            + "WHERE " + KEY_PK + " = new." + KEY_PK + ";" + " END";
 
-    String UPDATE_ARTIFACTS_TRIGGER = "CREATE TRIGGER update AFTER UPDATE ON artifacts FOR EACH ROW BEGIN UPDATE artifacts SET " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
-    String CREATE_ARTIFACTS_TRIGGER = "CREATE TRIGGER update AFTER INSERT ON artifacts FOR EACH ROW BEGIN UPDATE artifacts SET " + KEY_DATECREATED + " = " + new Timestamp(System.currentTimeMillis()) + " " + KEY_DATEUPDATED + " = " + new Timestamp(System.currentTimeMillis()) + " END";
+    String UPDATE_ARTIFACTS_TRIGGER = "CREATE TRIGGER artifactUpdateTimestamp AFTER UPDATE ON " + TABLE_ARTIFACTS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS + " SET " + KEY_DATEUPDATED + " = current_timestamp"
+            + " WHERE " + KEY_PK + " = old." + KEY_PK + ";" + " END";
+    String CREATE_ARTIFACTS_TRIGGER = "CREATE TRIGGER artifactCreateTimestamp AFTER INSERT ON " + TABLE_ARTIFACTS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
+            + "WHERE " + KEY_PK + " = new." + KEY_PK + ";" + " END";
 
     public LocalDatabaseHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    public Timestamp lastUpdated()
+    {
+        return this.lastUpdated;
+    }
+
+    public void setLastUpdated(Timestamp updated)
+    {
+        this.lastUpdated=updated;
+    }
+
     // Creating Tables
     @Override
     public void onCreate(SQLiteDatabase db) {
+        System.out.println("Created db");
         db.execSQL(CREATE_SITES_TABLE);
         db.execSQL(UPDATE_SITES_TRIGGER);
         db.execSQL(CREATE_SITES_TRIGGER);
@@ -150,7 +178,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
 
-        values.put(REMOTE_PRIMARY_KEY, site.getPk());
+        values.put(REMOTE_PRIMARY_KEY, site.getRemotePK());
         values.put(KEY_NAME, site.getName()); // Site name
         values.put(KEY_NUMBER, site.getNumber()); // Site Number
         values.put(KEY_LOC, site.getLocation());
@@ -167,15 +195,25 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     public Site getSite(int pk){
         SQLiteDatabase db = this.getWritableDatabase();
 
+        System.out.println("Local Database: " + db.toString());
+        System.out.println("Sites in Local DB: " + getAllSites());
+        System.out.println("PK passed: " + pk);
+
+        //Table Create Statements
+        /*String CREATE_SITES_TABLE = "CREATE TABLE " + TABLE_SITES + "("
+                + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_NAME + " TEXT, " + KEY_NUMBER + " TEXT, "
+                + KEY_LOC + " TEXT, " + KEY_DESC + " TEXT, " + KEY_DATE  + " DATETIME, "
+                + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";*/
         Cursor cursor = db.query(TABLE_SITES, new String[] {KEY_PK, REMOTE_PRIMARY_KEY,
-                        KEY_NAME, KEY_NUMBER, KEY_LOC, KEY_DESC, KEY_DATE}, KEY_PK + "=?",
-                new String[] { String.valueOf(pk) }, null, null, null, null);
+                        KEY_NAME, KEY_NUMBER, KEY_LOC, KEY_DESC, KEY_DATE, KEY_DATECREATED, KEY_DATEUPDATED}, KEY_PK + "=?",
+                new String[] { String.valueOf(pk) }, null, null, null);
 
         Site site = null;
 
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
             //TODO: make sure this is the correct order
             site = new Site(cursor.getString(2), cursor.getString(3), cursor.getString(6), cursor.getString(4), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(7)), Timestamp.valueOf(cursor.getString(8)));
+            System.out.println("Site rpk: " + site.getRemotePK());
         }
             // return site
         cursor.close();
@@ -253,8 +291,8 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_DESC, site.getDescription());
         values.put(KEY_DATE, site.getDateOpened());
 
-        int success = db.update(TABLE_SITES, values, KEY_PK + " = ?",
-                new String[] { String.valueOf(site.getPk()) });
+        int success = db.update(TABLE_SITES, values, REMOTE_PRIMARY_KEY + " = ?",
+                new String[] { String.valueOf(site.getRemotePK()) });
 
         if(success < 1)
         {
@@ -281,8 +319,14 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
 
-        values.put(REMOTE_PRIMARY_KEY, unit.getPk());
-        values.put(KEY_FK, unit.getSite().getPk()); //Foreign Key
+        values.put(REMOTE_PRIMARY_KEY, unit.getRemotePK());
+        if(unit.getSite()!=null) {
+            values.put(KEY_FK, unit.getSite().getPk()); //Foreign Key is local
+        }
+        else
+        {
+            values.put(KEY_FK, "");
+        }
         values.put(KEY_DATUM, unit.getDatum()); // Datum
         values.put(KEY_NSDIM, unit.getNsDimension());
         values.put(KEY_EWDIM, unit.getEwDimension());
@@ -424,8 +468,8 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_EXCS, unit.getExcavators());
         values.put(KEY_REAS, unit.getReasonForOpening());
 
-        int success = db.update(TABLE_UNITS, values, KEY_PK + " = ?",
-                new String[] { String.valueOf(unit.getPk()) });
+        int success = db.update(TABLE_UNITS, values, REMOTE_PRIMARY_KEY + " = ?",
+                new String[] { String.valueOf(unit.getRemotePK()) });
 
         if(success < 1)
         {
@@ -438,13 +482,19 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Adding new level
-    public void addLevel(Level level){
+    public long addLevel(Level level){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
 
         values.put(REMOTE_PRIMARY_KEY, level.getPk());
-        values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
+        if(level.getUnit()!=null) {
+            values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
+        }
+        else
+        {
+            values.put(KEY_FK, "");
+        }
         values.put(KEY_LVLNUM, level.getNumber()); // Level Number
         values.put(KEY_BD, level.getBegDepth());
         values.put(KEY_ED, level.getEndDepth());
@@ -453,8 +503,10 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         //values.put(KEY_NOTES, level.getNotes());
 
         // Inserting Row
-        db.insert(TABLE_LEVELS, null, values);
+        long temp = db.insert(TABLE_LEVELS, null, values);
         db.close(); // Closing database connection
+
+        return temp;
     }
 
     //Getting single level
@@ -593,26 +645,41 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
 
         // updating row
-        return db.update(TABLE_LEVELS, values, KEY_PK + " = ?",
-                new String[] { String.valueOf(level.getPk())});
+        int success = db.update(TABLE_LEVELS, values, REMOTE_PRIMARY_KEY + " = ?",
+                new String[] { String.valueOf(level.getRemotePK())});
+
+        if(success < 1)
+        {
+            success = (int) addLevel(level);
+        }
         /*return db.update(TABLE_LEVELS, values, KEY_PK + " = ?",
                 new String[] { String.valueOf(level.getPk()) });*/
+        return success;
     }
 
     //Adding new artifact
-    public void addArtifact(Artifact artifact){
+    public long addArtifact(Artifact artifact){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
             values.put(REMOTE_PRIMARY_KEY, artifact.getPk());
-        values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
+        if(artifact.getLevel()!=null)
+        {
+            values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
+        }
+        else
+        {
+            values.put(KEY_FK, "");
+        }
         values.put(KEY_ANUM, artifact.getAccessionNumber()); // Artifact Accession Number
         values.put(KEY_CNUM, artifact.getCatalogNumber());
         values.put(KEY_CONTENTS, artifact.getContents());
 
         // Inserting Row
-        db.insert(TABLE_ARTIFACTS, null, values);
+        long temp = db.insert(TABLE_ARTIFACTS, null, values);
         db.close(); // Closing database connection
+
+        return temp;
     }
 
     //Getting single artifact
@@ -738,9 +805,14 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_CONTENTS, artifact.getContents());
 
         // updating row
-        //TODO: add pk to artifact?
-        return db.update(TABLE_ARTIFACTS, values, KEY_PK + " = ?",
-                new String[] { String.valueOf(artifact.getPk()) });
+        int success = db.update(TABLE_ARTIFACTS, values, REMOTE_PRIMARY_KEY + " = ?",
+                new String[] { String.valueOf(artifact.getRemotePK()) });
+
+        if(success < 1)
+        {
+            success = (int) addArtifact(artifact);
+        }
+        return success;
     }
 
     //Updating entire database

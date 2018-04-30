@@ -58,8 +58,8 @@ public class Unit implements Parcelable {
         this.reasonForOpening=in.readString();
         this.pk=in.readInt();
         this.remotePK=in.readInt();
-        this.firstCreated=in.readParcelable(Timestamp.class.getClassLoader());
-        this.lastUpdated=in.readParcelable(Timestamp.class.getClassLoader());
+        this.firstCreated=new Timestamp(in.readLong()); //TODO: Will this work?
+        this.lastUpdated=new Timestamp(in.readLong()); //TODO: same
     }
 
     public String getDatum()
@@ -157,8 +157,8 @@ public class Unit implements Parcelable {
         dest.writeString(reasonForOpening);
         dest.writeInt(pk);
         dest.writeInt(remotePK);
-        dest.writeParcelable((Parcelable) firstCreated, flags);
-        dest.writeParcelable((Parcelable) lastUpdated, flags);
+        dest.writeLong(firstCreated.getTime());
+        dest.writeLong(lastUpdated.getTime());
     }
 
     @Override

@@ -65,6 +65,7 @@ public class RemoteDatabaseHandler {
         JSONArray sites = null;
         ArrayList<Site> allSites = new ArrayList<>();
 
+
         //HashMap to be passed to ListView, contains site's name and primary key
         ArrayList<HashMap<String, String>> sitesList = new ArrayList<>();
 
@@ -109,7 +110,7 @@ public class RemoteDatabaseHandler {
                         //Creating model object named temp
                         Site temp = null;
                         try {
-                            temp = new Site(name, siteNumber, date, location, description, -1, Integer.parseInt(pk), (Timestamp) sdf.parse(dateCreated), (Timestamp) sdf.parse(dateUpdated));
+                            temp = new Site(name, siteNumber, date, location, description, -1, Integer.parseInt(pk), new Timestamp(sdf.parse(dateCreated).getTime()), new Timestamp(sdf.parse(dateUpdated).getTime()));
                             allSites.add(temp); //Adding temp to list of sites
                         }catch(ParseException e)
                         {
@@ -154,7 +155,7 @@ public class RemoteDatabaseHandler {
         JSONObject json = jsonParser.makeHttpRequest(url_create_site,
                 "POST", params); //TODO: make this variable, based on if PK is set and if sitenum is a duplicate
 
-        System.out.println(json);
+        System.out.println("Json: " + json);
 
         try {
             // check log cat for response
@@ -216,7 +217,7 @@ public class RemoteDatabaseHandler {
         JSONObject json = jsonParser.makeHttpRequest(url_update_site,
                 "PUT", params);
 
-        System.out.println(json);
+        System.out.println("Json: " + json);
 
         try {
             // check log cat for response
@@ -265,6 +266,7 @@ public class RemoteDatabaseHandler {
         HashMap params = new HashMap();
         if(site!=null) { //if a site was passed, get all units associated with that site
             params.put("foreignKey", site.getRemotePK());
+            System.out.println("getting units from site with rpk: " + site.getRemotePK());
         }
         else
         {
@@ -306,7 +308,7 @@ public class RemoteDatabaseHandler {
                             String dateCreated = c.getString(TAG_DATECREATED);
                             String dateUpdated = c.getString(TAG_DATEUPDATED);
 
-                            //TODO: If this works, change for sites
+                            //TODO: Unless a site is passed, will return null. This breaks things
                             Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                             allUnits.add(temp);
 
@@ -334,7 +336,7 @@ public class RemoteDatabaseHandler {
                 online=false;
                 System.out.println("Getting all local units from Site: " + site.getRemotePK());
                 allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getRemotePK());
-                System.out.println(allUnits);
+                System.out.println("All local units: " + allUnits);
             }
             return allUnits;
     }
@@ -503,7 +505,7 @@ public class RemoteDatabaseHandler {
                             e.printStackTrace();
                         }
 
-                        Level temp = new Level(num, bd, ed, unit.getSite(), unit, date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                        Level temp = new Level(num, bd, ed, ((unit==null) ? null : unit.getSite()), unit, date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                         allLevels.add(temp);
                         temp.setImagePath(imPath);
 
@@ -511,7 +513,19 @@ public class RemoteDatabaseHandler {
                         try {
                             if (imPath != null && !imPath.equals("")) {
                                 Uri tempUri = Uri.parse(imPath);
-                                if (tempUri != null) //if the level has a Uri saved as its path instead of a url
+                                URL tempURL = null;
+                                Boolean errorFlag = false;
+                                try {
+                                    tempURL = new URL(tempUri.toString());
+                                }
+                                catch(IllegalArgumentException | MalformedURLException e)//if the level has a Uri saved as its path instead of a url
+                                {
+                                    System.out.println("Calling uploadImage");
+                                    errorFlag=true;
+                                    uploadImage(tempUri, temp);
+                                }
+
+                                if (!errorFlag && tempURL == null) //if the level has a Uri saved as its path instead of a url
                                 {
                                     System.out.println("Calling uploadImage");
                                     uploadImage(tempUri, temp);
@@ -542,7 +556,7 @@ public class RemoteDatabaseHandler {
         }catch(NullPointerException e)
         {
             online=false;
-            System.out.println("Coudln't connect to remote server, loading levels from local sever instead");
+            System.out.println("Couldn't connect to remote server, loading levels from local sever instead");
             allLevels = (ArrayList) ldb.getAllLevelsFromUnit(unit.getRemotePK());
         }
         return allLevels;
@@ -600,7 +614,7 @@ public class RemoteDatabaseHandler {
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
-            System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
+            System.out.println("Some bs: " + ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
             return -1;
         }
         return -1;
@@ -888,7 +902,7 @@ public class RemoteDatabaseHandler {
                         String dateCreated = c.getString(TAG_DATECREATED);
                         String dateUpdated = c.getString(TAG_DATEUPDATED);
 
-                        Artifact temp = new Artifact(level.getSite(), level.getUnit(), level, anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                        Artifact temp = new Artifact(((level == null) ? null : level.getSite()), ((level == null) ? null : level.getUnit()), level, anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                         allArtifacts.add(temp);
                     }
                 } else {
@@ -1012,15 +1026,15 @@ public class RemoteDatabaseHandler {
         try {
             // Check your log cat for JSON reponse
             Log.d("All artifacts: ", json.toString());
-            if(!onlineSince.after(new Timestamp(0))) {   //if onlineSince is 00-00-0000 00:00:00 then server wasn't previously online
-                Global.setOnlineSince(new Timestamp(System.currentTimeMillis()));    //set new timestamp for time online TODO: this isn't perfect
+            //if(!onlineSince.after(new Timestamp(0))) {   //if onlineSince is 00-00-0000 00:00:00 then server wasn't previously online
+             //   Global.setOnlineSince(new Timestamp(System.currentTimeMillis()));    //set new timestamp for time online TODO: this isn't perfect
                 //new UpdateDBs.execute();                                                                           //Update first, then set OfflineSince to 00-00-0000 00:00:00
-                Global.setOfflineSince(new Timestamp(0));
-            }
+               // Global.setOfflineSince(new Timestamp(0));
+            //}
             return true;
         }catch(NullPointerException e)
         {
-            if(!offlineSince.after(new Timestamp(0))) {    //if offlineSince is 00-00-0000 00:00:00 then server wasn't previously offline
+            if(offlineSince!=null && offlineSince.after(new Timestamp(0))) {    //if offlineSince is 00-00-0000 00:00:00 then server wasn't previously offline
                 Global.setOnlineSince(new Timestamp(0));   //set onlineSince to
                 Global.setOfflineSince(new Timestamp(System.currentTimeMillis()));
             }

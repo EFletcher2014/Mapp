@@ -37,6 +37,8 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
     protected String doInBackground(String ... args)
     {
+        System.out.println("Updating data");
+        //TODO: update local db even when online
         if(rdb.isOnline() && offlineSince.after(new Timestamp(0))) {     //If rdb is newly online--was just offline and offlineSince hasn't been changed yet
 
             try {
@@ -343,6 +345,7 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
             }
             allRemArtifacts.clear();
+                ldb.setLastUpdated(new Timestamp(System.currentTimeMillis()));
 
 
 
@@ -436,7 +439,48 @@ class UpdateDBs extends AsyncTask<String, String, String>
         }
         else
         {
-            //Not online
+            if(rdb.isOnline())
+            {
+                System.out.println("Online syncing remote data locally...");
+
+                //Get all entries in remote server
+                ArrayList<Site> allRemSites = rdb.LoadAllSites(ldb.lastUpdated());
+
+                ArrayList<Unit> allRemUnits = rdb.loadAllUnits(null, ldb.lastUpdated());
+
+                ArrayList<Level> allRemLevels = rdb.loadAllLevels(null, ldb.lastUpdated());
+
+                ArrayList<Artifact> allRemArtifacts = rdb.loadAllArtifacts(null, ldb.lastUpdated());
+
+                for(int i=0; i<allRemSites.size(); i++)
+                {
+                    System.out.println("Remote site being added: " + allRemSites.get(i));
+                    ldb.updateSite(allRemSites.get(i));
+                }
+
+                for(int i=0; i<allRemUnits.size(); i++)
+                {
+                    System.out.println("remote unit being added: " + allRemUnits.get(i));
+                    ldb.updateUnit(allRemUnits.get(i));
+                }
+
+                for(int i=0; i<allRemLevels.size(); i++)
+                {
+                    ldb.updateLevel(allRemLevels.get(i));
+                }
+
+                for(int i=0; i<allRemArtifacts.size(); i++)
+                {
+                    ldb.updateArtifact(allRemArtifacts.get(i));
+                }
+
+                ldb.setLastUpdated(new Timestamp(System.currentTimeMillis()));
+                System.out.println("Updating all sites: " + ldb.getAllSites());
+            }
+            else
+            {
+                System.out.println("Thinks it's offline...");
+            }
         }
         return null;
     }

@@ -73,9 +73,9 @@ public class AllUnitsActivity extends ListActivity {
 
     boolean test=false;
     ArrayList<Unit> allUnits = new ArrayList<>();
-    Unit[] testUnits = {new Unit("N24W11", "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 1, null, null),
-            new Unit("N23E9",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 2, null, null),
-            new Unit("N24W6",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 3, null, null)};
+    Unit[] testUnits = {new Unit("N24W11", "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 1, 1, null, null),
+            new Unit("N23E9",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 2, 2, null, null),
+            new Unit("N24W6",  "07/21/17", "1", "2", site, "Emily Fletcher and Meghan Williams", "possible blacksmith quarters", 3, 3, null, null)};
 
     //units JSONArray
     JSONArray units = null;
@@ -96,7 +96,7 @@ public class AllUnitsActivity extends ListActivity {
                 final String  nsd = savedInstanceState.getString("NSDim");
                 final String ewd = savedInstanceState.getString("EWDim");
 
-                showDialog(new Unit(coords, date, nsd, ewd, site, excs, reas, -1, null, null));
+                showDialog(new Unit(coords, date, nsd, ewd, site, excs, reas, -1, -1, null, null));
             }
         }
 
@@ -104,7 +104,7 @@ public class AllUnitsActivity extends ListActivity {
         Intent openIntent = getIntent();
         foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
         site = openIntent.getParcelableExtra("siteName");
-        System.out.println(site);
+        System.out.println("AllUnitsActivity received site: " + site + " " + site.getPk());
         TextView siteNameText = (TextView) findViewById(R.id.siteName);
         siteNameText.setText(site.getName() + " Units");
 
@@ -228,7 +228,8 @@ public class AllUnitsActivity extends ListActivity {
          * getting All units from url
          * */
         protected String doInBackground(String... args) {
-            allUnits = rdb.loadAllUnits(site);
+            System.out.println("loading all units from site: " + site);
+            allUnits = rdb.loadAllUnits(site, null);
             for(int i=0; i<allUnits.size(); i++)
             {
                 Unit temp = allUnits.get(i);
@@ -237,7 +238,8 @@ public class AllUnitsActivity extends ListActivity {
                 HashMap<String, String> map = new HashMap<String, String>();
 
                 // adding each child node to HashMap key => value
-                map.put(TAG_PID, temp.getPk() + "");
+                map.put(TAG_PID, temp.getRemotePK() + "");
+                System.out.println("Unit pk: " + temp.getRemotePK());
                 map.put(TAG_UNITNAME, temp.getDatum());
                 map.put("Site Unit", i + "");
 
@@ -389,7 +391,7 @@ public class AllUnitsActivity extends ListActivity {
              * Creating unit
              * */
             protected String doInBackground(String... args) {
-                if (rdb.createNewUnit(unit)) {
+                if (rdb.createNewUnit(unit)>-1) {
                     // successfully created unit
                     // closing this screen
                     finish();
@@ -555,7 +557,7 @@ public class AllUnitsActivity extends ListActivity {
                 unit = new Unit(inputCoords.getText().toString(),
                         toDate(y, m, d), inputNSDims.getText().toString(),
                         inputEWDims.getText().toString(), site, inputExcs.getText().toString(),
-                        inputReas.getText().toString(), -1, null, null);
+                        inputReas.getText().toString(), -1, -1, null, null);
 
                 if(!(inputCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
                         && !(inputDate.getText().toString().equals("")) && !(inputNSDims.getText().toString().equals(""))

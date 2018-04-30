@@ -64,8 +64,8 @@ public class Level implements Parcelable {
         this.notes=in.readString();
         this.pk=in.readInt();
         this.remotePK=in.readInt();
-        this.firstCreated=in.readParcelable(Timestamp.class.getClassLoader());
-        this.lastUpdated=in.readParcelable(Timestamp.class.getClassLoader());
+        this.firstCreated=new Timestamp(in.readLong()); //TODO: Will this work?
+        this.lastUpdated=new Timestamp(in.readLong()); //TODO: same
     }
 
     public int getPk() { return pk; }
@@ -170,8 +170,8 @@ public class Level implements Parcelable {
         dest.writeString(notes);
         dest.writeInt(pk);
         dest.writeInt(remotePK);
-        dest.writeParcelable((Parcelable)firstCreated, flags);
-        dest.writeParcelable((Parcelable)lastUpdated, flags);
+        dest.writeLong(firstCreated.getTime());
+        dest.writeLong(lastUpdated.getTime());
     }
 
     @Override

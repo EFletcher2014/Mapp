@@ -85,8 +85,8 @@ public class Global {
     public static final String TAG_CONT = "contents";
 
     // Timestamps for online/offline
-    public static Timestamp onlineSince;
-    public static Timestamp offlineSince;
+    public static Timestamp onlineSince = new Timestamp(0);
+    public static Timestamp offlineSince = new Timestamp(0);
 
     // Set onlineSince
     public static Timestamp setOnlineSince(Timestamp time)

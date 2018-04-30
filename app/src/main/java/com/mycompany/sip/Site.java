@@ -50,8 +50,8 @@ public class Site implements Parcelable {
         this.description = in.readString();
         this.pk = in.readInt();
         this.remotePK = in.readInt();
-        this.firstCreated=in.readParcelable(Timestamp.class.getClassLoader());
-        this.lastUpdated=in.readParcelable(Timestamp.class.getClassLoader());
+        this.firstCreated=new Timestamp(in.readLong()); //TODO: Will this work?
+        this.lastUpdated=new Timestamp(in.readLong()); //TODO: same
     }
 
     public String getName()
@@ -126,8 +126,8 @@ public class Site implements Parcelable {
         dest.writeString(description);
         dest.writeInt(pk);
         dest.writeInt(remotePK);
-        dest.writeParcelable((Parcelable) firstCreated, flags);
-        dest.writeParcelable((Parcelable) lastUpdated, flags);
+        dest.writeLong(firstCreated.getTime());
+        dest.writeLong(lastUpdated.getTime());
     }
 
     @Override

@@ -253,7 +253,7 @@ public class MapHome extends AppCompatActivity {
 
                 if(pk==-1)
                 {
-                    level = new Level(lvlNum, bd, ed, site, unit, "0000-00-00 00:00:00", em, n, pk);//TODO: add notes to level
+                    level = new Level(lvlNum, bd, ed, site, unit, "0000-00-00 00:00:00", em, n, pk, pk, null, null);//TODO: add notes to level
                 }
                 else
                 {
@@ -364,7 +364,7 @@ public class MapHome extends AppCompatActivity {
          * Creating level
          * */
         protected String doInBackground(String... args) {
-            madeLevel=rdb.createNewLevel(level);
+            madeLevel=(rdb.createNewLevel(level)>-1);
 /*
             // Building Parameters
             HashMap params = new HashMap();

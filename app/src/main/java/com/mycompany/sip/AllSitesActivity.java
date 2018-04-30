@@ -60,26 +60,26 @@ public class AllSitesActivity extends ListActivity {
 
         //Array of fake test sites, to be used if test==true
         //TODO: Make this an arraylist so that even in testing sites can be added and deleted [FIGURE OUT HOW TO DELETE SITES]
-        Site[] testSites = {new Site("Fort St. Joseph", "20BE23", "11/03/1996", "location", "a site", 0, null, null),
-                new Site("Lyne Site", "20BE10", "11/1/1111", "location", "another site", 1, null, null),
-                new Site("Fort Michilimackinac", "22MA23", "11/11/1010", "location", "yet another freaking site", 2, null, null),
-                new Site("Fort Mackinac", "23MA23", "11/11/1011", "location", "yet another freaking site", 3, null, null),
-                new Site("Site A", "22ZZ23", "11/11/1010", "location", "yet another freaking site", 4, null, null),
-                new Site("Fletcher Site", "3FL3", "11/11/1010", "location", "yet another freaking site", 5, null, null),
-                new Site("Jamestown", "22MA23", "11/11/1010", "location", "yet another freaking site", 6, null, null),
-                new Site("White City", "22MA23", "11/11/1010", "location", "yet another freaking site", 7, null, null),
-                new Site("Chichen Itza", "22MA23", "11/11/1010", "location", "yet another freaking site", 6, null, null),
-                new Site("Dan", "22MA23", "11/11/1010", "location", "yet another freaking site", 9, null, null),
-                new Site("foobar", "22MA23", "11/11/1010", "location", "yet another freaking site", 10, null, null),
-                new Site("Copenhagen", "22MA23", "11/11/1010", "location", "yet another freaking site", 11, null, null),
-                new Site("test site", "22MA23", "11/11/1010", "location", "yet another freaking site", 12, null, null),
-                new Site("goldfish crackers","22MA23", "11/11/1010", "location", "yet another freaking site", 13, null, null),
-                new Site("Kampsville Gardens", "22MA23", "11/11/1010", "location", "yet another freaking site", 14, null, null),
-                new Site("horrible reviews", "22MA23", "11/11/1010", "location", "yet another freaking site", 15, null, null),
-                new Site("yahoo", "22MA23", "11/11/1010", "location", "yet another freaking site", 16, null, null),
-                new Site("teotihuacan", "22MA23", "11/11/1010", "location", "yet another freaking site", 17, null, null),
-                new Site("n0", "22MA23", "11/11/1010", "location", "yet another freaking site", 18, null, null),
-                new Site("yes", "22MA23", "11/11/1010", "location", "yet another freaking site", 19, null, null),};
+        Site[] testSites = {new Site("Fort St. Joseph", "20BE23", "11/03/1996", "location", "a site", 0, 0, null, null),
+                new Site("Lyne Site", "20BE10", "11/1/1111", "location", "another site", 1, 1, null, null),
+                new Site("Fort Michilimackinac", "22MA23", "11/11/1010", "location", "yet another freaking site", 2, 2, null, null),
+                new Site("Fort Mackinac", "23MA23", "11/11/1011", "location", "yet another freaking site", 3, 3, null, null),
+                new Site("Site A", "22ZZ23", "11/11/1010", "location", "yet another freaking site", 4, 4, null, null),
+                new Site("Fletcher Site", "3FL3", "11/11/1010", "location", "yet another freaking site", 5, 5, null, null),
+                new Site("Jamestown", "22MA23", "11/11/1010", "location", "yet another freaking site", 6, 6, null, null),
+                new Site("White City", "22MA23", "11/11/1010", "location", "yet another freaking site", 7, 7, null, null),
+                new Site("Chichen Itza", "22MA23", "11/11/1010", "location", "yet another freaking site", 8, 8, null, null),
+                new Site("Dan", "22MA23", "11/11/1010", "location", "yet another freaking site", 9, 9, null, null),
+                new Site("foobar", "22MA23", "11/11/1010", "location", "yet another freaking site", 10, 10, null, null),
+                new Site("Copenhagen", "22MA23", "11/11/1010", "location", "yet another freaking site", 11, 11,null, null),
+                new Site("test site", "22MA23", "11/11/1010", "location", "yet another freaking site", 12, 12, null, null),
+                new Site("goldfish crackers","22MA23", "11/11/1010", "location", "yet another freaking site", 13, 13, null, null),
+                new Site("Kampsville Gardens", "22MA23", "11/11/1010", "location", "yet another freaking site", 14, 14, null, null),
+                new Site("horrible reviews", "22MA23", "11/11/1010", "location", "yet another freaking site", 15, 15, null, null),
+                new Site("yahoo", "22MA23", "11/11/1010", "location", "yet another freaking site", 16, 16, null, null),
+                new Site("teotihuacan", "22MA23", "11/11/1010", "location", "yet another freaking site", 17, 17, null, null),
+                new Site("n0", "22MA23", "11/11/1010", "location", "yet another freaking site", 18, 18, null, null),
+                new Site("yes", "22MA23", "11/11/1010", "location", "yet another freaking site", 19, 19, null, null),};
 
         // Creating JSON Parser object
         JSONParser jParser = new JSONParser();
@@ -115,6 +115,8 @@ public class AllSitesActivity extends ListActivity {
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
+            System.out.println("created");
+            //this.getApplicationContext().deleteDatabase("mapp");
                 super.onCreate(savedInstanceState);
 
                 //This statement is true if the user has rotated the screen during this activity
@@ -130,7 +132,7 @@ public class AllSitesActivity extends ListActivity {
                         final String sLoca = savedInstanceState.getString("Location");
 
                         //Reopens dialog to create a site with existing inputs
-                        showDialog(new Site(sName, sNumb, sDate, sLoca, sDesc, -1, null, null));//TODO: can this be -1?
+                        showDialog(new Site(sName, sNumb, sDate, sLoca, sDesc, -1, -1, null, null));//TODO: can this be -1?
                     }
                 }
                 setContentView(R.layout.activity_get_all_sites);
@@ -192,6 +194,7 @@ public class AllSitesActivity extends ListActivity {
                                         AllUnitsActivity.class);
                                 // sending pk to list units activity
                                 in.putExtra(TAG_PID, Integer.parseInt(pid));
+                            System.out.println("Pk: " + Integer.parseInt(pid));
 
                                 if(test)
                                 {
@@ -199,7 +202,7 @@ public class AllSitesActivity extends ListActivity {
                                 }
                                 else
                                 {
-                                    Site temp = new Site("", "", "", "", "", Integer.parseInt(pid), null, null);
+                                    Site temp = new Site("", "", "", "", "", Integer.parseInt(pid), Integer.parseInt(pid), null, null);
                                     in.putExtra(TAG_SITENAME, ldb.getSite(Integer.parseInt(pid)));//Get from the server sites
                                 }
 
@@ -263,13 +266,14 @@ public class AllSitesActivity extends ListActivity {
                         //between the time RemoteDatabaseHandler.online is set to true and this command
                         //I'll handle that in UpdateDBs though
                         new UpdateDBs(getApplicationContext()).execute();
+                    System.out.println("Local sites: " + ldb.getAllSites());
                 }
 
                 /**
                  * getting All sites from url
                  * */
                 protected String doInBackground(String... args) {
-                    allSites = rdb.LoadAllSites();
+                    allSites = rdb.LoadAllSites(null);
                     System.out.println("Sites recovered: " + allSites);
                         for(int i = 0; i<allSites.size(); i++)
                         {
@@ -278,7 +282,8 @@ public class AllSitesActivity extends ListActivity {
                                 HashMap<String, String> map = new HashMap<String, String>();
 
                                 // for each site, saving its pk and name to the hashmap for the listview
-                                map.put(TAG_PID, temp.getPk() + "");
+                                map.put(TAG_PID, temp.getRemotePK() + "");
+                                System.out.println("Pk...: " + temp.getRemotePK());
                                 map.put(TAG_SITENAME, temp.getName());
 
                                 // adding HashList to ArrayList
@@ -432,7 +437,7 @@ public class AllSitesActivity extends ListActivity {
          * Creating site
          * */
         protected String doInBackground(String... args) {
-            if (rdb.CreateNewSite(site)) {
+            if (rdb.CreateNewSite(site)>-1) {
                         // successfully created site
                         // closing this screen
                         finish();
@@ -619,7 +624,7 @@ public class AllSitesActivity extends ListActivity {
 
                 //Creating site from user's inputted data. CreateNewSite will use this later
                 site = new Site(inputName.getText().toString(), inputNumb.getText().toString(),
-                        toDate(y, m, d), inputLoca.getText().toString(), inputDesc.getText().toString(), -1, null, null);
+                        toDate(y, m, d), inputLoca.getText().toString(), inputDesc.getText().toString(), -1, -1, null, null);
                 //TODO: have CreateNewSite() return pk???
 
                 System.out.println("text: " + inputName.getText());
@@ -636,7 +641,7 @@ public class AllSitesActivity extends ListActivity {
                         // creating new site in background thread
                         new CreateNewSite().execute();
                     } else {
-                        System.out.println(site.toString());
+                        System.out.println("Site: " + site.toString());
                         // just go to next activity
                         CharSequence toastMessage = "Creating New Site...";
                         Toast toast = Toast.makeText(siteLayout.getContext(), toastMessage, Toast.LENGTH_LONG);

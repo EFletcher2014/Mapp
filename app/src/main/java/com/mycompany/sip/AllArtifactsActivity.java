@@ -62,9 +62,9 @@ public class AllArtifactsActivity extends ListActivity {
 
     boolean test=false;
     ArrayList<Artifact> testArtifactsList = new ArrayList<>();
-    Artifact[] testArtifacts = {new Artifact(site, unit, level, "17-2", 17, "seed bead", 0, null, null),
-            new Artifact(site, unit, level, "17-2", 16, "projectile point", 1, null, null),
-            new Artifact(site, unit, level, "17-2", 27, "flint flake", 2, null, null)};
+    Artifact[] testArtifacts = {new Artifact(site, unit, level, "17-2", 17, "seed bead", 0, 0, null, null),
+            new Artifact(site, unit, level, "17-2", 16, "projectile point", 1, 1, null, null),
+            new Artifact(site, unit, level, "17-2", 27, "flint flake", 2, 2, null, null)};
 
     // artifacts JSONArray
     JSONArray artifacts = null;
@@ -78,7 +78,7 @@ public class AllArtifactsActivity extends ListActivity {
         {
             if(savedInstanceState.getBoolean("alert"))
             {
-                showDialog(new Artifact(site, unit, level, savedInstanceState.getString("Accession Number"), Integer.parseInt(savedInstanceState.getString("Catalog Number")), savedInstanceState.getString("Contents"), -1, null, null));
+                showDialog(new Artifact(site, unit, level, savedInstanceState.getString("Accession Number"), Integer.parseInt(savedInstanceState.getString("Catalog Number")), savedInstanceState.getString("Contents"), -1, -1, null, null));
             }
         }
 
@@ -101,9 +101,9 @@ public class AllArtifactsActivity extends ListActivity {
         }
         else
         {
-            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 17, "seed bead", 0, null, null));
-            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 16, "projectile point", 1, null, null));
-            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 27, "flint flake", 2, null, null));
+            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 17, "seed bead", 0, 0, null, null));
+            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 16, "projectile point", 1, 1, null, null));
+            testArtifactsList.add(new Artifact(site, unit, level, "17-2", 27, "flint flake", 2, 2, null, null));
             // looping through All artifacts
             for (int i = 0; i < testArtifactsList.size(); i++) {
 
@@ -214,7 +214,7 @@ public class AllArtifactsActivity extends ListActivity {
          * getting All artifacts from url
          * */
         protected String doInBackground(String... args) {
-            allArtifacts = rdb.loadAllArtifacts(level);
+            allArtifacts = rdb.loadAllArtifacts(level, null);
             for(int i=0; i<allArtifacts.size(); i++)
             {
                 Artifact temp = allArtifacts.get(i);
@@ -372,7 +372,7 @@ public class AllArtifactsActivity extends ListActivity {
          * Creating artifact
          * */
         protected String doInBackground(String... args) {
-            if (rdb.createNewArtifact(artifact)) {
+            if (rdb.createNewArtifact(artifact)>0) {
                 // successfully created artifact
                 // closing this screen
                 finish();
@@ -494,7 +494,7 @@ public class AllArtifactsActivity extends ListActivity {
                 {
                     c=0;
                 }
-                artifact = new Artifact(site, unit, level, accNum.getText().toString(), c, contents.getText().toString(), -1, null, null);
+                artifact = new Artifact(site, unit, level, accNum.getText().toString(), c, contents.getText().toString(), -1, -1, null, null);
 
                 if(!(accNum.getText().toString().equals("")) && !(catNum.getText().toString().equals("")) && !(contents.getText().toString().equals("")))
                 {
