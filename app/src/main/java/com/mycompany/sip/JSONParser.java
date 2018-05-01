@@ -32,7 +32,7 @@ public class JSONParser {
         sbParams = new StringBuilder();
         int i = 0;
         for (String key : params.keySet()) {
-            System.out.println(String.valueOf(params.get(key)));
+            System.out.println("JSON says: " + String.valueOf(params.get(key)));
             try {
                 if (i != 0){
                     sbParams.append("&");

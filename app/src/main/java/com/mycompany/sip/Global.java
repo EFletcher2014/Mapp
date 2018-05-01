@@ -61,6 +61,7 @@ public class Global {
 
     // Unit JSON Node names
     public static final String TAG_UNITS = "units";
+    public static final String TAG_FK = "foreignKey";
     public static final String TAG_UNITNAME = "datum";
     public static final String TAG_NS = "nsDim";
     public static final String TAG_EW = "ewDim";

@@ -160,7 +160,7 @@ public class AllSitesActivity extends ListActivity {
 
                     // adding HashList to ArrayList
                     sitesList.add(testMap);
-                    System.out.println(sitesList);
+                    System.out.println("Sites: " + sitesList);
                 }
 
                 //From androidhive tutorial

@@ -87,7 +87,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     String CREATE_LEVELS_TABLE = "CREATE TABLE " + TABLE_LEVELS + "("
             + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_FK + " INTEGER, " + KEY_LVLNUM + " INTEGER, "
             + KEY_BD + " REAL, " + KEY_ED + " REAL, " + KEY_DATESTARTED + " DATETIME, " + KEY_EXCMETH
-            + " TEXT, " + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
+            + " TEXT, " + KEY_NOTES + " TEXT, " + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
 
     String CREATE_ARTIFACTS_TABLE = "CREATE TABLE " + TABLE_ARTIFACTS + "("
             + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_FK + " INTEGER, "
@@ -195,9 +195,9 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     public Site getSite(int pk){
         SQLiteDatabase db = this.getWritableDatabase();
 
-        System.out.println("Local Database: " + db.toString());
-        System.out.println("Sites in Local DB: " + getAllSites());
-        System.out.println("PK passed: " + pk);
+        //System.out.println("Local Database: " + db.toString());
+        //System.out.println("Sites in Local DB: " + getAllSites());
+        //System.out.println("PK passed: " + pk);
 
         //Table Create Statements
         /*String CREATE_SITES_TABLE = "CREATE TABLE " + TABLE_SITES + "("
@@ -213,9 +213,36 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
             //TODO: make sure this is the correct order
             site = new Site(cursor.getString(2), cursor.getString(3), cursor.getString(6), cursor.getString(4), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(7)), Timestamp.valueOf(cursor.getString(8)));
-            System.out.println("Site rpk: " + site.getRemotePK());
+            //System.out.println("Site rpk: " + site.getRemotePK());
         }
             // return site
+        cursor.close();
+        return site;
+    }
+
+    //Getting single site
+    public Site getSiteByRPK(int rpk){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        System.out.println("RPK passed: " + rpk);
+
+        //Table Create Statements
+        /*String CREATE_SITES_TABLE = "CREATE TABLE " + TABLE_SITES + "("
+                + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_NAME + " TEXT, " + KEY_NUMBER + " TEXT, "
+                + KEY_LOC + " TEXT, " + KEY_DESC + " TEXT, " + KEY_DATE  + " DATETIME, "
+                + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";*/
+        Cursor cursor = db.query(TABLE_SITES, new String[] {KEY_PK, REMOTE_PRIMARY_KEY,
+                        KEY_NAME, KEY_NUMBER, KEY_LOC, KEY_DESC, KEY_DATE, KEY_DATECREATED, KEY_DATEUPDATED}, REMOTE_PRIMARY_KEY + "=?",
+                new String[] { String.valueOf(rpk) }, null, null, null);
+
+        Site site = null;
+
+        if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
+            //TODO: make sure this is the correct order
+            site = new Site(cursor.getString(2), cursor.getString(3), cursor.getString(6), cursor.getString(4), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(7)), Timestamp.valueOf(cursor.getString(8)));
+            System.out.println("Site rpk: " + site.getRemotePK());
+        }
+        // return site
         cursor.close();
         return site;
     }
@@ -321,9 +348,15 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         values.put(REMOTE_PRIMARY_KEY, unit.getRemotePK());
         if(unit.getSite()!=null) {
-            values.put(KEY_FK, unit.getSite().getPk()); //Foreign Key is local
+            if(unit.getSite().getPk()>-1) {
+                values.put(KEY_FK, unit.getSite().getPk()); //Foreign Key is local
+            }
+            else //only an rpk is saved, have to find that entry locally
+            {
+                values.put(KEY_FK, getSiteByRPK(unit.getSite().getRemotePK()).getPk());
+            }
         }
-        else
+        else //TODO: shouldn't this throw an error? Doesn't make sense to have siteless unit
         {
             values.put(KEY_FK, "");
         }
@@ -346,7 +379,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cursor = db.query(TABLE_UNITS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
-                        KEY_DATUM, KEY_NSDIM, KEY_EWDIM, KEY_DATEOPEN, KEY_EXCS, KEY_REAS}, KEY_PK + "=?",
+                        KEY_DATUM, KEY_NSDIM, KEY_EWDIM, KEY_DATEOPEN, KEY_EXCS, KEY_REAS, KEY_DATECREATED, KEY_DATEUPDATED}, KEY_PK + "=?",
                 new String[] { String.valueOf(pk) }, null, null, null, null);
 
         Unit unit = null;
@@ -354,6 +387,32 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
             //TODO: make sure this is the correct order
             unit = new Unit(cursor.getString(3), cursor.getString(6), cursor.getString(4), cursor.getString(5), getSite(Integer.parseInt(cursor.getString(2))), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
+        }
+        // return unit
+        cursor.close();
+        return unit;
+    }
+
+    //Getting single unit
+    public Unit getUnitByRPK(int rpk){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.query(TABLE_UNITS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
+                        KEY_DATUM, KEY_NSDIM, KEY_EWDIM, KEY_DATEOPEN, KEY_EXCS, KEY_REAS, KEY_DATECREATED, KEY_DATEUPDATED},
+                REMOTE_PRIMARY_KEY + "=?", new String[] { String.valueOf(rpk) }, null, null, null, null);
+
+        Unit unit = null;
+
+        if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
+            //TODO: make sure this is the correct order
+            /*String CREATE_UNITS_TABLE = "CREATE TABLE " + TABLE_UNITS + "("
+                    + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_FK + " INTEGER, " + KEY_DATUM + " TEXT, "
+                    + KEY_NSDIM + " REAL, " + KEY_EWDIM + " REAL, " + KEY_DATEOPEN + " DATETIME, "
+                    + KEY_EXCS + " TEXT, " + KEY_REAS + " TEXT, " + KEY_DATECREATED + " DATETIME, "
+                    + KEY_DATEUPDATED + " DATETIME)";*/
+            //String dat, String date, String nsDim, String ewDim, Site st, String exc, String reas, int p, int rpk, Timestamp created, Timestamp updated
+            unit = new Unit(cursor.getString(3), cursor.getString(6), cursor.getString(4), cursor.getString(5), getSite(Integer.parseInt(cursor.getString(2))),
+                    cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
         }
         // return unit
         cursor.close();
@@ -459,8 +518,10 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        if(unit.getSite().getPk()>-1) {
+            values.put(KEY_FK, unit.getSite().getPk());
+        }
         values.put(REMOTE_PRIMARY_KEY, unit.getRemotePK());
-        values.put(KEY_FK, unit.getSite().getPk());
         values.put(KEY_DATUM, unit.getDatum()); // Datum
         values.put(KEY_NSDIM, unit.getNsDimension());
         values.put(KEY_EWDIM, unit.getEwDimension());
@@ -487,9 +548,15 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
 
-        values.put(REMOTE_PRIMARY_KEY, level.getPk());
+        values.put(REMOTE_PRIMARY_KEY, level.getRemotePK());
         if(level.getUnit()!=null) {
-            values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
+            if(level.getUnit().getPk()>-1) {
+                values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key is local
+            }
+            else //only an rpk is saved, have to find that entry locally
+            {
+                values.put(KEY_FK, getUnitByRPK(level.getUnit().getRemotePK()).getPk());
+            }
         }
         else
         {
@@ -506,6 +573,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         long temp = db.insert(TABLE_LEVELS, null, values);
         db.close(); // Closing database connection
 
+        System.out.println("Adding level success? " + temp + " " + level + " " + level.getRemotePK());
         return temp;
     }
 
@@ -521,6 +589,43 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
             //TODO: make this correct
+            Unit un = getUnit(Integer.parseInt(cursor.getString(2)));
+            level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
+        }
+        // return level
+        cursor.close();
+        return level;
+    }
+
+    //Getting single level
+    public Level getLevelByRPK(int rpk){
+        SQLiteDatabase db = this.getWritableDatabase();
+        System.out.println("Looking for level with rpk: " + rpk);
+        System.out.println("Level rpks: ");
+        ArrayList<Level> levels = (ArrayList) getAllLevels();
+        ArrayList<Unit> units = (ArrayList) getAllUnits();
+
+        for(int i=0; i<levels.size(); i++)
+        {
+            System.out.println("Level remotePK: " + levels.get(i).getRemotePK());
+        }
+
+        System.out.println("Unit pks worked: ");
+        for(int i=0; i<units.size(); i++)
+        {
+            System.out.println("Unit remotePK: " + units.get(i).getRemotePK());
+        }
+
+
+        Cursor cursor = db.query(TABLE_LEVELS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
+                        KEY_LVLNUM, KEY_BD, KEY_ED, KEY_DATESTARTED, KEY_EXCMETH, KEY_NOTES, KEY_DATECREATED, KEY_DATEUPDATED}, REMOTE_PRIMARY_KEY + "=?",
+                new String[] { String.valueOf(rpk) }, null, null, null, null);
+
+        Level level = null;
+
+        if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
+            //TODO: make this correct
+            System.out.println("Found level locally");
             Unit un = getUnit(Integer.parseInt(cursor.getString(2)));
             level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
         }
@@ -634,8 +739,11 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        if(level.getUnit().getPk()>-1) //TODO: is this necessary? Can anyone change a pk?
+        {
+            values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
+        }
         values.put(REMOTE_PRIMARY_KEY, level.getRemotePK());
-        values.put(KEY_FK, level.getUnit().getPk()); //Foreign Key
         values.put(KEY_LVLNUM, level.getNumber()); // Level Number
         values.put(KEY_BD, level.getBegDepth());
         values.put(KEY_ED, level.getEndDepth());
@@ -650,8 +758,17 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         if(success < 1)
         {
+            System.out.println("Local level update unsuccessful, going to add a new level instead: " + level.getRemotePK());
             success = (int) addLevel(level);
         }
+        else {
+            System.out.println("Level updated: " + level + " " + level.getRemotePK());
+        }
+        /*ArrayList<Level> temp = (ArrayList) getAllLevels();
+        for(int i = 0; i<temp.size(); i++)
+        {
+            System.out.println("*** " + temp.get(i) + " " + temp.get(i).getRemotePK());
+        }*/
         /*return db.update(TABLE_LEVELS, values, KEY_PK + " = ?",
                 new String[] { String.valueOf(level.getPk()) });*/
         return success;
@@ -665,9 +782,15 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             values.put(REMOTE_PRIMARY_KEY, artifact.getPk());
         if(artifact.getLevel()!=null)
         {
-            values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
+            if(artifact.getLevel().getPk()>-1) {
+                values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key is local
+            }
+            else //only an rpk is saved, have to find that entry locally
+            {
+                values.put(KEY_FK, getLevelByRPK(artifact.getLevel().getRemotePK()).getPk());
+            }
         }
-        else
+        else //TODO: delete, this shouldn't happen
         {
             values.put(KEY_FK, "");
         }
@@ -798,8 +921,11 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
+        if(artifact.getLevel().getPk()>-1)
+        {
+            values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
+        }
         values.put(REMOTE_PRIMARY_KEY, artifact.getRemotePK());
-        values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
         values.put(KEY_ANUM, artifact.getAccessionNumber()); // Artifact Accession Number
         values.put(KEY_CNUM, artifact.getCatalogNumber());
         values.put(KEY_CONTENTS, artifact.getContents());

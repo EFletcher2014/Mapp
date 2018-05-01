@@ -299,6 +299,7 @@ public class RemoteDatabaseHandler {
 
                             // Storing each json item in variable
                             String id = c.getString(TAG_PID);
+                            String fk = c.getString(TAG_FK);
                             String name = c.getString(TAG_UNITNAME);
                             String nsDim = c.getString(TAG_NS);
                             String ewDim = c.getString(TAG_EW);
@@ -308,8 +309,16 @@ public class RemoteDatabaseHandler {
                             String dateCreated = c.getString(TAG_DATECREATED);
                             String dateUpdated = c.getString(TAG_DATEUPDATED);
 
-                            //TODO: Unless a site is passed, will return null. This breaks things
-                            Unit temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                            Unit temp = null;
+                            if(site!=null) {
+                                temp = new Unit(name, date, nsDim, ewDim, site, excs, reas, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                            }
+                            else //if no site was passed, just give ldb the site's rpk
+                            {
+                                temp = new Unit(name, date, nsDim, ewDim,
+                                        new Site("", "", "", "", "", -1, Integer.parseInt(fk), null, null),
+                                        excs, reas, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                            }
                             allUnits.add(temp);
 
                             //save to local database
@@ -487,6 +496,7 @@ public class RemoteDatabaseHandler {
 
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
+                        String fk = c.getString(TAG_FK);
                         int num = c.getInt(TAG_LVLNUM);
                         Double bd = c.getDouble(TAG_BD);
                         Double ed = c.getDouble(TAG_ED);
@@ -505,7 +515,17 @@ public class RemoteDatabaseHandler {
                             e.printStackTrace();
                         }
 
-                        Level temp = new Level(num, bd, ed, ((unit==null) ? null : unit.getSite()), unit, date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                        Level temp = null;
+                        if(unit!=null)
+                        {
+                            temp = new Level(num, bd, ed, unit.getSite(), unit, date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                        }
+                        else
+                        {
+                            temp = new Level(num, bd, ed, null,
+                                    new Unit("", "", "", "", null, "", "", -1, Integer.parseInt(fk), null, null),
+                                    date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                        }
                         allLevels.add(temp);
                         temp.setImagePath(imPath);
 
@@ -896,13 +916,24 @@ public class RemoteDatabaseHandler {
 
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
+                        String fk = c.getString(TAG_FK);
                         String anum = c.getString(TAG_ANUM);
                         int cnum = c.getInt(TAG_CNUM);
                         String cont = c.getString(TAG_CONT);
                         String dateCreated = c.getString(TAG_DATECREATED);
                         String dateUpdated = c.getString(TAG_DATEUPDATED);
 
-                        Artifact temp = new Artifact(((level == null) ? null : level.getSite()), ((level == null) ? null : level.getUnit()), level, anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                        Artifact temp = null;
+                        if(level!=null) {
+                            temp = new Artifact(level.getSite(), level.getUnit(), level, anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+
+                        }else
+                        {
+                            temp = new Artifact(null, null,
+                                    new Level(-1, -1.0, -1.0, null, null, "", "", "", -1, Integer.parseInt(fk), null, null),
+                                    anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+
+                        }
                         allArtifacts.add(temp);
                     }
                 } else {

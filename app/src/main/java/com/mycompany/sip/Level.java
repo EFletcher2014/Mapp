@@ -44,7 +44,7 @@ public class Level implements Parcelable {
         this.dateStarted=date;
         this.excavationMethod=excM;
         this.notes=no;
-        System.out.println(notes);
+        System.out.println("notes" + notes);
         this.pk=p;
         this.remotePK=rpk;
         this.firstCreated=created;
@@ -53,7 +53,7 @@ public class Level implements Parcelable {
 
     public Level(Parcel in)
     {
-        System.out.println(in);
+        System.out.println("Parcel received:" + in);
         this.number=in.readInt();
         this.begDepth=in.readDouble();
         this.endDepth=in.readDouble();

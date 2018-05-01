@@ -466,6 +466,7 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
                 for(int i=0; i<allRemLevels.size(); i++)
                 {
+                    System.out.println("remote level being added: " + allRemLevels.get(i) + " " + allRemLevels.get(i).getRemotePK());
                     ldb.updateLevel(allRemLevels.get(i));
                 }
 
