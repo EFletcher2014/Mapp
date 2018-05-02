@@ -126,8 +126,8 @@ public class Site implements Parcelable {
         dest.writeString(description);
         dest.writeInt(pk);
         dest.writeInt(remotePK);
-        dest.writeLong(firstCreated.getTime());
-        dest.writeLong(lastUpdated.getTime());
+        dest.writeLong((firstCreated!=null ? firstCreated.getTime() : 0));
+        dest.writeLong((lastUpdated!=null ? lastUpdated.getTime() : 0));
     }
 
     @Override

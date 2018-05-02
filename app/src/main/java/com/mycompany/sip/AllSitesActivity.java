@@ -418,7 +418,7 @@ public class AllSitesActivity extends ListActivity {
      * From Androidhive tutorial
      * */
     class CreateNewSite extends AsyncTask<String, String, String> {
-
+        boolean success = false;
         /**
          * Before starting background thread Show Progress Dialog
          * */
@@ -437,72 +437,7 @@ public class AllSitesActivity extends ListActivity {
          * Creating site
          * */
         protected String doInBackground(String... args) {
-            if (rdb.CreateNewSite(site)>-1) {
-                        // successfully created site
-                        // closing this screen
-                        finish();
-
-                        //restarting activity so list will include new site
-                        startActivity(getIntent());
-                    } else {
-                        // failed to create site
-                    }
-//            // Building Parameters
-//            HashMap params = new HashMap();
-//
-//            //Getting data from site, which was created by new site dialog
-//            //TODO: could this data be changed before/during execute, causing problems?
-//            params.put("siteName", site.getName());
-//            params.put("siteNumber", site.getNumber());
-//            params.put("location", site.getLocation());
-//            params.put("description", site.getDescription());
-//            params.put("dateDiscovered", site.getDateOpened());
-//
-//            // getting JSON Object
-//            // Note that create site url accepts POST method
-//            JSONObject json = jsonParser.makeHttpRequest(url_create_site,
-//                    "POST", params);
-//
-//            System.out.println(json);
-//
-//            try {
-//                // check log cat for response
-//                Log.d("Create Response", json.toString());
-//
-//                // check for success tag
-//                try {
-//                    int success = json.getInt(TAG_SUCCESS);
-//
-//                    if (success == 1) {
-//                        // successfully created site
-//                        // closing this screen
-//                        finish();
-//
-//                        //restarting activity so list will include new site
-//                        startActivity(getIntent());
-//                    } else {
-//                        // failed to create site
-//                    }
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//
-//                //TODO: figure out where this should go
-//                //Saves site to local SQLite database
-//                //ldb.addSite(site);
-//            }catch(NullPointerException e)
-//            {
-//                //Server is unreachable, save to local server instead
-//                ldb.addSite(site); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
-//                                    //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
-//                                    //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
-//
-//                // closing this screen
-//                finish();
-//
-//                //restarting activity so list will include new site
-//                startActivity(getIntent());
-//            }
+            success=(rdb.CreateNewSite(site)>-1);
 
             return null;
         }
@@ -518,6 +453,14 @@ public class AllSitesActivity extends ListActivity {
                 //between the time RemoteDatabaseHandler.online is set to true and this command
                 //I'll handle that in UpdateDBs though
                 new UpdateDBs(getApplicationContext()).execute();
+
+            if(success) {
+                // closing this screen
+                finish();
+
+                //restarting activity so list will include new site
+                startActivity(getIntent());
+            }
         }
 
     }

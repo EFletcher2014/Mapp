@@ -170,8 +170,8 @@ public class Level implements Parcelable {
         dest.writeString(notes);
         dest.writeInt(pk);
         dest.writeInt(remotePK);
-        dest.writeLong(firstCreated.getTime());
-        dest.writeLong(lastUpdated.getTime());
+        dest.writeLong((firstCreated!=null ? firstCreated.getTime() : 0));
+        dest.writeLong((lastUpdated!=null ? lastUpdated.getTime() : 0));
     }
 
     @Override

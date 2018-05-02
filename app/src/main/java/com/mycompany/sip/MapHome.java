@@ -365,61 +365,6 @@ public class MapHome extends AppCompatActivity {
          * */
         protected String doInBackground(String... args) {
             madeLevel=(rdb.createNewLevel(level)>-1);
-/*
-            // Building Parameters
-            HashMap params = new HashMap();
-
-            if(pk!=-1)//if not a new level, update existing. TODO: edit php to include this
-            {
-                params.put("PrimaryKey", pk);
-                madeLevel=true;
-            }
-            params.put("foreignKey", fk);
-            params.put("lvlNum", level.getNumber());
-            params.put("begDepth", level.getBegDepth());
-            params.put("endDepth", level.getEndDepth());
-            params.put("dateStarted", level.getDateStarted());
-            params.put("excavationMethod", level.getExcavationMethod());
-            //TODO: add notes to the database
-            //TODO: add picture to the database
-
-            // getting JSON Object
-            // Note that create site url accepts POST method
-            JSONObject json = jsonParser.makeHttpRequest(url_create_level,
-                    "POST", params);
-
-            try {
-                // check log cat fro response
-                Log.d("Create Response", json.toString());
-
-                // check for success tag
-                try {
-                    int success = json.getInt(TAG_SUCCESS);
-
-                    if (success == 1) {
-
-                        // closing this screen
-                        //finish();
-                        //startActivity(getIntent());
-                        madeLevel = true;
-                    } else {
-                        // failed to create level
-                        madeLevel = false;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }catch(NullPointerException e)
-            {
-                System.out.println("Adding level " + level + " to SQLite database");
-                ldb.addLevel(level);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
-                                    //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
-                                    //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
-                                    //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
-                                    //TODO: when we're updating...But then we have to do more PHP stuff I think
-                System.out.println(ldb.getAllLevelsFromUnit(level.getUnit().getPk()));
-                madeLevel = true;
-            }*/
 
             return null;
         }

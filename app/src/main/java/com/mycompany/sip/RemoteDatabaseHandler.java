@@ -190,10 +190,9 @@ public class RemoteDatabaseHandler {
             online=false;
             //Server is unreachable, save to local server instead
             System.out.println("Adding site to local server, remote server not accessible.");
-            ldb.addSite(site); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+            return (int) ldb.addSite(site); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
             //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
-            return -1;
         }
         return -2;
     }
@@ -344,7 +343,13 @@ public class RemoteDatabaseHandler {
             {
                 online=false;
                 System.out.println("Getting all local units from Site: " + site.getRemotePK());
-                allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getRemotePK());
+                if(site.getRemotePK()<0) {//Has not yet been saved online //TODO: can't we just use Pk always?
+                    allUnits = (ArrayList) ldb.getAllUnitsFromSite(site.getPk());
+                }
+                else
+                {
+                    allUnits = (ArrayList) ldb.getAllUnitsFromSite(ldb.getSiteByRPK(site.getRemotePK()).getPk());
+                }
                 System.out.println("All local units: " + allUnits);
             }
             return allUnits;
@@ -392,15 +397,14 @@ public class RemoteDatabaseHandler {
         }catch(NullPointerException e)
         {
             online=false;
-            ldb.addUnit(unit); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+            // closing this screen
+            return (int) ldb.addUnit(unit); //TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
             //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
-            // closing this screen
-            return -1;
         }
-        return -2;
+        return -2; //was -2 because the previous catch returned -1 to designate that it was offline.
     }
 
     public int updateUnit(Unit unit)
@@ -577,7 +581,18 @@ public class RemoteDatabaseHandler {
         {
             online=false;
             System.out.println("Couldn't connect to remote server, loading levels from local sever instead");
-            allLevels = (ArrayList) ldb.getAllLevelsFromUnit(unit.getRemotePK());
+            System.out.println("Loading all levels from unit with lpk: " + ldb.getUnitByRPK(unit.getRemotePK()).getPk());
+            if(unit.getRemotePK()<0)//not yet saved online
+            {
+                allLevels = (ArrayList) ldb.getAllLevelsFromUnit(unit.getPk());
+            }
+            else {
+                allLevels = (ArrayList) ldb.getAllLevelsFromUnit(ldb.getUnitByRPK(unit.getRemotePK()).getPk());
+            }
+            for(int i = 0; i<allLevels.size(); i++)
+            {
+                System.out.println("All levels from that unit loaded: " + allLevels.get(i) + " " + allLevels.get(i).getPk() + " " + allLevels.get(i).getUnit().getPk());
+            }
         }
         return allLevels;
     }
@@ -629,13 +644,13 @@ public class RemoteDatabaseHandler {
         {
             online=false;
             System.out.println("Adding level " + level + " to SQLite database");
-            ldb.addLevel(level);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+            //System.out.println("Some bs: " + ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
+
+            return (int) ldb.addLevel(level);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
             //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
-            System.out.println("Some bs: " + ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
-            return -1;
         }
         return -1;
     }
@@ -946,7 +961,14 @@ public class RemoteDatabaseHandler {
         }catch(NullPointerException e)
         {
             online=false;
-            allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(level.getRemotePK());
+            System.out.println("Getting all levels from sites with lpk: " + ldb.getLevelByRPK(level.getRemotePK()).getPk());
+            if(level.getRemotePK()<0) { //Has not yet been saved online, doesn't have an rpk
+                allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(level.getPk());
+            }
+            else
+            {
+                allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(ldb.getLevelByRPK(level.getRemotePK()).getPk());
+            }
         }
         return allArtifacts;
     }
@@ -989,13 +1011,12 @@ public class RemoteDatabaseHandler {
         }catch(NullPointerException e)
         {
             online=false;
-            ldb.addArtifact(artifact);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+            // closing this screen
+            return (int) ldb.addArtifact(artifact);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
             //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
             //TODO: when we're updating...But then we have to do more PHP stuff I think
-            // closing this screen
-            return -1;
         }
         return -2;
 

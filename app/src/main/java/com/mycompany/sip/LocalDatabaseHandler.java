@@ -221,7 +221,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Getting single site
-    public Site getSiteByRPK(int rpk){
+    public Site getSiteByRPK(int rpk){//TODO: handle response when passed -1
         SQLiteDatabase db = this.getWritableDatabase();
 
         System.out.println("RPK passed: " + rpk);
@@ -394,7 +394,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Getting single unit
-    public Unit getUnitByRPK(int rpk){
+    public Unit getUnitByRPK(int rpk){ //TODO: handle response when passed -1
         SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cursor = db.query(TABLE_UNITS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
@@ -453,6 +453,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_UNITS + " WHERE " + KEY_FK + " = " + fk;
 
+        System.out.println("Looking for units with fk: " + fk);
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
@@ -470,6 +471,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
 
         // return unit list
+        db.close();
         cursor.close();
         return unitList;
     }
@@ -582,7 +584,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cursor = db.query(TABLE_LEVELS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
-                        KEY_LVLNUM, KEY_BD, KEY_ED, KEY_DATESTARTED, KEY_EXCMETH/*, KEY_NOTES*/}, KEY_PK + "=?",
+                        KEY_LVLNUM, KEY_BD, KEY_ED, KEY_DATESTARTED, KEY_EXCMETH, KEY_NOTES, KEY_DATECREATED, KEY_DATEUPDATED}, KEY_PK + "=?",
                 new String[] { String.valueOf(pk) }, null, null, null, null);
 
         Level level = null;
@@ -598,7 +600,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Getting single level
-    public Level getLevelByRPK(int rpk){
+    public Level getLevelByRPK(int rpk){//TODO: handle response when passed -1
         SQLiteDatabase db = this.getWritableDatabase();
         System.out.println("Looking for level with rpk: " + rpk);
         System.out.println("Level rpks: ");
@@ -668,6 +670,21 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     public List<Level> getAllLevelsFromUnit(int fk) {
         List<Level> levelList = new ArrayList<Level>();
 
+        System.out.println("Looking for levels with fk: " + fk);
+        ArrayList<Unit> units = (ArrayList) getAllUnits();
+        System.out.println("Units: ");
+        for(int i=0; i<units.size(); i++)
+        {
+            System.out.println(units.get(i) + " " + units.get(i).getPk());
+        }
+
+        ArrayList<Level> levels = (ArrayList) getAllLevels();
+        System.out.println("Levels: ");
+        for(int i=0; i<levels.size(); i++)
+        {
+            System.out.println(levels.get(i) + " " + levels.get(i).getUnit().getPk());
+        }
+
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_LEVELS + " WHERE " + KEY_FK + " = " + fk;
 
@@ -691,12 +708,14 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
         // return level list
         cursor.close();
+        db.close();
         return levelList;
     }
 
     // Getting all levels updated after the given time
     public List<Level> getAllLevelsUpdatedAfter(Timestamp offline) {
         List<Level> levelList = new ArrayList<Level>();
+
 
         // Select All Query
         String selectQuery = "SELECT  * FROM " + TABLE_LEVELS + " WHERE " + KEY_DATEUPDATED + " > " + offline;

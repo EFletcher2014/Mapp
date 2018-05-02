@@ -155,7 +155,7 @@ public class AllLevelsActivity extends ListActivity {
                 // Launch Add New product Activity
                 Intent i = new Intent(view.getContext(),
                         MapHome.class);
-                i.putExtra("depth", new Level(allLevels.size()+1, -1, -1, site, unit, "", "", "", -1, -1, null, null));
+                i.putExtra("depth", new Level(allLevels.size()+1, -1, -1, site, unit, "", "", "", -1, -1, null, null)); //levelnum for new level should be size + 1
                 //i.putExtra("ForeignKey", foreignKey);
                 //i.putExtra("lvlNum", allLevels.size()+1);
                 //i.putExtra("siteName", site);
@@ -189,6 +189,7 @@ public class AllLevelsActivity extends ListActivity {
             //Intent intent = getIntent();
             //finish();
             //startActivity(intent);
+            System.out.println("MapHome worked");
             new LoadAllLevels().execute();
         }
 
@@ -222,6 +223,7 @@ public class AllLevelsActivity extends ListActivity {
          * getting All levels from url
          * */
         protected String doInBackground(String... args) {
+            System.out.println("Asking rdb to load levels from unit: " + unit + " " + unit.getPk());
             allLevels = rdb.loadAllLevels(unit, null);
             levelsList = new ArrayList<HashMap<String, String>>();
 
@@ -240,100 +242,6 @@ public class AllLevelsActivity extends ListActivity {
                 // adding HashList to ArrayList
                 levelsList.add(map);
             }
-            // Building Parameters
-            /*HashMap params = new HashMap();
-
-            params.put("foreignKey", foreignKey);
-
-            // getting JSON string from URL
-            JSONObject json = jParser.makeHttpRequest(url_all_levels, "GET", params);
-
-            try {
-                // Check your log cat for JSON reponse
-                Log.d("All levels: ", json.toString());
-
-                try {
-                    // Checking for SUCCESS TAG
-                    int success = json.getInt(TAG_SUCCESS);
-
-                    if (success == 1) {
-                        // levels found
-                        // Getting Array of levels
-                        levels = json.getJSONArray(TAG_LEVELS);
-
-                        // looping through All sites
-                        for (int i = 0; i < levels.length(); i++) {
-                            JSONObject c = levels.getJSONObject(i);
-
-                            // Storing each json item in variable
-                            String id = c.getString(TAG_PID);
-                            int num = c.getInt(TAG_LVLNUM);
-                            Double bd = c.getDouble(TAG_BD);
-                            Double ed = c.getDouble(TAG_ED);
-                            String date = c.getString(TAG_DATE);
-                            String excm = c.getString(TAG_EXCM);
-
-                            Level temp = new Level(num, bd, ed, site, unit, date, excm, "", Integer.parseInt(id));
-                            allLevels.add(temp);
-                            String name = temp.toString();
-
-
-                            // creating new HashMap
-                            HashMap<String, String> map = new HashMap<String, String>();
-
-                            // adding each child node to HashMap key => value
-                            map.put(TAG_PID, id);
-                            map.put("name", name);
-                            map.put("Unit Level", i + "");
-
-                            // adding HashList to ArrayList
-                            levelsList.add(map);
-
-                            //save to local database
-                            System.out.println(temp.getUnit().getPk());
-                            if (ldb.updateLevel(temp, temp.getUnit().getPk()) == 0) {
-                                System.out.println("Adding new level to SQLite DB");
-                                ldb.addLevel(temp);
-                            } else {
-                                System.out.println();
-                            }
-                            System.out.println(ldb.getLevelsCount());
-                            System.out.println(ldb.getLevel(i));
-                            System.out.println(ldb.getAllLevels().toString());
-                        }
-                    } else {
-                        // no levels found
-                        // Launch Add New level Activity
-                        //TODO: Change it so it isn't getApplicationContext
-                        *//*Intent i = new Intent(getApplicationContext(),
-                                MapHome.class);
-                        // Closing all previous activities
-                        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(i);*//*
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }catch(NullPointerException e)
-            {
-                System.out.println("Coudln't connect to remote server, loading levels from local sever instead");
-                allLevels = (ArrayList) ldb.getAllLevelsFromUnit(unit.getPk());
-                for(int i=0; i<allLevels.size(); i++)
-                {
-                    Level temp = allLevels.get(i);
-
-                    // creating new HashMap
-                    HashMap<String, String> map = new HashMap<String, String>();
-
-                    // adding each child node to HashMap key => value
-                    map.put(TAG_PID, temp.getPk() + "");
-                    map.put("name", temp.toString());
-                    map.put("Unit Level", i + "");
-
-                    // adding HashList to ArrayList
-                    levelsList.add(map);
-                }
-            }*/
             return null;
         }
 
@@ -362,7 +270,7 @@ public class AllLevelsActivity extends ListActivity {
                     {
                             Intent i = new Intent(findViewById(R.id.newLevelBtn).getContext(),
                                     MapHome.class);
-                            i.putExtra("depth", new Level(allLevels.size() + 1, -1, -1, site, unit, "", "", "", -1, -1, null, null));
+                            i.putExtra("depth", new Level(allLevels.size()+1, -1, -1, site, unit, "", "", "", -1, -1, null, null));
                             //i.putExtra("ForeignKey", foreignKey);
                             //i.putExtra("lvlNum", 1);
                             //i.putExtra("siteName", site);
