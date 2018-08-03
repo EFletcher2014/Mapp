@@ -207,7 +207,7 @@ public class AllArtifactsActivity extends ListActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
             pDialog.show();
-            new UpdateDBs(getApplicationContext()).execute();
+            //new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**
@@ -365,7 +365,7 @@ public class AllArtifactsActivity extends ListActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show();
-            new UpdateDBs(getApplicationContext()).execute();
+            //new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**

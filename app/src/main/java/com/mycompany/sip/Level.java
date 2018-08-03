@@ -34,7 +34,7 @@ public class Level implements Parcelable {
         this.firstCreated=created;
     }
 
-    public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM, String no, int p, int rpk, Timestamp created, Timestamp updated)
+    public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM, String no, String imPath, int p, int rpk, Timestamp created, Timestamp updated)
     {
         this.number=n;
         this.begDepth=bD;
@@ -44,6 +44,7 @@ public class Level implements Parcelable {
         this.dateStarted=date;
         this.excavationMethod=excM;
         this.notes=no;
+        this.imagePath=imPath;
         System.out.println("notes" + notes);
         this.pk=p;
         this.remotePK=rpk;
@@ -62,6 +63,7 @@ public class Level implements Parcelable {
         this.dateStarted=in.readString();
         this.excavationMethod=in.readString();
         this.notes=in.readString();
+        this.imagePath=in.readString();
         this.pk=in.readInt();
         this.remotePK=in.readInt();
         this.firstCreated=new Timestamp(in.readLong()); //TODO: Will this work?
@@ -168,6 +170,7 @@ public class Level implements Parcelable {
         dest.writeString(dateStarted);
         dest.writeString(excavationMethod);
         dest.writeString(notes);
+        dest.writeString(imagePath);
         dest.writeInt(pk);
         dest.writeInt(remotePK);
         dest.writeLong((firstCreated!=null ? firstCreated.getTime() : 0));

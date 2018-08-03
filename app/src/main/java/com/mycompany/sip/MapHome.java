@@ -140,6 +140,7 @@ public class MapHome extends AppCompatActivity {
         //unit = openIntent.getParcelableExtra("unitNumber");
         //unitNumber=unit.getDatum();
         level = openIntent.getParcelableExtra("depth");
+        System.out.println("MapHome received: " + level + " " + level.getPk());
         if(level!=null) {
             lvlNum = level.getNumber();
             fk = level.getUnit().getPk();
@@ -161,6 +162,14 @@ public class MapHome extends AppCompatActivity {
             }
             excMeth.setText(level.getExcavationMethod() + "");
             notes.setText(level.getNotes() + "");
+            if(!level.getImagePath().equals("")) {
+                selectedImageUri = Uri.parse(level.getImagePath());
+                unitImage.setImageURI(selectedImageUri);
+                if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
+                    switcher.showNext();
+                }
+            }
+            System.out.println("MapHome received image path:" + level.getImagePath() + "\nConverted to: " + selectedImageUri);
         }
         else
         {
@@ -250,10 +259,10 @@ public class MapHome extends AppCompatActivity {
                 //String date = dateTime.getText().toString(); Don't have date started yet
                 String em = excMeth.getText().toString();
                 String n = notes.getText().toString();
-
+                System.out.println("Saving level: " + pk);
                 if(pk==-1)
                 {
-                    level = new Level(lvlNum, bd, ed, site, unit, "0000-00-00 00:00:00", em, n, pk, pk, null, null);//TODO: add notes to level
+                    level = new Level(lvlNum, bd, ed, site, unit, "0000-00-00 00:00:00", em, n, "", pk, pk, null, null);//TODO: add notes to level
                 }
                 else
                 {
@@ -261,6 +270,8 @@ public class MapHome extends AppCompatActivity {
                     level.setEndDepth(ed);
                     level.setExcavationMethod(em);
                     level.setNotes(n);
+                    level.setImagePath(selectedImageUri + "");
+                    System.out.println("Saved imagePath as: " + level.getImagePath());
                 }
                 new CreateNewLevel().execute();
             }
@@ -310,12 +321,9 @@ public class MapHome extends AppCompatActivity {
              if(resultCode == RESULT_OK) {
                  System.out.println("URIing");
                  selectedImageUri = data.getParcelableExtra("newURI");
+                 System.out.println(selectedImageUri);
 
                  final int takeFlags = (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-// Check for the freshest data.
-                 if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                     getContentResolver().takePersistableUriPermission(selectedImageUri, takeFlags);
-                 }
 
                  System.out.println(selectedImageUri);
                  unitImage.setImageURI(selectedImageUri);
@@ -357,7 +365,7 @@ public class MapHome extends AppCompatActivity {
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show();
-            new UpdateDBs(getApplicationContext()).execute();
+            //new UpdateDBs(getApplicationContext()).execute();
         }
 
         /**
