@@ -522,13 +522,13 @@ public class RemoteDatabaseHandler {
                         Level temp = null;
                         if(unit!=null)
                         {
-                            temp = new Level(num, bd, ed, unit.getSite(), unit, date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                            temp = new Level(num, bd, ed, unit.getSite(), unit, date, excm, n, "", -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                         }
                         else
                         {
                             temp = new Level(num, bd, ed, null,
                                     new Unit("", "", "", "", null, "", "", -1, Integer.parseInt(fk), null, null),
-                                    date, excm, n, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                                    date, excm, n, "", -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
                         }
                         allLevels.add(temp);
                         temp.setImagePath(imPath);
@@ -646,7 +646,7 @@ public class RemoteDatabaseHandler {
             System.out.println("Adding level " + level + " to SQLite database");
             //System.out.println("Some bs: " + ldb.getAllLevelsFromUnit(level.getUnit().getRemotePK()));
 
-            return (int) ldb.addLevel(level);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+            return level == null || level.getPk()<0 ? (int) ldb.addLevel(level) : ldb.updateLevel(level);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
             //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
@@ -945,7 +945,7 @@ public class RemoteDatabaseHandler {
                         }else
                         {
                             temp = new Artifact(null, null,
-                                    new Level(-1, -1.0, -1.0, null, null, "", "", "", -1, Integer.parseInt(fk), null, null),
+                                    new Level(-1, -1.0, -1.0, null, null, "", "", "", "", -1, Integer.parseInt(fk), null, null),
                                     anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
 
                         }
@@ -1078,11 +1078,18 @@ public class RemoteDatabaseHandler {
         try {
             // Check your log cat for JSON reponse
             Log.d("All artifacts: ", json.toString());
-            //if(!onlineSince.after(new Timestamp(0))) {   //if onlineSince is 00-00-0000 00:00:00 then server wasn't previously online
-             //   Global.setOnlineSince(new Timestamp(System.currentTimeMillis()));    //set new timestamp for time online TODO: this isn't perfect
-                //new UpdateDBs.execute();                                                                           //Update first, then set OfflineSince to 00-00-0000 00:00:00
-               // Global.setOfflineSince(new Timestamp(0));
-            //}
+            System.out.println("Checking onlineSince: " + onlineSince);
+            if(!onlineSince.after(new Timestamp(0))) {   //if onlineSince is 00-00-0000 00:00:00 then server wasn't previously online
+                System.out.println("Online since was zero, updating it");
+                Global.setOnlineSince(new Timestamp(System.currentTimeMillis()));    //set new timestamp for time online TODO: this isn't perfect
+                System.out.println("Online since now: " + onlineSince);
+                //new UpdateDBs.execute();
+            }
+            if(updateComplete)
+            {
+                //Update first, then set OfflineSince to 00-00-0000 00:00:00 //Actually some bs time in 1970 bc of how timestamps work
+                Global.setOfflineSince(new Timestamp(0));
+            }
             return true;
         }catch(NullPointerException e)
         {

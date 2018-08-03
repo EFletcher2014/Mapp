@@ -17,10 +17,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
@@ -79,6 +81,12 @@ public class selectActivity extends AppCompatActivity {
             switcher.showNext();
         }
         System.out.println("SURI: " + selectedImageUri);
+
+        //Added 8/1/2018
+
+        final ListView artifacts = (ListView) findViewById(R.id.artifactListMap);
+        final Button addArtifact = (Button) findViewById(R.id.addArtifactButton);
+
         //ImageView selectImageView = (ImageView) findViewById(R.id.select_image_view);
 
         /*if (selectedImageUri == null) {
@@ -89,7 +97,7 @@ public class selectActivity extends AppCompatActivity {
         }
         selectImageView.setImageURI(selectedImageUri);*/
 
-        final LinearLayout FABMenu = (LinearLayout) findViewById(R.id.fabMenu);
+        /*final LinearLayout FABMenu = (LinearLayout) findViewById(R.id.fabMenu);
         FloatingActionButton addFab = (FloatingActionButton) findViewById(R.id.editfab);
         addFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,14 +115,14 @@ public class selectActivity extends AppCompatActivity {
                     //FABMenu.setVisibility(View.GONE);
                 }
             }
-        });
+        });*/
 
-        hi  = (TextView) findViewById(R.id.highlightLabel);
-        FloatingActionButton highlight = (FloatingActionButton) findViewById(R.id.selectfab);
-        highlight.setOnClickListener(new View.OnClickListener() {
+        /*hi  = (TextView) findViewById(R.id.highlightLabel);
+        FloatingActionButton highlight = (FloatingActionButton) findViewById(R.id.selectfab);*/
+        addArtifact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(fabMenuDeployed)
+                /*if(fabMenuDeployed)
                 {
                     if(hi.getVisibility()==View.VISIBLE)
                     {
@@ -125,9 +133,9 @@ public class selectActivity extends AppCompatActivity {
                         hi.setVisibility(View.VISIBLE);
                         gr.setVisibility(View.GONE);
                         ks.setVisibility(View.GONE);
-                    }
+                    }*/
 
-                    if(selectedImageUri!=null)
+                    if(selectedImageUri!=null)//TODO: make this turn off automatically
                     {
                         if(imageDraw.getTool().equals("highlight"))
                         {
@@ -137,10 +145,10 @@ public class selectActivity extends AppCompatActivity {
                             imageDraw.highlight();
                         }
                     }
-                }
+                //}
             }
         });
-        gr = (TextView) findViewById(R.id.gridLabel);
+        /*gr = (TextView) findViewById(R.id.gridLabel);
         FloatingActionButton grid = (FloatingActionButton) findViewById(R.id.gridfab);
         grid.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -205,7 +213,7 @@ public class selectActivity extends AppCompatActivity {
                     }
                 }
             }
-        });
+        });*/
     }
 
     public static void saveLayer()

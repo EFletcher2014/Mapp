@@ -87,7 +87,11 @@ public class Global {
 
     // Timestamps for online/offline
     public static Timestamp onlineSince = new Timestamp(0);
-    public static Timestamp offlineSince = new Timestamp(0);
+    public static Timestamp offlineSince = new Timestamp(System.currentTimeMillis());
+
+    //Stupid bs variable to determine if update is still happening since there's apparently no better (easy) way to do this
+    //TODO: implement an interfac instead
+    public static boolean updateComplete=false;
 
     // Set onlineSince
     public static Timestamp setOnlineSince(Timestamp time)

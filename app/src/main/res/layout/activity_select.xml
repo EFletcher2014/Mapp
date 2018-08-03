@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     android:theme="@style/AppTheme"
     android:orientation="horizontal"
     android:id="@+id/selectActivity">
@@ -40,8 +39,73 @@
             />
     </ViewSwitcher>
 
-    <!--TODO: make this a fragment???????-->
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:layout_gravity="end"
+        android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Map"
+            android:gravity="center"
+            android:theme="@style/titleTheme"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1"
+            android:layout_gravity="bottom">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Artifacts"
+                android:layout_gravity="left"
+                android:textSize="16dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add"
+                android:layout_gravity="right"
+                android:id="@+id/addArtifactButton"
+                android:color="@color/colorText"
+                />
+            </LinearLayout>
+        <ListView
+            android:id="@+id/artifactListMap"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="2"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="3"
+            android:layout_gravity="bottom">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Features"
+                android:layout_gravity="left"
+                android:textSize="16dp"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add"
+                android:layout_gravity="right"
+                android:id="@+id/addFeatureButton"
+                android:color="@color/colorText"
+                />
+        </LinearLayout>
+        <ListView
+            android:id="@+id/featureListMap"
+            android:layout_width="match_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="4"/>
+        </LinearLayout>
+    <!--TODO: make this a fragment???????-->
+   <!--<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="2"
@@ -55,7 +119,7 @@
             android:id="@+id/fabMenu"
             android:layout_gravity="end"
             android:visibility="gone">
-            <!--All from this tutorial: https://www.sitepoint.com/animating-android-floating-action-button/-->
+            &lt;!&ndash;All from this tutorial: https://www.sitepoint.com/animating-android-floating-action-button/&ndash;&gt;
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -140,5 +204,5 @@
             android:src="@drawable/ic_add_white_24dp"
             android:scaleType="center"
             app:fabSize="normal"/>
-    </LinearLayout>
+    </LinearLayout>-->
 </LinearLayout>

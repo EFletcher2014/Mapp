@@ -142,7 +142,30 @@ public class AllSitesActivity extends ListActivity {
 
                 // Loading sites in Background Thread
             if(!test) {
-                new LoadAllSites().execute();
+                final UpdateDBs update = new UpdateDBs(getApplicationContext());
+                new Thread (new Runnable () {
+                    public void run() {
+                        //if (rdb.isOnline()) {
+                        //update.execute();
+                    //}
+                    }
+                }).start();
+
+                int i=0;
+
+                updateComplete = true;
+                while(!updateComplete)
+                {
+                    if(i<100) {
+                        //Just killing time--probably a better way to do this
+                        System.out.println("Waiting for update to complete");
+                    }
+
+                    i++;
+                }
+                if(updateComplete) {
+                    new LoadAllSites().execute();
+                }
             }
             else
             {
@@ -265,7 +288,7 @@ public class AllSitesActivity extends ListActivity {
                         //the pDialog is gone. However, I'm nervous that the remDB could go offline
                         //between the time RemoteDatabaseHandler.online is set to true and this command
                         //I'll handle that in UpdateDBs though
-                        new UpdateDBs(getApplicationContext()).execute();
+
                     System.out.println("Local sites: " + ldb.getAllSites());
                 }
 
@@ -282,8 +305,14 @@ public class AllSitesActivity extends ListActivity {
                                 HashMap<String, String> map = new HashMap<String, String>();
 
                                 // for each site, saving its pk and name to the hashmap for the listview
-                                map.put(TAG_PID, temp.getRemotePK() + "");
-                                System.out.println("Pk...: " + temp.getRemotePK());
+                                if(temp.getRemotePK()>-1) {
+                                    map.put(TAG_PID, temp.getRemotePK() + "");
+                                    System.out.println("Pk...: " + temp.getRemotePK());
+                                }
+                                else
+                                {
+                                    map.put(TAG_PID, temp.getPk() + "");
+                                }
                                 map.put(TAG_SITENAME, temp.getName());
 
                                 // adding HashList to ArrayList
@@ -452,7 +481,7 @@ public class AllSitesActivity extends ListActivity {
                 //the pDialog is gone. However, I'm nervous that the remDB could go offline
                 //between the time RemoteDatabaseHandler.online is set to true and this command
                 //I'll handle that in UpdateDBs though
-                new UpdateDBs(getApplicationContext()).execute();
+                //new UpdateDBs(getApplicationContext()).execute();
 
             if(success) {
                 // closing this screen
@@ -580,9 +609,31 @@ public class AllSitesActivity extends ListActivity {
 
                     //if not testing, save to server
                     if (!test) {
+                        final UpdateDBs update1 = new UpdateDBs(getApplicationContext());
+                        new Thread (new Runnable () {
+                            public void run() {
+                                if (rdb.isOnline()) {
+                                    //try {
+                                        //update1.execute();//.get();
+                                    //}catch(java.lang.InterruptedException | java.util.concurrent.ExecutionException e)
+                                    //{
+                                     //   System.out.println("Error during the thing");
+                                    //}
+                                }
+                            }
+                        }).start();
 
-                        // creating new site in background thread
-                        new CreateNewSite().execute();
+                        updateComplete = true;
+                        while(!updateComplete)
+                        {
+                            //Just killing time--probably a better way to do this
+                            System.out.println("Waiting for update to complete");
+                        }
+                        if(updateComplete) {
+                            System.out.println("Update complete, starting to create a site");
+                            // creating new site in background thread
+                            new CreateNewSite().execute();
+                        }
                     } else {
                         System.out.println("Site: " + site.toString());
                         // just go to next activity

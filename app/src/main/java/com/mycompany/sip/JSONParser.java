@@ -32,7 +32,7 @@ public class JSONParser {
         sbParams = new StringBuilder();
         int i = 0;
         for (String key : params.keySet()) {
-            System.out.println("JSON says: " + String.valueOf(params.get(key)));
+            System.out.println("JSON says: " + key + " " + String.valueOf(params.get(key)));
             try {
                 if (i != 0){
                     sbParams.append("&");
@@ -99,8 +99,8 @@ public class JSONParser {
 
                 conn.setRequestMethod("GET");
 
-                conn.setRequestProperty("Accept-Charset", charset);
-
+                conn.setRequestProperty("Accept-Charset", charset); //TODO: this is throwing an IllegalStateException: "Cannot set request property after connection is made"
+                                                                    //I think this is because the update isn't completed before loadallsites starts
                 conn.setConnectTimeout(15000);
 
                 conn.connect();

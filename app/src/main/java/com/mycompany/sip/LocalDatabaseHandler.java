@@ -66,6 +66,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_DATESTARTED = "dateStarted";
     private static final String KEY_EXCMETH = "excavationMethod";
     private static final String KEY_NOTES = "notes";
+    private static final String KEY_IMAGE_LINK = "imageLink";
 
     //Artifacts Table Column names
     private static final String KEY_ANUM = "accNum";
@@ -87,7 +88,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     String CREATE_LEVELS_TABLE = "CREATE TABLE " + TABLE_LEVELS + "("
             + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_FK + " INTEGER, " + KEY_LVLNUM + " INTEGER, "
             + KEY_BD + " REAL, " + KEY_ED + " REAL, " + KEY_DATESTARTED + " DATETIME, " + KEY_EXCMETH
-            + " TEXT, " + KEY_NOTES + " TEXT, " + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
+            + " TEXT, " + KEY_NOTES + " TEXT, " + KEY_IMAGE_LINK + " TEXT," + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
 
     String CREATE_ARTIFACTS_TABLE = "CREATE TABLE " + TABLE_ARTIFACTS + "("
             + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_FK + " INTEGER, "
@@ -275,7 +276,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     public List<Site> getAllSitesUpdatedAfter(Timestamp offline) {
         List<Site> siteList = new ArrayList<Site>();
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_SITES + " WHERE " + KEY_DATEUPDATED + " > " + offline;
+        String selectQuery = "SELECT * FROM " + TABLE_SITES + " WHERE " + KEY_DATEUPDATED + " > \"" + offline + "\"";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -482,7 +483,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         List<Unit> unitList = new ArrayList<Unit>();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_UNITS + " WHERE " + KEY_DATEUPDATED + " > " + offline;
+        String selectQuery = "SELECT  * FROM " + TABLE_UNITS + " WHERE " + KEY_DATEUPDATED + " > \"" + offline + "\"";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -569,13 +570,14 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_ED, level.getEndDepth());
         values.put(KEY_DATESTARTED, level.getDateStarted());
         values.put(KEY_EXCMETH, level.getExcavationMethod());
-        //values.put(KEY_NOTES, level.getNotes());
+        values.put(KEY_NOTES, level.getNotes());
+        values.put(KEY_IMAGE_LINK, level.getImagePath());
 
         // Inserting Row
         long temp = db.insert(TABLE_LEVELS, null, values);
         db.close(); // Closing database connection
 
-        System.out.println("Adding level success? " + temp + " " + level + " " + level.getRemotePK());
+        System.out.println("Adding level success? " + temp + " " + level + " " + + level.getPk() + " " + level.getRemotePK());
         return temp;
     }
 
@@ -584,7 +586,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         Cursor cursor = db.query(TABLE_LEVELS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
-                        KEY_LVLNUM, KEY_BD, KEY_ED, KEY_DATESTARTED, KEY_EXCMETH, KEY_NOTES, KEY_DATECREATED, KEY_DATEUPDATED}, KEY_PK + "=?",
+                        KEY_LVLNUM, KEY_BD, KEY_ED, KEY_DATESTARTED, KEY_EXCMETH, KEY_NOTES, KEY_IMAGE_LINK, KEY_DATECREATED, KEY_DATEUPDATED}, KEY_PK + "=?",
                 new String[] { String.valueOf(pk) }, null, null, null, null);
 
         Level level = null;
@@ -592,7 +594,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
             //TODO: make this correct
             Unit un = getUnit(Integer.parseInt(cursor.getString(2)));
-            level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
+            level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), cursor.getString(9), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(10)), Timestamp.valueOf(cursor.getString(11)));
         }
         // return level
         cursor.close();
@@ -620,7 +622,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
 
         Cursor cursor = db.query(TABLE_LEVELS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
-                        KEY_LVLNUM, KEY_BD, KEY_ED, KEY_DATESTARTED, KEY_EXCMETH, KEY_NOTES, KEY_DATECREATED, KEY_DATEUPDATED}, REMOTE_PRIMARY_KEY + "=?",
+                        KEY_LVLNUM, KEY_BD, KEY_ED, KEY_DATESTARTED, KEY_EXCMETH, KEY_NOTES, KEY_IMAGE_LINK, KEY_DATECREATED, KEY_DATEUPDATED}, REMOTE_PRIMARY_KEY + "=?",
                 new String[] { String.valueOf(rpk) }, null, null, null, null);
 
         Level level = null;
@@ -629,7 +631,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             //TODO: make this correct
             System.out.println("Found level locally");
             Unit un = getUnit(Integer.parseInt(cursor.getString(2)));
-            level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
+            level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), cursor.getString(9), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(10)), Timestamp.valueOf(cursor.getString(11)));
         }
         // return level
         cursor.close();
@@ -654,7 +656,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
 
                 Unit un = getUnit(Integer.parseInt(cursor.getString(2)));
-                Level level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
+                Level level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), cursor.getString(9), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(10)), Timestamp.valueOf(cursor.getString(11)));
 
                 // Adding site to list
                 levelList.add(level);
@@ -699,7 +701,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
 
                 Unit un = getUnit(Integer.parseInt(cursor.getString(2)));
-                Level level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
+                Level level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), cursor.getString(9), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(10)), Timestamp.valueOf(cursor.getString(11)));
 
                 // Adding site to list
                 levelList.add(level);
@@ -718,7 +720,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_LEVELS + " WHERE " + KEY_DATEUPDATED + " > " + offline;
+        String selectQuery = "SELECT  * FROM " + TABLE_LEVELS + " WHERE " + KEY_DATEUPDATED + " > \"" + offline + "\"";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -731,7 +733,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
 
 
                 Unit un = getUnit(Integer.parseInt(cursor.getString(2)));
-                Level level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(9)), Timestamp.valueOf(cursor.getString(10)));
+                Level level = new Level(Integer.parseInt(cursor.getString(3)), Double.parseDouble(cursor.getString(4)), Double.parseDouble(cursor.getString(5)), un.getSite(), un, cursor.getString(6), cursor.getString(7), cursor.getString(8), cursor.getString(9), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(10)), Timestamp.valueOf(cursor.getString(11)));
 
                 // Adding site to list
                 levelList.add(level);
@@ -768,12 +770,13 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_ED, level.getEndDepth());
         values.put(KEY_DATESTARTED, level.getDateStarted());
         values.put(KEY_EXCMETH, level.getExcavationMethod());
-        //values.put(KEY_NOTES, level.getNotes());
+        values.put(KEY_NOTES, level.getNotes());
+        values.put(KEY_IMAGE_LINK, level.getImagePath());
 
 
         // updating row
-        int success = db.update(TABLE_LEVELS, values, REMOTE_PRIMARY_KEY + " = ?",
-                new String[] { String.valueOf(level.getRemotePK())});
+        int success = db.update(TABLE_LEVELS, values, KEY_PK + " = ?",
+                new String[] { String.valueOf(level.getPk())});
 
         if(success < 1)
         {
@@ -781,7 +784,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             success = (int) addLevel(level);
         }
         else {
-            System.out.println("Level updated: " + level + " " + level.getRemotePK());
+            System.out.println("Level updated: " + level + " " + level.getPk());
         }
         /*ArrayList<Level> temp = (ArrayList) getAllLevels();
         for(int i = 0; i<temp.size(); i++)
@@ -903,7 +906,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         List<Artifact> artifactList = new ArrayList<Artifact>();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS + " WHERE " + KEY_DATEUPDATED + " > " + offline;
+        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS + " WHERE " + KEY_DATEUPDATED + " > \"" + offline + "\"";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);

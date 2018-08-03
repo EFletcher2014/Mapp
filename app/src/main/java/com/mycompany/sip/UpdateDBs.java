@@ -1,5 +1,6 @@
 package com.mycompany.sip;
 import android.content.Context;
+import android.database.CursorJoiner;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
@@ -35,12 +36,16 @@ class UpdateDBs extends AsyncTask<String, String, String>
         ldb = new LocalDatabaseHandler(c);
     }
 
-    protected String doInBackground(String ... args)
+    @Override
+    protected String doInBackground(String... args)
     {
+        updateComplete=false;
         System.out.println("Updating data");
+        System.out.println("Offline since: " + offlineSince);
         //TODO: update local db even when online
-        if(rdb.isOnline() && offlineSince.after(new Timestamp(0))) {     //If rdb is newly online--was just offline and offlineSince hasn't been changed yet
+        if(offlineSince.after(new Timestamp(0)) && rdb.isOnline()) {     //If rdb is newly online--was just offline and offlineSince hasn't been changed yet
 
+            System.out.println("Syncing because newly online");
             try {
 
 
@@ -206,15 +211,15 @@ class UpdateDBs extends AsyncTask<String, String, String>
                     }
                 }
 
-                if(contains) //if site was updated both locally and remotely while offline
+                if(contains) //if unit was updated both locally and remotely while offline
                 {
-                    if(allRemUnits.get(loc).getLastUpdated().after(allLocUnits.get(0).getLastUpdated())) //if remote site was updated most recently
+                    if(allRemUnits.get(loc).getLastUpdated().after(allLocUnits.get(0).getLastUpdated())) //if remote unit was updated most recently
                     {
-                        ldb.updateUnit(allRemUnits.get(loc)); //update the local site to match it
+                        ldb.updateUnit(allRemUnits.get(loc)); //update the local unit to match it
                     }
                     else
                     {
-                        int temppk=rdb.updateUnit(allLocUnits.get(0)); //otherwise, update remote site to match local
+                        int temppk=rdb.updateUnit(allLocUnits.get(0)); //otherwise, update remote unit to match local
                         if(temppk>-1) //this means the update worked
                         {
                             allLocUnits.get(0).setRemotePK(temppk); //save the correct rpk to the local database
@@ -237,6 +242,7 @@ class UpdateDBs extends AsyncTask<String, String, String>
             //If any remote units are left over (weren't also updated locally while offline) update those now
             for(int j=0; j<allRemUnits.size(); j++)
             {
+
                 ldb.updateUnit(allRemUnits.get(j));
 
             }
@@ -350,9 +356,9 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
 
         //TODO: return something useful
-    } catch (NullPointerException e) {
-        //TODO: return something else useful
-    }
+            } catch (NullPointerException e) {
+                //TODO: return something else useful
+            }
 
 
 //            //Loop through all sites to save new creations/updates
@@ -483,6 +489,15 @@ class UpdateDBs extends AsyncTask<String, String, String>
                 System.out.println("Thinks it's offline...");
             }
         }
-        return null;
+        System.out.println("Update completed");
+        updateComplete=true;
+        return "done";
+    }
+
+    @Override
+    protected void onPostExecute(String result) {
+        super.onPostExecute(result);
+        updateComplete=true;
+        System.out.println("Update completed! In postExecute now");
     }
 }
