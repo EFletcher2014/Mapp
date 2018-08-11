@@ -27,7 +27,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/newArtifactBtn"
-        android:text="Create New Artifact"/>
+        android:id="@+id/newArtifactBagBtn"
+        android:text="Create New Artifact Bag"/>
 
 </LinearLayout>

@@ -39,13 +39,13 @@ public class Global {
     public static String url_upload_image = "http://75.134.106.101/mapp/upload_image.php";
 
     // url to get all artifacts list
-    public static String url_all_artifacts = "http://75.134.106.101:80/mapp/get_all_artifacts.php";
+    public static String url_all_artifacts_bags = "http://75.134.106.101:80/mapp/get_all_artifacts_bags.php";
     
     // url to create new artifact
-    public static String url_create_artifact = "http://75.134.106.101:80/mapp/create_new_artifact.php";
+    public static String url_create_artifact_bag = "http://75.134.106.101:80/mapp/create_new_artifact_bag.php";
 
     // url to update artifact
-    public static String url_update_artifact = "http://75.134.106.101:80/mapp/update_artifact.php";
+    public static String url_update_artifact_bag = "http://75.134.106.101:80/mapp/update_artifact_bag.php";
     
     // Site JSON Node names--column headings in database, which allow JSON to parse data
     public static final String TAG_PID = "PrimaryKey";
@@ -79,11 +79,15 @@ public class Global {
     public static final String TAG_NOTES = "notes";
     public static final String TAG_IMPATH = "imagePath";
 
-    // Artifact JSON Node names
-    public static final String TAG_ARTIFACTS = "artifacts";
+    // ArtifactBag JSON Node names
+    public static final String TAG_ARTIFACTS_BAGS = "artifactsBags";
     public static final String TAG_ANUM = "accNum";
     public static final String TAG_CNUM = "catNum";
     public static final String TAG_CONT = "contents";
+
+    //Artifacts JSON Node names
+    public static final String TAG_ARTIFACTS = "artifacts";
+    public static final String TAG_ARTIFACT = "artifact";
 
     // Timestamps for online/offline
     public static Timestamp onlineSince = new Timestamp(0);

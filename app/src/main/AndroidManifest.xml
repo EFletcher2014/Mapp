@@ -34,7 +34,7 @@
         </activity>
         <activity android:name=".AllLevelsActivity" >
         </activity>
-        <activity android:name=".AllArtifactsActivity" >
+        <activity android:name=".AllArtifactsBagsActivity" >
         </activity>
     </application>
 

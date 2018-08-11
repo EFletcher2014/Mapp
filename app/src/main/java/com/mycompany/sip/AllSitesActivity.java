@@ -629,7 +629,7 @@ public class AllSitesActivity extends ListActivity {
                             //Just killing time--probably a better way to do this
                             System.out.println("Waiting for update to complete");
                         }
-                        if(updateComplete) {
+                        if(updateComplete) { //TODO: should this be after site creation?
                             System.out.println("Update complete, starting to create a site");
                             // creating new site in background thread
                             new CreateNewSite().execute();
