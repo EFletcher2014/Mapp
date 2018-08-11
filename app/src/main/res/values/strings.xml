@@ -7,6 +7,9 @@
     <string name="title_activity_select">selectActivity</string>
     <string name="savecontent">Click here to save your work</string>
     <string name="photo_button_hint">Click here to select an image of your unit</string>
-    <string name="artifact_button_hint">Click here to add a new feature or artifact</string>
+    <string name="artifact_button_hint">Click here to add a new artifact bag</string>
     <string name="no_draw_hint">Please return to previous screen and select an image of your unit</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

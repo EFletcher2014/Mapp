@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:theme="@style/AppTheme"
     android:orientation="horizontal"
@@ -39,72 +40,14 @@
             />
     </ViewSwitcher>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="2"
-        android:layout_gravity="end"
-        android:orientation="vertical">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Map"
-            android:gravity="center"
-            android:theme="@style/titleTheme"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="1"
-            android:layout_gravity="bottom">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Artifacts"
-                android:layout_gravity="left"
-                android:textSize="16dp"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Add"
-                android:layout_gravity="right"
-                android:id="@+id/addArtifactButton"
-                android:color="@color/colorText"
-                />
-            </LinearLayout>
-        <ListView
-            android:id="@+id/artifactListMap"
-            android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="2"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="3"
-            android:layout_gravity="bottom">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Features"
-                android:layout_gravity="left"
-                android:textSize="16dp"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Add"
-                android:layout_gravity="right"
-                android:id="@+id/addFeatureButton"
-                android:color="@color/colorText"
-                />
-        </LinearLayout>
-        <ListView
-            android:id="@+id/featureListMap"
-            android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="4"/>
-        </LinearLayout>
-    <!--TODO: make this a fragment???????-->
+    <fragment
+        android:id="@+id/fragment"
+        android:name="com.mycompany.sip.MapKeyFragment"
+        android:layout_weight="1"
+        android:layout_gravity="right"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_map" />
    <!--<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

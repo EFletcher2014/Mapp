@@ -32,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
-        android:hint="Describe artifact here"
+        android:hint="Describe bag contents here"
         android:id="@+id/contents"/>
-    <!--should add something to add a picture of the artifact too and maybe save coordinates-->
+    <!--should add something to add a picture of the artifactBag too and maybe save coordinates-->
 </LinearLayout>

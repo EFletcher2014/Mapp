@@ -3,16 +3,13 @@ package com.mycompany.sip;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -20,30 +17,16 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 import android.widget.ViewSwitcher;
-
-import java.io.IOException;
-import java.net.Socket;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Date;
-import org.json.*;
-
-import static com.mycompany.sip.Global.*;
 
 //TODO: allow this to save a new level and also edit an old one
 
@@ -169,7 +152,7 @@ public class MapHome extends AppCompatActivity {
                     switcher.showNext();
                 }
             }
-            System.out.println("MapHome received image path:" + level.getImagePath() + "\nConverted to: " + selectedImageUri);
+            System.out.println("MapHome received image path: " + level.getImagePath() + "\nConverted to: " + selectedImageUri);
         }
         else
         {
@@ -205,22 +188,22 @@ public class MapHome extends AppCompatActivity {
             }
         });
 
-        final Button toAddArtifactActivity = (Button) findViewById(R.id.toAddArtifactsActivity);
-        toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
+        final Button toAddArtifactBagActivity = (Button) findViewById(R.id.toAddArtifactsBagsActivity);
+        toAddArtifactBagActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(level!=null) {
                     //Move to select on image activity
-                    Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactsActivity.class);
-                    artifactActivityIntent.putExtra("name", site);
-                    artifactActivityIntent.putExtra("datum", unit);
-                    artifactActivityIntent.putExtra("depth", level);
-                    artifactActivityIntent.putExtra("PrimaryKey", pk);
-                    startActivity(artifactActivityIntent);
+                    Intent aBagActivityIntent = new Intent(view.getContext(), AllArtifactsBagsActivity.class);
+                    aBagActivityIntent.putExtra("name", site);
+                    aBagActivityIntent.putExtra("datum", unit);
+                    aBagActivityIntent.putExtra("depth", level);
+                    aBagActivityIntent.putExtra("PrimaryKey", pk);
+                    startActivity(aBagActivityIntent);
                 }
                 else
                 {
-                    Toast.makeText(getApplicationContext(), "You must save your level before creating artifacts", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "You must save your level before creating artifact bags", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -229,11 +212,11 @@ public class MapHome extends AppCompatActivity {
         toSelectOnImageActivity.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View view) {
-                    if(level!=null) {
+                    if(level!=null) { //TODO: not working
                         if(selectedImageUri!=null) {
                             //Move to select on image activity
                             Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
-                            selectActivityIntent.putExtra("unit", unit);
+                            selectActivityIntent.putExtra("level", level);
                             selectActivityIntent.putExtra("rotation", rotation);
                             startActivityForResult(selectActivityIntent, 33);
                         }
@@ -262,7 +245,8 @@ public class MapHome extends AppCompatActivity {
                 System.out.println("Saving level: " + pk);
                 if(pk==-1)
                 {
-                    level = new Level(lvlNum, bd, ed, site, unit, "0000-00-00 00:00:00", em, n, "", pk, pk, null, null);//TODO: add notes to level
+
+                    level = new Level(lvlNum, bd, ed, site, unit, "0000-00-00 00:00:00", em, n, selectedImageUri.toString(), pk, pk, null, null);//TODO: add notes to level
                 }
                 else
                 {
@@ -349,6 +333,7 @@ public class MapHome extends AppCompatActivity {
              }
          }
     }
+
     /**
      * Background Async Task to Create new level
      * */

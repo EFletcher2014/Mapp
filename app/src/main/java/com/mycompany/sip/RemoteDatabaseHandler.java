@@ -3,10 +3,8 @@ package com.mycompany.sip;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,21 +14,17 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 import static com.mycompany.sip.Global.*;
@@ -890,19 +884,19 @@ public class RemoteDatabaseHandler {
         return 0;
     }
 
-    public ArrayList loadAllArtifacts(Level level, Timestamp offline)
+    public ArrayList loadAllArtifactsBags(Level level, Timestamp offline)
     {
-        ArrayList<Artifact> allArtifacts = new ArrayList<>();
-        JSONArray artifacts = null;
+        ArrayList<ArtifactBag> allArtifactBags = new ArrayList<>();
+        JSONArray artifactsBags = null;
         // Building Parameters
         HashMap params = new HashMap();
 
-        if(level!=null) { //if a level was passed, get all artifacts associated with that level
+        if(level!=null) { //if a level was passed, get all artifact bags associated with that level
         params.put("foreignKey", level.getRemotePK());
         }
         else
         {
-            //if a timestamp was passed, get all artifacts updated after that time
+            //if a timestamp was passed, get all artifact bags updated after that time
             if(offline!=null)
             {
                 params.put("lastOnline", offline);
@@ -910,24 +904,24 @@ public class RemoteDatabaseHandler {
         }
 
         // getting JSON string from URL
-        JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
+        JSONObject json = jParser.makeHttpRequest(url_all_artifacts_bags, "GET", params);
 
         try {
             // Check your log cat for JSON reponse
-            Log.d("All artifacts: ", json.toString());
+            Log.d("All artifact bags: ", json.toString());
 
             try {
                 // Checking for SUCCESS TAG
                 int success = json.getInt(TAG_SUCCESS);
 
                 if (success == 1) {
-                    // artifacts found
-                    // Getting Array of artifacts
-                    artifacts = json.getJSONArray(TAG_ARTIFACTS);
+                    // artifact bags found
+                    // Getting Array of artifact bags
+                    artifactsBags = json.getJSONArray(TAG_ARTIFACTS_BAGS);
 
                     // looping through All sites
-                    for (int i = 0; i < artifacts.length(); i++) {
-                        JSONObject c = artifacts.getJSONObject(i);
+                    for (int i = 0; i < artifactsBags.length(); i++) {
+                        JSONObject c = artifactsBags.getJSONObject(i);
 
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
@@ -938,21 +932,21 @@ public class RemoteDatabaseHandler {
                         String dateCreated = c.getString(TAG_DATECREATED);
                         String dateUpdated = c.getString(TAG_DATEUPDATED);
 
-                        Artifact temp = null;
+                        ArtifactBag temp = null;
                         if(level!=null) {
-                            temp = new Artifact(level.getSite(), level.getUnit(), level, anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
+                            temp = new ArtifactBag(level.getSite(), level.getUnit(), level, anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
 
                         }else
                         {
-                            temp = new Artifact(null, null,
+                            temp = new ArtifactBag(null, null,
                                     new Level(-1, -1.0, -1.0, null, null, "", "", "", "", -1, Integer.parseInt(fk), null, null),
                                     anum, cnum, cont, -1, Integer.parseInt(id), Timestamp.valueOf(dateCreated), Timestamp.valueOf(dateUpdated));
 
                         }
-                        allArtifacts.add(temp);
+                        allArtifactBags.add(temp);
                     }
                 } else {
-                    // no artifacts found
+                    // no artifact bags found
                 }
                 online=true;
             } catch (JSONException e) {
@@ -963,29 +957,29 @@ public class RemoteDatabaseHandler {
             online=false;
             System.out.println("Getting all levels from sites with lpk: " + ldb.getLevelByRPK(level.getRemotePK()).getPk());
             if(level.getRemotePK()<0) { //Has not yet been saved online, doesn't have an rpk
-                allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(level.getPk());
+                allArtifactBags = (ArrayList) ldb.getAllArtifactsBagsFromLevel(level.getPk());
             }
             else
             {
-                allArtifacts = (ArrayList) ldb.getAllArtifactsFromLevel(ldb.getLevelByRPK(level.getRemotePK()).getPk());
+                allArtifactBags = (ArrayList) ldb.getAllArtifactsBagsFromLevel(ldb.getLevelByRPK(level.getRemotePK()).getPk());
             }
         }
-        return allArtifacts;
+        return allArtifactBags;
     }
 
-    public int createNewArtifact(Artifact artifact)
+    public int createNewArtifactBag(ArtifactBag artifactBag)
     {
         // Building Parameters
         HashMap params = new HashMap();
 
-        params.put("foreignKey", artifact.getLevel().getRemotePK()); //TODO: What if level isn't saved yet?
-        params.put("accNum", artifact.getAccessionNumber());
-        params.put("catNum", artifact.getCatalogNumber());
-        params.put("contents", artifact.getContents());
+        params.put("foreignKey", artifactBag.getLevel().getRemotePK()); //TODO: What if level isn't saved yet?
+        params.put("accNum", artifactBag.getAccessionNumber());
+        params.put("catNum", artifactBag.getCatalogNumber());
+        params.put("contents", artifactBag.getContents());
 
         // getting JSON Object
         // Note that create site url accepts POST method
-        JSONObject json = jsonParser.makeHttpRequest(url_create_artifact,
+        JSONObject json = jsonParser.makeHttpRequest(url_create_artifact_bag,
                 "POST", params);
 
         try {
@@ -1002,7 +996,7 @@ public class RemoteDatabaseHandler {
                     // closing this screen
                     return rpk;
                 } else {
-                    // failed to create artifact
+                    // failed to create artifactBag
                     return -2;
                 }
             } catch (JSONException e) {
@@ -1012,7 +1006,7 @@ public class RemoteDatabaseHandler {
         {
             online=false;
             // closing this screen
-            return (int) ldb.addArtifact(artifact);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
+            return (int) ldb.addArtifactBag(artifactBag);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
             //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
             //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
             //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
@@ -1022,19 +1016,19 @@ public class RemoteDatabaseHandler {
 
     }
 
-    public int updateArtifact(Artifact artifact)
+    public int updateArtifactBag(ArtifactBag artifactBag)
     {
         // Building Parameters
         HashMap params = new HashMap();
-        params.put("PrimaryKey", artifact.getRemotePK());
-        params.put("foreignKey", artifact.getLevel().getRemotePK()); //TODO: What if level isn't saved yet?
-        params.put("accNum", artifact.getAccessionNumber());
-        params.put("catNum", artifact.getCatalogNumber());
-        params.put("contents", artifact.getContents());
+        params.put("PrimaryKey", artifactBag.getRemotePK());
+        params.put("foreignKey", artifactBag.getLevel().getRemotePK()); //TODO: What if level isn't saved yet?
+        params.put("accNum", artifactBag.getAccessionNumber());
+        params.put("catNum", artifactBag.getCatalogNumber());
+        params.put("contents", artifactBag.getContents());
 
         // getting JSON Object
         // Note that update site url accepts POST method
-        JSONObject json = jsonParser.makeHttpRequest(url_update_artifact,
+        JSONObject json = jsonParser.makeHttpRequest(url_update_artifact_bag,
                 "PUT", params);
 
         try {
@@ -1051,7 +1045,7 @@ public class RemoteDatabaseHandler {
                     // closing this screen
                     return rpk;
                 } else {
-                    // failed to update artifact
+                    // failed to update artifactBag
                     return -2;
                 }
             } catch (JSONException e) {
@@ -1060,7 +1054,7 @@ public class RemoteDatabaseHandler {
         }catch(NullPointerException e)
         {
             online=false;
-            //ldb.addArtifact(artifact);
+            //ldb.addArtifact(artifactBag);
             // closing this screen
             return -1;
         }
@@ -1073,11 +1067,11 @@ public class RemoteDatabaseHandler {
         HashMap params = new HashMap();
         // getting JSON string from URL
         //TODO: pick something which will be faster
-        JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
+        JSONObject json = jParser.makeHttpRequest(url_all_artifacts_bags, "GET", params);
 
         try {
             // Check your log cat for JSON reponse
-            Log.d("All artifacts: ", json.toString());
+            Log.d("All artifact bags: ", json.toString());
             System.out.println("Checking onlineSince: " + onlineSince);
             if(!onlineSince.after(new Timestamp(0))) {   //if onlineSince is 00-00-0000 00:00:00 then server wasn't previously online
                 System.out.println("Online since was zero, updating it");

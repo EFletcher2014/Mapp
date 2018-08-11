@@ -4,13 +4,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -28,6 +25,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     private static ArrayList<Long> unsavedSites;
     private static ArrayList<Long> unsavedUnits;
     private static ArrayList<Long> unsavedLevels;
+    private static ArrayList<Long> unsavedArtifactsBags;
     private static ArrayList<Long> unsavedArtifacts;
 
     private static int DATABASE_VERSION = 1;
@@ -37,6 +35,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     private static final String TABLE_SITES = "sites";
     private static final String TABLE_UNITS = "units";
     private static final String TABLE_LEVELS = "levels";
+    private static final String TABLE_ARTIFACTS_BAGS = "artifactsBags";
     private static final String TABLE_ARTIFACTS = "artifacts";
     private static final String KEY_DATECREATED = "dateCreated";
     private static final String KEY_DATEUPDATED = "dateUpdated";
@@ -68,10 +67,17 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     private static final String KEY_NOTES = "notes";
     private static final String KEY_IMAGE_LINK = "imageLink";
 
-    //Artifacts Table Column names
+    //Artifacts Bags Table Column names
     private static final String KEY_ANUM = "accNum";
     private static final String KEY_CNUM = "catNum";
     private static final String KEY_CONTENTS = "contents";
+
+    //Artifacts Table Column names
+    private static final String KEY_BAG = "bagNum";
+    private static final String KEY_LEVEL = "levelPk";
+    //Also has a description field, but using the KEY_DESC above
+    private static final String KEY_SELECTION = "locationOnMap"; //TODO: should this be saved as a bitmap or a link to an image?
+    //TODO: Find some way to store a location or maybe the bitmap of the selection
 
     //Table Create Statements
     String CREATE_SITES_TABLE = "CREATE TABLE " + TABLE_SITES + "("
@@ -90,10 +96,14 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             + KEY_BD + " REAL, " + KEY_ED + " REAL, " + KEY_DATESTARTED + " DATETIME, " + KEY_EXCMETH
             + " TEXT, " + KEY_NOTES + " TEXT, " + KEY_IMAGE_LINK + " TEXT," + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
 
-    String CREATE_ARTIFACTS_TABLE = "CREATE TABLE " + TABLE_ARTIFACTS + "("
+    String CREATE_ARTIFACTS_BAGS_TABLE = "CREATE TABLE " + TABLE_ARTIFACTS_BAGS + "("
             + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_FK + " INTEGER, "
             + KEY_ANUM + " TEXT, " + KEY_CNUM + " INTEGER, " + KEY_CONTENTS + " TEXT, "
             + KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
+
+    String CREATE_ARTIFACTS_TABLE = "CREATE TABLE " + TABLE_ARTIFACTS + "("
+            + KEY_PK + " INTEGER PRIMARY KEY, " + REMOTE_PRIMARY_KEY + " INTEGER, " + KEY_LEVEL + " INTEGER, "
+            + KEY_BAG + " INTEGER, " + KEY_DESC + " TEXT, " + KEY_SELECTION + " BLOB," +KEY_DATECREATED + " DATETIME, " + KEY_DATEUPDATED + " DATETIME)";
 
     //Trigger Create Statements
     String UPDATE_SITES_TRIGGER = "CREATE TRIGGER updateTimestamp AFTER UPDATE ON " + TABLE_SITES
@@ -117,11 +127,18 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
             + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_LEVELS + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
             + "WHERE " + KEY_PK + " = new." + KEY_PK + ";" + " END";
 
+    String UPDATE_ARTIFACTS_BAGS_TRIGGER = "CREATE TRIGGER artifactBagUpdateTimestamp AFTER UPDATE ON " + TABLE_ARTIFACTS_BAGS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS_BAGS + " SET " + KEY_DATEUPDATED + " = current_timestamp"
+            + " WHERE " + KEY_PK + " = old." + KEY_PK + ";" + " END";
+    String CREATE_ARTIFACTS_BAGS_TRIGGER = "CREATE TRIGGER artifactBagCreateTimestamp AFTER INSERT ON " + TABLE_ARTIFACTS_BAGS
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS_BAGS + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
+            + "WHERE " + KEY_PK + " = new." + KEY_PK + ";" + " END";
+
     String UPDATE_ARTIFACTS_TRIGGER = "CREATE TRIGGER artifactUpdateTimestamp AFTER UPDATE ON " + TABLE_ARTIFACTS
-            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS + " SET " + KEY_DATEUPDATED + " = current_timestamp"
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS_BAGS + " SET " + KEY_DATEUPDATED + " = current_timestamp"
             + " WHERE " + KEY_PK + " = old." + KEY_PK + ";" + " END";
     String CREATE_ARTIFACTS_TRIGGER = "CREATE TRIGGER artifactCreateTimestamp AFTER INSERT ON " + TABLE_ARTIFACTS
-            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
+            + " FOR EACH ROW " + "BEGIN " + "UPDATE " + TABLE_ARTIFACTS_BAGS + " SET " + KEY_DATECREATED + " = current_timestamp, " + KEY_DATEUPDATED + " = current_timestamp "
             + "WHERE " + KEY_PK + " = new." + KEY_PK + ";" + " END";
 
     public LocalDatabaseHandler(Context context) {
@@ -151,13 +168,16 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_LEVELS_TABLE);
         db.execSQL(UPDATE_LEVELS_TRIGGER);
         db.execSQL(CREATE_LEVELS_TRIGGER);
+        db.execSQL(CREATE_ARTIFACTS_BAGS_TABLE);
         db.execSQL(CREATE_ARTIFACTS_TABLE);
+        db.execSQL(UPDATE_ARTIFACTS_BAGS_TRIGGER);
         db.execSQL(UPDATE_ARTIFACTS_TRIGGER);
+        db.execSQL(CREATE_ARTIFACTS_BAGS_TRIGGER);
         db.execSQL(CREATE_ARTIFACTS_TRIGGER);
         unsavedSites = new ArrayList<>();
         unsavedUnits = new ArrayList<>();
         unsavedLevels = new ArrayList<>();
-        unsavedArtifacts = new ArrayList<>();
+        unsavedArtifactsBags = new ArrayList<>();
     }
 
     // Upgrading database
@@ -167,6 +187,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SITES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_UNITS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LEVELS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ARTIFACTS_BAGS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ARTIFACTS);
 
         // Create tables again
@@ -796,29 +817,183 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         return success;
     }
 
-    //Adding new artifact
-    public long addArtifact(Artifact artifact){
+    //Adding new artifactBag
+    public long addArtifactBag(ArtifactBag artifactBag){
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-            values.put(REMOTE_PRIMARY_KEY, artifact.getPk());
-        if(artifact.getLevel()!=null)
+            values.put(REMOTE_PRIMARY_KEY, artifactBag.getPk());
+        if(artifactBag.getLevel()!=null)
         {
-            if(artifact.getLevel().getPk()>-1) {
-                values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key is local
+            if(artifactBag.getLevel().getPk()>-1) {
+                values.put(KEY_FK, artifactBag.getLevel().getPk()); //Foreign Key is local
             }
             else //only an rpk is saved, have to find that entry locally
             {
-                values.put(KEY_FK, getLevelByRPK(artifact.getLevel().getRemotePK()).getPk());
+                values.put(KEY_FK, getLevelByRPK(artifactBag.getLevel().getRemotePK()).getPk());
             }
         }
         else //TODO: delete, this shouldn't happen
         {
             values.put(KEY_FK, "");
         }
-        values.put(KEY_ANUM, artifact.getAccessionNumber()); // Artifact Accession Number
-        values.put(KEY_CNUM, artifact.getCatalogNumber());
-        values.put(KEY_CONTENTS, artifact.getContents());
+        values.put(KEY_ANUM, artifactBag.getAccessionNumber()); // ArtifactBag Accession Number
+        values.put(KEY_CNUM, artifactBag.getCatalogNumber());
+        values.put(KEY_CONTENTS, artifactBag.getContents());
+
+        // Inserting Row
+        long temp = db.insert(TABLE_ARTIFACTS_BAGS, null, values);
+        db.close(); // Closing database connection
+
+        return temp;
+    }
+
+    //Getting single artifact bag
+    public ArtifactBag getArtifactBag(int pk){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.query(TABLE_ARTIFACTS_BAGS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
+                        KEY_ANUM, KEY_CNUM, KEY_CONTENTS, KEY_DATECREATED, KEY_DATEUPDATED}, KEY_PK + "=?",
+                new String[] { String.valueOf(pk) }, null, null, null, null);
+
+        ArtifactBag artifactBag = null;
+
+        if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
+            //TODO: make this correct
+            Level l = getLevel(Integer.parseInt(cursor.getString(2)));
+            artifactBag = new ArtifactBag(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+        }
+        // return artifactBag
+        cursor.close();
+        return artifactBag;
+    }
+
+    // Getting All artifact bags
+    public List<ArtifactBag> getAllArtifactsBags() {
+        List<ArtifactBag> artifactBagList = new ArrayList<ArtifactBag>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS_BAGS;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                //TODO: make this correct
+                Level l = getLevel(Integer.parseInt(cursor.getString(2)));
+                ArtifactBag artifactBag = new ArtifactBag(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+
+                // Adding artifactBag to list
+                artifactBagList.add(artifactBag);
+            } while (cursor.moveToNext());
+        }
+
+        // return artifact bag list
+        cursor.close();
+        return artifactBagList;
+    }
+
+    // Getting All artifact bags
+    public List<ArtifactBag> getAllArtifactsBagsFromLevel(int fk) {
+        List<ArtifactBag> artifactBagList = new ArrayList<ArtifactBag>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS_BAGS + " WHERE " + KEY_FK + " = " + fk;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                //TODO: make this correct
+                Level l = getLevel(Integer.parseInt(cursor.getString(2)));
+                ArtifactBag artifactBag = new ArtifactBag(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+
+                // Adding artifactBag to list
+                artifactBagList.add(artifactBag);
+            } while (cursor.moveToNext());
+        }
+
+        // return artifact bag list
+        cursor.close();
+        return artifactBagList;
+    }
+
+    // Getting all artifact bags updated after the given time
+    public List<ArtifactBag> getAllArtifactsBagsUpdatedAfter(Timestamp offline) {
+        List<ArtifactBag> artifactBagList = new ArrayList<ArtifactBag>();
+
+        // Select All Query
+        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS_BAGS + " WHERE " + KEY_DATEUPDATED + " > \"" + offline + "\"";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                //TODO: make this correct
+                Level l = getLevel(Integer.parseInt(cursor.getString(2)));
+                ArtifactBag artifactBag = new ArtifactBag(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+
+                // Adding artifactBag to list
+                artifactBagList.add(artifactBag);
+            } while (cursor.moveToNext());
+        }
+
+        // return artifact bag list
+        cursor.close();
+        return artifactBagList;
+    }
+
+    //Getting artifact bag count
+    public int getArtifactsBagsCount(){
+        String countQuery = "SELECT  * FROM " + TABLE_ARTIFACTS_BAGS;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+
+        // return count
+        return cursor.getCount();
+    }
+
+    //Updating single artifactBag bag
+    public int updateArtifactBag(ArtifactBag artifactBag){ //TODO: rename to bag
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        if(artifactBag.getLevel().getPk()>-1)
+        {
+            values.put(KEY_FK, artifactBag.getLevel().getPk()); //Foreign Key
+        }
+        values.put(REMOTE_PRIMARY_KEY, artifactBag.getRemotePK());
+        values.put(KEY_ANUM, artifactBag.getAccessionNumber()); // ArtifactBag Accession Number
+        values.put(KEY_CNUM, artifactBag.getCatalogNumber());
+        values.put(KEY_CONTENTS, artifactBag.getContents());
+
+        // updating row
+        int success = db.update(TABLE_ARTIFACTS_BAGS, values, REMOTE_PRIMARY_KEY + " = ?",
+                new String[] { String.valueOf(artifactBag.getRemotePK()) });
+
+        if(success < 1)
+        {
+            success = (int) addArtifactBag(artifactBag);
+        }
+        return success;
+    }
+
+    //Adding new artifact
+    public long addArtifact(Artifact artifact){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(REMOTE_PRIMARY_KEY, artifact.getPk());
+        values.put(KEY_BAG, artifact.getBag().getPk()); // ArtifactBag Accession Number
+        values.put(KEY_LEVEL, artifact.getLevel().getPk());
+        values.put(KEY_DESC, artifact.getDescription());
+        values.put(KEY_SELECTION, artifact.getSelectionAsBytes());
 
         // Inserting Row
         long temp = db.insert(TABLE_ARTIFACTS, null, values);
@@ -827,22 +1002,20 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         return temp;
     }
 
-    //Getting single artifact
+    //Getting single artifact bag
     public Artifact getArtifact(int pk){
         SQLiteDatabase db = this.getWritableDatabase();
 
-        Cursor cursor = db.query(TABLE_ARTIFACTS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_FK,
-                        KEY_ANUM, KEY_CNUM, KEY_CONTENTS}, KEY_PK + "=?",
+        Cursor cursor = db.query(TABLE_ARTIFACTS, new String[] {KEY_PK, REMOTE_PRIMARY_KEY, KEY_BAG, KEY_LEVEL, KEY_DESC, KEY_SELECTION, KEY_DATECREATED, KEY_DATEUPDATED}, KEY_PK + "=?",
                 new String[] { String.valueOf(pk) }, null, null, null, null);
 
         Artifact artifact = null;
 
         if (cursor.moveToFirst()) { //Changed from if (cursor != null) by Emily Fletcher 10/30/2017
-            //TODO: make this correct
-            Level l = getLevel(Integer.parseInt(cursor.getString(2)));
-            artifact = new Artifact(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+            ArtifactBag bag = getArtifactBag(Integer.parseInt(cursor.getString(2)));
+            artifact = new Artifact(bag.getSite(), bag.getUnit(), bag.getLevel(), bag, Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), cursor.getString(4), cursor.getBlob(5), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
         }
-        // return artifact
+        // return artifactBag
         cursor.close();
         return artifact;
     }
@@ -860,21 +1033,20 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                //TODO: make this correct
-                Level l = getLevel(Integer.parseInt(cursor.getString(2)));
-                Artifact artifact = new Artifact(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+                ArtifactBag bag = getArtifactBag(Integer.parseInt(cursor.getString(2)));
+                Artifact artifact = new Artifact(/*bag.getSite(), bag.getUnit(), bag.getLevel(), bag,*/ null, null, null, null, Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), cursor.getString(4), cursor.getBlob(5), new Timestamp(0), new Timestamp(0)/*Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7))*/);
 
-                // Adding artifact to list
+                // Adding artifactBag to list
                 artifactList.add(artifact);
             } while (cursor.moveToNext());
         }
 
-        // return artifact list
+        // return artifact bag list
         cursor.close();
         return artifactList;
     }
 
-    // Getting All artifacts
+    // Getting All artifact bags
     public List<Artifact> getAllArtifactsFromLevel(int fk) {
         List<Artifact> artifactList = new ArrayList<Artifact>();
 
@@ -887,21 +1059,20 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
-                //TODO: make this correct
-                Level l = getLevel(Integer.parseInt(cursor.getString(2)));
-                Artifact artifact = new Artifact(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+                ArtifactBag bag = getArtifactBag(Integer.parseInt(cursor.getString(2)));
+                Artifact artifact = new Artifact(bag.getSite(), bag.getUnit(), bag.getLevel(), bag, Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), cursor.getString(4), cursor.getBlob(5), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
 
-                // Adding artifact to list
+                // Adding artifactBag to list
                 artifactList.add(artifact);
             } while (cursor.moveToNext());
         }
 
-        // return artifact list
+        // return artifact bag list
         cursor.close();
         return artifactList;
     }
 
-    // Getting all artifacts updated after the given time
+    // Getting all artifact updated after the given time
     public List<Artifact> getAllArtifactsUpdatedAfter(Timestamp offline) {
         List<Artifact> artifactList = new ArrayList<Artifact>();
 
@@ -915,15 +1086,15 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 //TODO: make this correct
-                Level l = getLevel(Integer.parseInt(cursor.getString(2)));
-                Artifact artifact = new Artifact(l.getSite(), l.getUnit(), l, cursor.getString(3), Integer.parseInt(cursor.getString(4)), cursor.getString(5), Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
+                ArtifactBag bag = getArtifactBag(Integer.parseInt(cursor.getString(2)));
+                Artifact artifact = new Artifact(bag.getSite(), bag.getUnit(), bag.getLevel(), bag, Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), cursor.getString(4), cursor.getBlob(5), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
 
                 // Adding artifact to list
                 artifactList.add(artifact);
             } while (cursor.moveToNext());
         }
 
-        // return artifact list
+        // return artifact bag list
         cursor.close();
         return artifactList;
     }
@@ -939,18 +1110,22 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Updating single artifact
-    public int updateArtifact(Artifact artifact){
+    public int updateArtifact(Artifact artifact){ //TODO: rename to bag
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        if(artifact.getLevel().getPk()>-1)
+
+        if(artifact.getLevel().getPk()>-1) //TODO: is this necessary? what if the level fk is -1
         {
-            values.put(KEY_FK, artifact.getLevel().getPk()); //Foreign Key
+            values.put(KEY_LEVEL, artifact.getLevel().getPk()); //Foreign Key
+        }
+        if(artifact.getBag().getPk()>-1)
+        {
+            values.put(KEY_BAG, artifact.getBag().getPk()); //Foreign Key
         }
         values.put(REMOTE_PRIMARY_KEY, artifact.getRemotePK());
-        values.put(KEY_ANUM, artifact.getAccessionNumber()); // Artifact Accession Number
-        values.put(KEY_CNUM, artifact.getCatalogNumber());
-        values.put(KEY_CONTENTS, artifact.getContents());
+        values.put(KEY_DESC, artifact.getDescription());
+        values.put(KEY_SELECTION, artifact.getSelectionAsBytes());
 
         // updating row
         int success = db.update(TABLE_ARTIFACTS, values, REMOTE_PRIMARY_KEY + " = ?",
@@ -964,17 +1139,19 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
     }
 
     //Updating entire database
-    public void update(ArrayList sites, ArrayList units, ArrayList levels, ArrayList artifacts)
+    public void update(ArrayList sites, ArrayList units, ArrayList levels, ArrayList artifactsBags, ArrayList artifacts)
     {
         //System.out.println("Sites to update to local: " + sites);
         unsavedSites = new ArrayList<>();
         unsavedUnits = new ArrayList<>();
         unsavedLevels = new ArrayList<>();
+        unsavedArtifactsBags = new ArrayList<>();
         unsavedArtifacts = new ArrayList<>();
 
         this.getWritableDatabase().delete(TABLE_SITES, null, null);
         this.getWritableDatabase().delete(TABLE_UNITS, null, null);
         this.getWritableDatabase().delete(TABLE_LEVELS, null, null);
+        this.getWritableDatabase().delete(TABLE_ARTIFACTS_BAGS, null, null);
         this.getWritableDatabase().delete(TABLE_ARTIFACTS, null, null);
 
 
@@ -992,6 +1169,11 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         for (int i=0; i<levels.size(); i++)
         {
             this.addLevel((Level) levels.get(i));
+        }
+
+        for(int i=0; i<artifactsBags.size(); i++)
+        {
+            this.addArtifactBag((ArtifactBag) artifactsBags.get(i));
         }
 
         for(int i=0; i<artifacts.size(); i++)

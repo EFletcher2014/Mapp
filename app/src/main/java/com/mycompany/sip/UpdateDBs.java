@@ -1,19 +1,9 @@
 package com.mycompany.sip;
 import android.content.Context;
-import android.database.CursorJoiner;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.Toast;
-
-import com.mycompany.sip.Site;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static com.mycompany.sip.Global.*;
 
@@ -56,7 +46,7 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
                 ArrayList<Level> allRemLevels = new ArrayList<>();
 
-                ArrayList<Artifact> allRemArtifacts = new ArrayList<>();
+                ArrayList<ArtifactBag> allRemArtifactBags = new ArrayList<>();
 
                 for (int j = 0; j < allRemSites.size(); j++) {
                     allRemUnits.addAll(rdb.loadAllUnits(allRemSites.get(j)));
@@ -71,7 +61,7 @@ class UpdateDBs extends AsyncTask<String, String, String>
                 JSONArray artifacts = null;
 
                 for (int j = 0; j < allRemLevels.size(); j++) {
-                    allRemArtifacts.addAll(rdb.loadAllArtifacts(allRemLevels.get(j)));
+                    allRemArtifactBags.addAll(rdb.loadAllArtifacts(allRemLevels.get(j)));
                 }*/
 
                 //Get entries from local server and loop through to add them to the remote
@@ -120,18 +110,18 @@ class UpdateDBs extends AsyncTask<String, String, String>
 //                }
 
                 //Update remote server
-                ArrayList<Artifact> allLocArtifacts = (ArrayList) ldb.getAllArtifactsUpdatedAfter(offlineSince);
+                ArrayList<ArtifactBag> allLocArtifactBags = (ArrayList) ldb.getAllArtifactsBagsUpdatedAfter(offlineSince);
 
-//                for (int i = 0; i < allLocArtifacts.size(); i++) {
-//                    Artifact temp = allLocArtifacts.get(i);
+//                for (int i = 0; i < allLocArtifactBags.size(); i++) {
+//                    ArtifactBag temp = allLocArtifactBags.get(i);
 //
-//                    if (temp.getFirstCreated().after(offlineSince)/*!allRemArtifacts.contains(temp)*/) {   //if created while offline add to remote
-//                        Artifact temp1 = new Artifact(temp.getSite(), temp.getUnit(), temp.getLevel(), temp.getAccessionNumber(), temp.getCatalogNumber(), temp.getContents(), -1, new Timestamp(0), new Timestamp(0));
+//                    if (temp.getFirstCreated().after(offlineSince)/*!allRemArtifactBags.contains(temp)*/) {   //if created while offline add to remote
+//                        ArtifactBag temp1 = new ArtifactBag(temp.getSite(), temp.getUnit(), temp.getLevel(), temp.getAccessionNumber(), temp.getCatalogNumber(), temp.getContents(), -1, new Timestamp(0), new Timestamp(0));
 //                        rdb.createNewArtifact(temp1);
 //                    } else if (temp.getLastUpdated().after(offlineSince)){     //if updated while offline add updates to remote
 //                        rdb.createNewArtifact(temp);
 //                    }
-//                    //System.out.println("Updated artifact: " + allLocArtifacts.get(i).getPk());
+//                    //System.out.println("Updated artifact: " + allLocArtifactBags.get(i).getPk());
 //                }
 
             //Get all entries in remote server
@@ -141,7 +131,7 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
             ArrayList<Level> allRemLevels = rdb.loadAllLevels(null, offlineSince);
 
-            ArrayList<Artifact> allRemArtifacts = rdb.loadAllArtifacts(null, offlineSince);
+            ArrayList<ArtifactBag> allRemArtifactBags = rdb.loadAllArtifactsBags(null, offlineSince);
 
             //Loop through all sites to create or update entries
             while(allLocSites.size()>0)
@@ -301,14 +291,14 @@ class UpdateDBs extends AsyncTask<String, String, String>
             allRemLevels.clear();
 
             //Loop through all artifacts to create or update entries
-            while(allLocArtifacts.size()>0)
+            while(allLocArtifactBags.size()>0)
             {
                 Boolean contains = false;
                 int loc = -1;
-                for(int j=0; j<allRemArtifacts.size(); j++)
+                for(int j = 0; j< allRemArtifactBags.size(); j++)
                 {
-                    if((allLocArtifacts.get(0).getRemotePK()>-1 && allRemArtifacts.get(j).getRemotePK()==(allLocArtifacts.get(0).getRemotePK()))
-                            || allLocArtifacts.get(0).equals(allRemArtifacts.get(j)))
+                    if((allLocArtifactBags.get(0).getRemotePK()>-1 && allRemArtifactBags.get(j).getRemotePK()==(allLocArtifactBags.get(0).getRemotePK()))
+                            || allLocArtifactBags.get(0).equals(allRemArtifactBags.get(j)))
                     {//if artifacts have the same rpk or same site number, they are the same
                         contains=true;
                         loc = j;
@@ -318,39 +308,39 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
                 if(contains) //if site was updated both locally and remotely while offline
                 {
-                    if(allRemArtifacts.get(loc).getLastUpdated().after(allLocArtifacts.get(0).getLastUpdated())) //if remote site was updated most recently
+                    if(allRemArtifactBags.get(loc).getLastUpdated().after(allLocArtifactBags.get(0).getLastUpdated())) //if remote site was updated most recently
                     {
-                        ldb.updateArtifact(allRemArtifacts.get(loc)); //update the local site to match it
+                        ldb.updateArtifactBag(allRemArtifactBags.get(loc)); //update the local site to match it
                     }
                     else
                     {
-                        int temppk=rdb.updateArtifact(allLocArtifacts.get(0)); //otherwise, update remote site to match local
+                        int temppk=rdb.updateArtifactBag(allLocArtifactBags.get(0)); //otherwise, update remote site to match local
                         if(temppk>-1) //this means the update worked
                         {
-                            allLocArtifacts.get(0).setRemotePK(temppk); //save the correct rpk to the local database
-                            ldb.updateArtifact(allLocArtifacts.get(0));
+                            allLocArtifactBags.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                            ldb.updateArtifactBag(allLocArtifactBags.get(0));
                         }
                     }
-                    allRemArtifacts.remove(loc); //was already synced, remove
+                    allRemArtifactBags.remove(loc); //was already synced, remove
                 }
                 else { //if local site wasn't also updated remotely
-                    int temppk=rdb.updateArtifact(allLocArtifacts.get(0)); //update it remotely
+                    int temppk=rdb.updateArtifactBag(allLocArtifactBags.get(0)); //update it remotely
                     if(temppk>-1) //this means the update worked
                     {
-                        allLocArtifacts.get(0).setRemotePK(temppk); //save the correct rpk to the local database
-                        ldb.updateArtifact(allLocArtifacts.get(0));
+                        allLocArtifactBags.get(0).setRemotePK(temppk); //save the correct rpk to the local database
+                        ldb.updateArtifactBag(allLocArtifactBags.get(0));
                     }
                 }
-                allLocArtifacts.remove(0); //was already synced, remove
+                allLocArtifactBags.remove(0); //was already synced, remove
             }
 
             //If any remote artifacts are left over (weren't also updated locally while offline) update those now
-            for(int j=0; j<allRemArtifacts.size(); j++)
+            for(int j = 0; j< allRemArtifactBags.size(); j++)
             {
-                ldb.updateArtifact(allRemArtifacts.get(j));
+                ldb.updateArtifactBag(allRemArtifactBags.get(j));
 
             }
-            allRemArtifacts.clear();
+            allRemArtifactBags.clear();
                 ldb.setLastUpdated(new Timestamp(System.currentTimeMillis()));
 
 
@@ -456,7 +446,7 @@ class UpdateDBs extends AsyncTask<String, String, String>
 
                 ArrayList<Level> allRemLevels = rdb.loadAllLevels(null, ldb.lastUpdated());
 
-                ArrayList<Artifact> allRemArtifacts = rdb.loadAllArtifacts(null, ldb.lastUpdated());
+                ArrayList<ArtifactBag> allRemArtifactBags = rdb.loadAllArtifactsBags(null, ldb.lastUpdated());
 
                 for(int i=0; i<allRemSites.size(); i++)
                 {
@@ -476,9 +466,9 @@ class UpdateDBs extends AsyncTask<String, String, String>
                     ldb.updateLevel(allRemLevels.get(i));
                 }
 
-                for(int i=0; i<allRemArtifacts.size(); i++)
+                for(int i = 0; i< allRemArtifactBags.size(); i++)
                 {
-                    ldb.updateArtifact(allRemArtifacts.get(i));
+                    ldb.updateArtifactBag(allRemArtifactBags.get(i));
                 }
 
                 ldb.setLastUpdated(new Timestamp(System.currentTimeMillis()));

@@ -150,8 +150,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:clickable="true"
-                android:id="@+id/toAddArtifactsActivity"
-                android:text="Click here to see artifacts found in this level"
+                android:id="@+id/toAddArtifactsBagsActivity"
+                android:text="Click here to see artifact bags for this level"
                 android:layout_gravity="center_horizontal"
                 android:color="@color/colorText"/>
 
