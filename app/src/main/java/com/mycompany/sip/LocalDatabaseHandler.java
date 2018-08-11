@@ -1051,7 +1051,7 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
         List<Artifact> artifactList = new ArrayList<Artifact>();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS + " WHERE " + KEY_FK + " = " + fk;
+        String selectQuery = "SELECT  * FROM " + TABLE_ARTIFACTS + " WHERE " + KEY_LEVEL + " = " + fk;
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -1062,12 +1062,12 @@ public class LocalDatabaseHandler extends SQLiteOpenHelper {
                 ArtifactBag bag = getArtifactBag(Integer.parseInt(cursor.getString(2)));
                 Artifact artifact = new Artifact(bag.getSite(), bag.getUnit(), bag.getLevel(), bag, Integer.parseInt(cursor.getString(0)), Integer.parseInt(cursor.getString(1)), cursor.getString(4), cursor.getBlob(5), Timestamp.valueOf(cursor.getString(6)), Timestamp.valueOf(cursor.getString(7)));
 
-                // Adding artifactBag to list
+                // Adding artifact to list
                 artifactList.add(artifact);
             } while (cursor.moveToNext());
         }
 
-        // return artifact bag list
+        // return artifact list
         cursor.close();
         return artifactList;
     }

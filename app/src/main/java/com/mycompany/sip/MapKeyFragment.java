@@ -22,6 +22,8 @@ import static com.mycompany.sip.Global.*;
 
 
 /**
+ * A ListFragment to display a list of artifacts and features selected on a canvas in selectActivity
+ * Not working as of 8/11/2018--listview won't populate
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
  * {@link MapKeyFragment.OnFragmentInteractionListener} interface
@@ -29,20 +31,13 @@ import static com.mycompany.sip.Global.*;
  * Use the {@link MapKeyFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MapKeyFragment extends ListFragment{
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+public class MapKeyFragment extends ListFragment
+{
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private OnFragmentInteractionListener mListener;
 
     private ProgressDialog pDialog;
     private Context context;
-    //ListView alv;
 
 
     //HashMap to be passed to ListView, contains artifact's name and primary key
@@ -100,6 +95,7 @@ public class MapKeyFragment extends ListFragment{
         super.onViewCreated(view, savedInstanceState);
         //alv = (ListView) view.findViewById(android.R.id.list);
         System.out.println("View created!");
+        this.context = view.getContext();
     }
 
     @Override
@@ -109,16 +105,19 @@ public class MapKeyFragment extends ListFragment{
     }
 
 
-    public ListAdapter refreshArtifactsLV(Artifact artifact, Context con, ListView alv)
+    public ListAdapter refreshArtifactsLV(Artifact artifact, Context con, ListView alv, Level level)
     {
+        //TODO: use asynctasks
+        //TODO: split into add artifact and load artifacts methods
         pDialog = new ProgressDialog(con);
         ldb = new LocalDatabaseHandler(con);
         this.artifact = artifact;
         System.out.println("Adding artifact: " + artifact);
         if(artifact != null) {
             ldb.addArtifact(this.artifact);
+            //new CreateNewArtifact().execute();
         }
-        ArrayList<Artifact> afacts = (ArrayList) ldb.getAllArtifacts();
+        ArrayList<Artifact> afacts = (ArrayList) ldb.getAllArtifacts(); //TODO: should be getAllArtifactsFromLevel, but that's broken and isn't worth fixing
         artifactsMap = new ArrayList<HashMap<String, String>>();
 
         for(int i=0; i<afacts.size(); i++)
@@ -128,7 +127,7 @@ public class MapKeyFragment extends ListFragment{
             HashMap<String, String> testMap = new HashMap<String, String>();
 
             // adding each child node to HashMap key => value
-            testMap.put(TAG_PID, /*afacts.get(i).getPk()*/ i + "");
+            testMap.put(TAG_PID, afacts.get(i).getPk() + "");
             testMap.put("name", afacts.get(i).toString());
             System.out.println("testmap: " + testMap);
 
@@ -151,15 +150,6 @@ public class MapKeyFragment extends ListFragment{
         aadapter.notifyDataSetChanged();
 
         return adapter;
-
-        //return adapter;
-
-
-
-
-        //TODO: add an rdb method for this
-        //new CreateNewArtifact().execute();
-        //new LoadAllArtifacts().execute();
     }
 
     /**
@@ -178,7 +168,8 @@ public class MapKeyFragment extends ListFragment{
     }
 
     /**
-     * Background Async Task to Create new level
+     * Background Async Task to Create new artifact
+     * Not used right now, will complicate listview which already isn't working.
      * */
     class LoadAllArtifacts extends AsyncTask<String, String, String> {
 
@@ -203,6 +194,7 @@ public class MapKeyFragment extends ListFragment{
             //TODO: add remote capability
             //madeArtifact=(rdb.createNewArtifact(artifact)>-1);
             artifactsList = (ArrayList) ldb.getAllArtifactsFromLevel(artifact.getLevel().getPk());
+            artifactsMap = new ArrayList<HashMap<String, String>>();
 
             for(int i=0; i<artifactsList.size(); i++)
             {
@@ -210,8 +202,8 @@ public class MapKeyFragment extends ListFragment{
                 HashMap<String, String> testMap = new HashMap<String, String>();
 
                 // adding each child node to HashMap key => value
-                testMap.put(TAG_PID, artifact.getPk() + "");
-                testMap.put("name", artifact.toString());
+                testMap.put(TAG_PID, i + "");
+                testMap.put("name", artifactsList.get(i).toString());
 
                 // adding HashList to ArrayList
                 artifactsMap.add(testMap);
@@ -240,7 +232,8 @@ public class MapKeyFragment extends ListFragment{
     }
 
     /**
-     * Background Async Task to Create new level
+     * Background Async Task to Create new artifact
+     * Not used right now, will complicate listview
      * */
     class CreateNewArtifact extends AsyncTask<String, String, String> {
 

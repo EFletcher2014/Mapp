@@ -89,7 +89,7 @@ public class selectActivity extends AppCompatActivity implements MapKeyFragment.
         View m = inflater.inflate(R.layout.fragment_map, null); //creates canvas
 
         final ListView a = (ListView) m.findViewById(android.R.id.list); //references artifacts ListView in MapKeyFragment
-        ListAdapter  adapter = mf.refreshArtifactsLV(null, imageDraw.getContext(), a); //attempts to refresh listview to display all created artifacts
+        ListAdapter  adapter = mf.refreshArtifactsLV(null, imageDraw.getContext(), a, level); //attempts to refresh listview to display all created artifacts
                                                                     //but doesn't work. Passes null because no new artifacts have been created yet
         a.setAdapter(adapter);
         System.out.println("adapter " + a.getAdapter());
@@ -169,7 +169,7 @@ public class selectActivity extends AppCompatActivity implements MapKeyFragment.
                 imageDraw.save(bitmap);
 
                 artifact = new Artifact(level.getSite(), level.getUnit(), level, new ArtifactBag(level.getSite(), level.getUnit(), level, "", -1, -1, new Timestamp(0)), -1, -1, name.getText().toString(), bitmap, new Timestamp(0), new Timestamp(0));
-                mf.refreshArtifactsLV(artifact, imageDraw.getContext(), a);
+                mf.refreshArtifactsLV(artifact, imageDraw.getContext(), a, level);
 
             }
 
