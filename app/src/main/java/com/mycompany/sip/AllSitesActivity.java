@@ -8,23 +8,19 @@ package com.mycompany.sip;
         import java.text.SimpleDateFormat;
         import java.util.ArrayList;
         import java.util.HashMap;
-        import java.util.StringTokenizer;
+        import java.util.Map;
 
         import org.json.JSONArray;
-        import org.json.JSONException;
-        import org.json.JSONObject;
 
         import android.app.AlertDialog;
         import android.app.ListActivity;
         import android.app.ProgressDialog;
         import android.content.DialogInterface;
         import android.content.Intent;
-        import android.graphics.Color;
         import android.os.AsyncTask;
         import android.os.Build;
         import android.os.Bundle;
-        import android.support.v4.content.ContextCompat;
-        import android.support.v4.content.res.ResourcesCompat;
+        import android.support.annotation.NonNull;
         import android.util.Log;
         import android.view.ContextThemeWrapper;
         import android.view.LayoutInflater;
@@ -32,7 +28,6 @@ package com.mycompany.sip;
         import android.widget.AdapterView;
         import android.widget.AdapterView.OnItemClickListener;
         import android.widget.Button;
-        import android.widget.DatePicker;
         import android.widget.EditText;
         import android.widget.ListAdapter;
         import android.widget.ListView;
@@ -40,11 +35,20 @@ package com.mycompany.sip;
         import android.widget.TextView;
         import android.widget.Toast;
 
+        import com.google.android.gms.tasks.OnCompleteListener;
+        import com.google.android.gms.tasks.Task;
+        import com.google.firebase.firestore.*;
+
+        import static android.content.ContentValues.TAG;
         import static com.mycompany.sip.Global.*;
 
 public class AllSitesActivity extends ListActivity {
         // Progress Dialog--from AndroidHive -EF
         private ProgressDialog pDialog;
+
+        //Firebase
+        FirebaseFirestore mappDB = FirebaseFirestore.getInstance();
+        DatabaseHandler handler = new DatabaseHandler();
 
         //Handler for local SQLite database to backup data to device
         LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
@@ -142,30 +146,7 @@ public class AllSitesActivity extends ListActivity {
 
                 // Loading sites in Background Thread
             if(!test) {
-                final UpdateDBs update = new UpdateDBs(getApplicationContext());
-                new Thread (new Runnable () {
-                    public void run() {
-                        //if (rdb.isOnline()) {
-                        //update.execute();
-                    //}
-                    }
-                }).start();
-
-                int i=0;
-
-                updateComplete = true;
-                while(!updateComplete)
-                {
-                    if(i<100) {
-                        //Just killing time--probably a better way to do this
-                        System.out.println("Waiting for update to complete");
-                    }
-
-                    i++;
-                }
-                if(updateComplete) {
-                    new LoadAllSites().execute();
-                }
+                new LoadAllSites().execute();
             }
             else
             {
@@ -183,7 +164,6 @@ public class AllSitesActivity extends ListActivity {
 
                     // adding HashList to ArrayList
                     sitesList.add(testMap);
-                    System.out.println("Sites: " + sitesList);
                 }
 
                 //From androidhive tutorial
@@ -192,6 +172,7 @@ public class AllSitesActivity extends ListActivity {
                         R.layout.list_item, new String[] { TAG_PID,
                         TAG_SITENAME},
                         new int[] { R.id.pid, R.id.name });
+
                 // updating listview
                 setListAdapter(adapter);
             }
@@ -216,8 +197,7 @@ public class AllSitesActivity extends ListActivity {
                                 Intent in = new Intent(view.getContext(),
                                         AllUnitsActivity.class);
                                 // sending pk to list units activity
-                                in.putExtra(TAG_PID, Integer.parseInt(pid));
-                            System.out.println("Pk: " + Integer.parseInt(pid));
+                                in.putExtra(TAG_PID, pid);
 
                                 if(test)
                                 {
@@ -225,8 +205,7 @@ public class AllSitesActivity extends ListActivity {
                                 }
                                 else
                                 {
-                                    Site temp = new Site("", "", "", "", "", Integer.parseInt(pid), Integer.parseInt(pid), null, null);
-                                    in.putExtra(TAG_SITENAME, ldb.getSite(Integer.parseInt(pid)));//Get from the server sites
+                                    in.putExtra(TAG_SITENAME, handler.getSite(pid));
                                 }
 
                                 // starting unit activity
@@ -237,7 +216,7 @@ public class AllSitesActivity extends ListActivity {
 
                 //on clicking new site button
                 //launching new site dialog
-                /*FloatingAction*/Button newSite = (/*FloatingAction*/Button) findViewById(R.id.newSiteBtn);
+                Button newSite = (Button) findViewById(R.id.newSiteBtn);
                 newSite.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View view) {
@@ -284,134 +263,58 @@ public class AllSitesActivity extends ListActivity {
                         pDialog.setIndeterminate(false);
                         pDialog.setCancelable(false);
                         pDialog.show();
-                        //I'm putting this here because I want it to execute in the background after
-                        //the pDialog is gone. However, I'm nervous that the remDB could go offline
-                        //between the time RemoteDatabaseHandler.online is set to true and this command
-                        //I'll handle that in UpdateDBs though
-
-                    System.out.println("Local sites: " + ldb.getAllSites());
                 }
 
                 /**
                  * getting All sites from url
                  * */
                 protected String doInBackground(String... args) {
-                    allSites = rdb.LoadAllSites(null);
-                    System.out.println("Sites recovered: " + allSites);
-                        for(int i = 0; i<allSites.size(); i++)
-                        {
-                                Site temp = allSites.get(i);
-                                // creating new HashMap
-                                HashMap<String, String> map = new HashMap<String, String>();
+                    allSites = new ArrayList<>();
+                    mappDB.collection("sites")
+                            .get()
+                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        for (QueryDocumentSnapshot document : task.getResult()) {
+                                            Site site = new Site(document.getId(), document.get("Name").toString(), document.get("Number").toString(), document.get("Description").toString());
+                                            allSites.add(site);
+                                            Log.d(TAG, document.getId() + " => " + document.getData());
+                                        }
 
-                                // for each site, saving its pk and name to the hashmap for the listview
-                                if(temp.getRemotePK()>-1) {
-                                    map.put(TAG_PID, temp.getRemotePK() + "");
-                                    System.out.println("Pk...: " + temp.getRemotePK());
+                                        System.out.println("Sites recovered: " + allSites);
+                                        for(int i = 0; i<allSites.size(); i++)
+                                        {
+                                            Site temp = allSites.get(i);
+                                            // creating new HashMap
+                                            HashMap<String, String> map = new HashMap<String, String>();
+                                            map.put(TAG_PID, temp.getNumber());
+                                            map.put(TAG_SITENAME, temp.getName());
+
+                                            // adding HashList to ArrayList
+                                            sitesList.add(map);
+                                        }
+
+                                        runOnUiThread(new Runnable() {
+                                            public void run() {
+                                                /**
+                                                 * Updating parsed JSON data into ListView
+                                                 * */
+                                                ListAdapter adapter = new SimpleAdapter(
+                                                        AllSitesActivity.this, sitesList,
+                                                        R.layout.list_item, new String[] { TAG_PID,
+                                                        TAG_SITENAME},
+                                                        new int[] { R.id.pid, R.id.name }); //listview entries will contain site's pk and name
+
+                                                // updating listview
+                                                setListAdapter(adapter);
+                                            }
+                                        });
+                                    } else {
+                                        Log.w(TAG, "Error getting documents.", task.getException());
+                                    }
                                 }
-                                else
-                                {
-                                    map.put(TAG_PID, temp.getPk() + "");
-                                }
-                                map.put(TAG_SITENAME, temp.getName());
-
-                                // adding HashList to ArrayList
-                                sitesList.add(map);
-                        }
-//                    // Building Parameters
-//                    HashMap params = new HashMap();
-//                    // getting JSON string from URL
-//                    JSONObject json = jParser.makeHttpRequest(url_all_sites, "GET", params);
-
-                    // Check your log cat for JSON reponse
-//                    try {
-//                        Log.d("All sites: ", json.toString());
-//                        try {
-//                            // Checking for SUCCESS TAG
-//                            int success = json.getInt(TAG_SUCCESS);
-//
-//                            if (success == 1) {
-//                                // sites found
-//                                // Getting Array of sites
-//                                sites = json.getJSONArray(TAG_SITES);
-//
-//                                // looping through All sites
-//                                for (int i = 0; i < sites.length(); i++) {
-//                                    JSONObject c = sites.getJSONObject(i);
-//
-//                                    // Storing each json item in variable
-//                                    String pk = c.getString(TAG_PID);
-//                                    String name = c.getString(TAG_SITENAME);
-//                                    String siteNumber = c.getString(TAG_SITENUM);
-//                                    String location = c.getString(TAG_LOC);
-//                                    String description = c.getString(TAG_DESC);
-//                                    String date = c.getString(TAG_DATEDISC);
-//
-//                                    //Creating model object named temp
-//                                    Site temp = new Site(name, siteNumber, date, location, description, Integer.parseInt(pk));
-//                                    allSites.add(temp); //Adding temp to list of sites
-//
-//                                    // creating new HashMap
-//                                    HashMap<String, String> map = new HashMap<String, String>();
-//
-//                                    // for each site, saving its pk and name to the hashmap for the listview
-//                                    map.put(TAG_PID, pk);
-//                                    map.put(TAG_SITENAME, name);
-//
-//                                    // adding HashList to ArrayList
-//                                    sitesList.add(map);
-//
-//                                    //Backup local changes to remote server
-//                                    //TODO: should be done async, to ensure all changes are saved, not just the ones being accessed
-//
-//                                    //save to local database
-//                                    if(ldb.getSite(temp.getPk())==null)//If the site doesn't exist already
-//                                    {
-//                                        System.out.println("Adding new site " + temp + " to SQLite DB");
-//                                        System.out.println(temp.getPk() + " " + ldb.getSite(temp.getPk()));
-//                                        ldb.addSite(temp);
-//                                    }*/
-//                                    /*else
-//                                    {
-//                                        System.out.println("Site " + temp + " already exists and was updated!");
-//                                        //TODO: Should I ever need to update from the remote server? I don't think so
-//                                        //ldb.updateSite(temp);
-//                                    }*/
-//
-//                                    //TODO: Add any SQLite entries to the remote server, and update any remote entries
-//                                    System.out.println(ldb.getSitesCount());
-//                                    System.out.println(ldb.getSite(temp.getPk()));
-//                                    System.out.println(ldb.getAllSites().toString());
-//                                }
-//                            } else {
-//                                // no sites found
-//                                // Launch Add New product Dialog
-//                            }
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                        return null;
-//                    }catch(NullPointerException e)
-//                    {
-//                        //Server isn't running/reachable, so just get stuff from local one
-//                        System.out.println("do the thing");
-//                        System.out.println(ldb.getSitesCount());
-//                        allSites = (ArrayList) ldb.getAllSites();
-//                        for(int i = 0; i<allSites.size(); i++)
-//                        {
-//                                Site temp = allSites.get(i);
-//                                // creating new HashMap
-//                                HashMap<String, String> map = new HashMap<String, String>();
-//
-//                                // for each site, saving its pk and name to the hashmap for the listview
-//                                map.put(TAG_PID, temp.getPk() + "");
-//                                map.put(TAG_SITENAME, temp.getName());
-//
-//                                // adding HashList to ArrayList
-//                                sitesList.add(map);
-//                        }
-//                    }
+                            });
                     return null;
                 }
 
@@ -422,22 +325,7 @@ public class AllSitesActivity extends ListActivity {
                 protected void onPostExecute(String file_url) {
                         // dismiss the dialog after getting all sites
                         pDialog.dismiss();
-                        // updating UI from Background Thread
-                        runOnUiThread(new Runnable() {
-                                public void run() {
-                                        /**
-                                         * Updating parsed JSON data into ListView
-                                         * */
-                                        ListAdapter adapter = new SimpleAdapter(
-                                                AllSitesActivity.this, sitesList,
-                                                R.layout.list_item, new String[] { TAG_PID,
-                                                TAG_SITENAME},
-                                                new int[] { R.id.pid, R.id.name }); //listview entries will contain site's pk and name
 
-                                        // updating listview
-                                        setListAdapter(adapter);
-                                }
-                        });
                 }
 
         }
@@ -466,8 +354,13 @@ public class AllSitesActivity extends ListActivity {
          * Creating site
          * */
         protected String doInBackground(String... args) {
-            success=(rdb.CreateNewSite(site)>-1);
+            Map<String, Object> temp = new HashMap<>();
+            temp.put("Description", site.getDescription());
+            temp.put("Name", site.getName());
+            temp.put("Number", site.getNumber());
 
+            mappDB.collection("sites").add(temp);
+            success = true;
             return null;
         }
 
@@ -477,11 +370,6 @@ public class AllSitesActivity extends ListActivity {
         protected void onPostExecute(String file_url) {
             // dismiss the dialog once done
             pDialog.dismiss();
-                //I'm putting this here because I want it to execute in the background after
-                //the pDialog is gone. However, I'm nervous that the remDB could go offline
-                //between the time RemoteDatabaseHandler.online is set to true and this command
-                //I'll handle that in UpdateDBs though
-                //new UpdateDBs(getApplicationContext()).execute();
 
             if(success) {
                 // closing this screen
@@ -609,31 +497,9 @@ public class AllSitesActivity extends ListActivity {
 
                     //if not testing, save to server
                     if (!test) {
-                        final UpdateDBs update1 = new UpdateDBs(getApplicationContext());
-                        new Thread (new Runnable () {
-                            public void run() {
-                                if (rdb.isOnline()) {
-                                    //try {
-                                        //update1.execute();//.get();
-                                    //}catch(java.lang.InterruptedException | java.util.concurrent.ExecutionException e)
-                                    //{
-                                     //   System.out.println("Error during the thing");
-                                    //}
-                                }
-                            }
-                        }).start();
 
-                        updateComplete = true;
-                        while(!updateComplete)
-                        {
-                            //Just killing time--probably a better way to do this
-                            System.out.println("Waiting for update to complete");
-                        }
-                        if(updateComplete) {
-                            System.out.println("Update complete, starting to create a site");
-                            // creating new site in background thread
-                            new CreateNewSite().execute();
-                        }
+                        new CreateNewSite().execute();
+
                     } else {
                         System.out.println("Site: " + site.toString());
                         // just go to next activity
@@ -662,7 +528,6 @@ public class AllSitesActivity extends ListActivity {
         // this is set the view from XML inside AlertDialog
         alert.setView(siteLayout);
         AlertDialog dialog = alert.create();
-        //dialog.getButton(DialogInterface.BUTTON_NEGATIVE).setTextColor(ContextCompat.getColor(siteLayout.getContext(), R.color.colorAccent));
         dialog.show();
     }
 

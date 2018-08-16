@@ -18,10 +18,18 @@ public class Site implements Parcelable {
     private String location;
     private String description;
     private int pk;
+    private String id;
     private int remotePK;
     private Timestamp lastUpdated;
     private Timestamp firstCreated;
 
+    public Site(String i, String n, String nu, String desc)
+    {
+        name = n;
+        id = i;
+        number = nu;
+        description = desc;
+    }
     public Site(String n, String num, int pk, Timestamp created)
     {
         this.name=n;
@@ -57,6 +65,11 @@ public class Site implements Parcelable {
     public String getName()
     {
         return name;
+    }
+
+    public String getID()
+    {
+        return id;
     }
 
     public String getNumber()

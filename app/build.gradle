@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '25.0.0'
-
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.mycompany.sip"
-        minSdkVersion 8
+        minSdkVersion 14
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -20,12 +20,24 @@ android {
             debuggable true
         }
     }
+    productFlavors {
+    }
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:design:23.1.1'
-    compile project(':mysql-connector-java-5.0.8-bin')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(':mysql-connector-java-5.0.8-bin')
+    implementation 'com.android.support:appcompat-v7:23.1.1'
+    implementation 'com.android.support:design:23.1.1'
+    implementation 'com.google.firebase:firebase-storage:16.0.1'
+    implementation 'com.google.firebase:firebase-auth:16.0.3'
+    implementation 'com.google.firebase:firebase-core:16.0.1'
+    implementation 'com.google.firebase:firebase-database:16.0.1'
+    implementation 'com.google.firebase:firebase-firestore:17.1.0'
+    implementation 'com.google.android.gms:play-services-places:15.0.1'
+    implementation 'com.android.support:multidex:1.0.3'
+    testImplementation 'junit:junit:4.12'
 }
+
+
+apply plugin: 'com.google.gms.google-services'
