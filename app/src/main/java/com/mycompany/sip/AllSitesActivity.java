@@ -21,12 +21,14 @@ package com.mycompany.sip;
         import android.os.Build;
         import android.os.Bundle;
         import android.support.annotation.NonNull;
+        import android.support.annotation.Nullable;
         import android.util.Log;
         import android.view.ContextThemeWrapper;
         import android.view.LayoutInflater;
         import android.view.View;
         import android.widget.AdapterView;
         import android.widget.AdapterView.OnItemClickListener;
+        import android.widget.ArrayAdapter;
         import android.widget.Button;
         import android.widget.EditText;
         import android.widget.ListAdapter;
@@ -37,6 +39,7 @@ package com.mycompany.sip;
 
         import com.google.android.gms.tasks.OnCompleteListener;
         import com.google.android.gms.tasks.Task;
+        import com.google.android.gms.tasks.Tasks;
         import com.google.firebase.firestore.*;
 
         import static android.content.ContentValues.TAG;
@@ -48,7 +51,9 @@ public class AllSitesActivity extends ListActivity {
 
         //Firebase
         FirebaseFirestore mappDB = FirebaseFirestore.getInstance();
-        DatabaseHandler handler = new DatabaseHandler();
+        DatabaseHandler handler;
+        CollectionReference docRef; //todo: will be a docref once users added
+        Task<QuerySnapshot> task;
 
         //Handler for local SQLite database to backup data to device
         LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
@@ -120,6 +125,43 @@ public class AllSitesActivity extends ListActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             System.out.println("created");
+            //handler = new DatabaseHandler();
+
+            docRef = mappDB.collection("sites");
+            docRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot snapshot,
+                                    @Nullable FirebaseFirestoreException e) {
+
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        if(doc != null) {
+                            Object tempName = doc.get("Name");
+                            Object tempNum = doc.get("Number");
+                            Object tempDesc = doc.get("Description");
+
+                            Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
+                                    (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()));
+
+                            int index = Global.sites.indexOf(temp);
+                            if (index < 0) {
+                                Global.sites.add(temp);
+                            }
+                            else
+                            {
+                                Global.sites.set(index, temp);
+                            }
+                        }
+                    }
+                    //new LoadAllSites().execute();
+                    loadSites();
+                }
+            });
+
             //this.getApplicationContext().deleteDatabase("mapp");
                 super.onCreate(savedInstanceState);
 
@@ -146,7 +188,7 @@ public class AllSitesActivity extends ListActivity {
 
                 // Loading sites in Background Thread
             if(!test) {
-                new LoadAllSites().execute();
+                //new LoadAllSites().execute();
             }
             else
             {
@@ -205,7 +247,9 @@ public class AllSitesActivity extends ListActivity {
                                 }
                                 else
                                 {
-                                    in.putExtra(TAG_SITENAME, handler.getSite(pid));
+
+                                    //TODO: instead of getting id from site and passing it here to get site to pass to unit, can we just pass site?
+                                    in.putExtra(TAG_SITENAME, Global.sites.get(Global.sites.indexOf(new Site(pid, "", "", ""))));
                                 }
 
                                 // starting unit activity
@@ -227,6 +271,38 @@ public class AllSitesActivity extends ListActivity {
                     }
             });
 
+        }
+
+        private void loadSites()
+        {
+            sitesList = new ArrayList<HashMap<String, String>>();
+            for(int i = 0; i<Global.sites.size(); i++)
+            {
+                Site temp = Global.sites.get(i);
+                // creating new HashMap
+                HashMap<String, String> map = new HashMap<String, String>();
+                map.put(TAG_PID, temp.getID());
+                map.put(TAG_SITENAME, temp.getName());
+
+                // adding HashList to ArrayList
+                sitesList.add(map);
+            }
+
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    /**
+                     * Updating parsed JSON data into ListView
+                     * */
+                    ListAdapter adapter = new SimpleAdapter(
+                            AllSitesActivity.this, sitesList,
+                            R.layout.list_item, new String[] { TAG_PID,
+                            TAG_SITENAME},
+                            new int[] { R.id.pid, R.id.name }); //listview entries will contain site's pk and name
+
+                    // updating listview
+                    setListAdapter(adapter);
+                }
+            });
         }
 
         //TODO: I don't think I even use this--delete?
@@ -269,7 +345,9 @@ public class AllSitesActivity extends ListActivity {
                  * getting All sites from url
                  * */
                 protected String doInBackground(String... args) {
-                    allSites = new ArrayList<>();
+                    //handler = new DatabaseHandler();
+                    //handler.getAllSites(getListView().getContext());
+
                     mappDB.collection("sites")
                             .get()
                             .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -278,14 +356,15 @@ public class AllSitesActivity extends ListActivity {
                                     if (task.isSuccessful()) {
                                         for (QueryDocumentSnapshot document : task.getResult()) {
                                             Site site = new Site(document.getId(), document.get("Name").toString(), document.get("Number").toString(), document.get("Description").toString());
-                                            allSites.add(site);
+                                            if(!Global.sites.contains(site)) {
+                                                Global.sites.add(site);
+                                            }
                                             Log.d(TAG, document.getId() + " => " + document.getData());
                                         }
 
-                                        System.out.println("Sites recovered: " + allSites);
-                                        for(int i = 0; i<allSites.size(); i++)
+                                        for(int i = 0; i<Global.sites.size(); i++)
                                         {
-                                            Site temp = allSites.get(i);
+                                            Site temp = Global.sites.get(i);
                                             // creating new HashMap
                                             HashMap<String, String> map = new HashMap<String, String>();
                                             map.put(TAG_PID, temp.getNumber());
@@ -323,6 +402,37 @@ public class AllSitesActivity extends ListActivity {
                  * and add data to listview
                  * **/
                 protected void onPostExecute(String file_url) {
+
+//                    if(Global.sites != null && !Global.sites.isEmpty())
+//                    {
+//                        for(int i = 0; i<Global.sites.size(); i++)
+//                        {
+//                            Site temp = Global.sites.get(i);
+//                            // creating new HashMap
+//                            HashMap<String, String> map = new HashMap<String, String>();
+//                            map.put(TAG_PID, temp.getNumber());
+//                            map.put(TAG_SITENAME, temp.getName());
+//
+//                            // adding HashList to ArrayList
+//                            sitesList.add(map);
+//                        }
+//
+//                        runOnUiThread(new Runnable() {
+//                            public void run() {
+//                                *
+//                                 * Updating parsed JSON data into ListView
+//                                 *
+//                                ListAdapter adapter = new SimpleAdapter(
+//                                        AllSitesActivity.this, sitesList,
+//                                        R.layout.list_item, new String[] { TAG_PID,
+//                                        TAG_SITENAME},
+//                                        new int[] { R.id.pid, R.id.name }); //listview entries will contain site's pk and name
+//
+//                                // updating listview
+//                                setListAdapter(adapter);
+//                            }
+//                        });
+//                    }
                         // dismiss the dialog after getting all sites
                         pDialog.dismiss();
 

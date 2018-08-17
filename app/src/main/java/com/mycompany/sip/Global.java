@@ -1,6 +1,9 @@
 package com.mycompany.sip;
 
+import android.widget.ArrayAdapter;
+
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 /**
  * Created by Emily on 12/7/2017.
@@ -10,6 +13,9 @@ public class Global {
 
     // url to get all sites list
     public static String url_all_sites = "http://75.134.106.101:80/mapp/get_all_sites.php";
+
+    //sites list
+    public static ArrayList<Site> sites = new ArrayList<>();
 
     // url to create new site
     public static String url_create_site = "http://75.134.106.101:80/mapp/create_new_site.php";
