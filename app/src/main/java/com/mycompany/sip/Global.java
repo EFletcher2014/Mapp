@@ -1,6 +1,9 @@
 package com.mycompany.sip;
 
+import android.widget.ArrayAdapter;
+
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 /**
  * Created by Emily on 12/7/2017.
@@ -11,11 +14,16 @@ public class Global {
     // url to get all sites list
     public static String url_all_sites = "http://75.134.106.101:80/mapp/get_all_sites.php";
 
+
+
     // url to create new site
     public static String url_create_site = "http://75.134.106.101:80/mapp/create_new_site.php";
 
     // url to update site
     public static String url_update_site = "http://75.134.106.101:80/mapp/update_site.php";
+
+    //sites list
+    public static ArrayList<Site> sites = new ArrayList<>();
 
     // url to get all units list
     public static String url_all_units = "http://75.134.106.101:80/mapp/get_all_units.php";
@@ -26,6 +34,9 @@ public class Global {
     // url to update unit
     public static String url_update_unit = "http://75.134.106.101:80/mapp/update_unit.php";
 
+    //units list
+    public static ArrayList<Unit> units = new ArrayList<>();
+
     // url to get all levels list
     public static String url_all_levels = "http://75.134.106.101:80/mapp/get_all_levels.php";
     
@@ -34,6 +45,9 @@ public class Global {
 
     // url to update level
     public static String url_update_level = "http://75.134.106.101:80/mapp/update_level.php";
+
+    //levels list
+    public static ArrayList<Level> levels = new ArrayList<>();
 
     // url to upload image
     public static String url_upload_image = "http://75.134.106.101/mapp/upload_image.php";
@@ -46,6 +60,7 @@ public class Global {
 
     // url to update artifact
     public static String url_update_artifact = "http://75.134.106.101:80/mapp/update_artifact.php";
+
     
     // Site JSON Node names--column headings in database, which allow JSON to parse data
     public static final String TAG_PID = "PrimaryKey";
@@ -79,7 +94,7 @@ public class Global {
     public static final String TAG_NOTES = "notes";
     public static final String TAG_IMPATH = "imagePath";
 
-    // Artifact JSON Node names
+    // ArtifactBag JSON Node names
     public static final String TAG_ARTIFACTS = "artifacts";
     public static final String TAG_ANUM = "accNum";
     public static final String TAG_CNUM = "catNum";
