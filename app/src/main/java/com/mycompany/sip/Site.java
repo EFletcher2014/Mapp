@@ -1,7 +1,10 @@
 package com.mycompany.sip;
 
+import android.graphics.Point;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.google.android.gms.maps.model.LatLng;
 
 import java.sql.Timestamp;
 
@@ -15,51 +18,27 @@ public class Site implements Parcelable {
     private String name;
     private String number;
     private String dateOpened;
-    private String location;
     private String description;
-    private int pk;
     private String id;
-    private int remotePK;
-    private Timestamp lastUpdated;
-    private Timestamp firstCreated;
+    private LatLng datum;
 
-    public Site(String i, String n, String nu, String desc)
+    public Site(String i, String n, String nu, String desc, String date, double latude, double lotude)
     {
         name = n;
         id = i;
         number = nu;
         description = desc;
-    }
-    public Site(String n, String num, int pk, Timestamp created)
-    {
-        this.name=n;
-        this.number=num;
-        this.pk=pk;
-        this.firstCreated=created;
-    }
-    public Site(String n, String num, String date, String loc, String desc, int p, int rpk, Timestamp created, Timestamp updated)
-    {
-        this.name=n;
-        this.number=num;
-        this.dateOpened=date;
-        this.location=loc;
-        this.description=desc;
-        this.pk=p;
-        this.remotePK=rpk;
-        this.firstCreated=created;
-        this.lastUpdated=updated;
+        dateOpened = date;
+        datum = new LatLng(latude, lotude);
     }
 
     public Site(Parcel in) {
+        this.id = in.readString();
         this.name = in.readString();
         this.number = in.readString();
         this.dateOpened = in.readString();
-        this.location = in.readString();
         this.description = in.readString();
-        this.pk = in.readInt();
-        this.remotePK = in.readInt();
-        this.firstCreated=new Timestamp(in.readLong()); //TODO: Will this work?
-        this.lastUpdated=new Timestamp(in.readLong()); //TODO: same
+        this.datum = new LatLng(in.readDouble(), in.readDouble());
     }
 
     public String getName()
@@ -82,19 +61,14 @@ public class Site implements Parcelable {
         return dateOpened;
     }
 
-    public String getLocation()
-    {
-        return location;
-    }
-
     public String getDescription()
     {
         return description;
     }
 
-    public Timestamp getFirstCreated() { return firstCreated; }
+    public LatLng getDatum() { return datum; }
 
-    public Timestamp getLastUpdated() { return lastUpdated; }
+
 
     @Override
     public String toString()
@@ -117,30 +91,26 @@ public class Site implements Parcelable {
         dateOpened=d;
     }
 
-    public void setLocation(String l)
-    {
-        location=l;
-    }
-
     public void setDescription(String des)
     {
         description=des;
     }
 
-    public void setLastUpdated(Timestamp t) { lastUpdated=t; }
+    public void setDatum(double la, double lo)
+    {
+        datum = new LatLng(la, lo);
+    }
 
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
+        dest.writeString(id);
         dest.writeString(name);
         dest.writeString(number);
         dest.writeString(dateOpened);
-        dest.writeString(location);
         dest.writeString(description);
-        dest.writeInt(pk);
-        dest.writeInt(remotePK);
-        dest.writeLong((firstCreated!=null ? firstCreated.getTime() : 0));
-        dest.writeLong((lastUpdated!=null ? lastUpdated.getTime() : 0));
+        dest.writeDouble(datum.latitude);
+        dest.writeDouble(datum.longitude);
     }
 
     @Override
@@ -159,19 +129,15 @@ public class Site implements Parcelable {
         }
     };
 
-    public int getPk(){
-        return pk;
-    }
-
-    public int getRemotePK() { return remotePK; }
-
-    public void setRemotePK(int rpk) { remotePK = rpk; }
     @Override
     public boolean equals(Object o)
     {
         try {
-            String num = ((Site) o).getNumber();
-            return this.getNumber().equals(num);
+            String id = ((Site) o).getID();
+            Boolean same = this.getID().equals(id);
+            return same;
+            //String num = ((Site) o).getNumber();
+            //return this.getNumber().equals(num);
         }catch(Exception e)
         {
             return false;

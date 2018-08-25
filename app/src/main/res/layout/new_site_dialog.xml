@@ -134,13 +134,31 @@
             android:paddingTop="10dip"
             android:textSize="17dip"/>
 
-        <!-- Input Location -->
-        <EditText android:id="@+id/inputLoca"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:orientation="horizontal">
+            <!-- Input Latitude -->
+            <EditText android:id="@+id/inputLat"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:singleLine="true"
+                android:inputType="numberDecimal"
+                android:hint="latitude"
+                android:layout_weight="1"/>
+            <!-- Input Longitude -->
+            <EditText android:id="@+id/inputLong"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:singleLine="true"
+                android:inputType="numberDecimal"
+                android:hint="longitude"
+                android:layout_weight="1"/>
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

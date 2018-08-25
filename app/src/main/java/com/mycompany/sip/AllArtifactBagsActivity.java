@@ -3,14 +3,12 @@ package com.mycompany.sip;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.json.JSONArray;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
@@ -28,7 +26,13 @@ import android.widget.Toast;
 
 import static com.mycompany.sip.Global.*;
 
-public class AllArtifactsActivity extends ListActivity {
+public class AllArtifactBagsActivity extends ListActivity {
+
+    public static boolean isActive;
+
+    //Firebase
+    FirebaseHandler fbh = FirebaseHandler.getInstance();
+
     // Progress Dialog
     private ProgressDialog pDialog;
 
@@ -44,20 +48,33 @@ public class AllArtifactsActivity extends ListActivity {
     private EditText catNum;
     private EditText contents;
     private String pid;
+    private String depth;
     ArrayList<ArtifactBag> allArtifactBags = new ArrayList<>();
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        isActive = true;
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        isActive = false;
+    }
+
+    public boolean isActive()
+    {
+        return isActive;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_artifacts);
-
-        if(savedInstanceState!=null)
-        {
-            if(savedInstanceState.getBoolean("alert"))
-            {
-                showDialog(new ArtifactBag(site, unit, level, "", savedInstanceState.getString("Accession Number"), Integer.parseInt(savedInstanceState.getString("Catalog Number")), savedInstanceState.getString("Contents")));
-            }
-        }
+        fbh.updateArtifactBagActivity(this);
 
         // Hashmap for ListView
         artifactBagsList = new ArrayList<HashMap<String, String>>();
@@ -72,11 +89,30 @@ public class AllArtifactsActivity extends ListActivity {
         String title = site.getName() + " " + unit.getDatum() + " Level " + level.getNumber() + " Artifacts";
         titleText.setText(title);
 
-        //TODO: load artifactBags from Firebase
-
+        fbh.getArtifactBagsFromLevel(level);
 
         // Get listview
         ListView lv = getListView();
+
+        if(savedInstanceState!=null)
+        {
+            if(savedInstanceState.getBoolean("alert"))
+            {
+                if(savedInstanceState.get("ID").toString() == "")
+                {
+                    artifactBag = new ArtifactBag(site, unit, level, "", savedInstanceState.get("AccNum").toString(), Integer.parseInt(savedInstanceState.get("CatNum").toString()), savedInstanceState.get("Contents").toString());
+                    showDialog(artifactBag);
+                }
+                else {
+                    System.out.println(savedInstanceState.get("ID").toString() + " " + allArtifactBags);
+                    artifactBag = allArtifactBags.get(allArtifactBags.indexOf(new ArtifactBag(site, unit, level, savedInstanceState.get("ID").toString(), "", -1, "")));
+                    artifactBag.setAccessionNumber(savedInstanceState.get("AccNum").toString());
+                    artifactBag.setCatalogNumber(Integer.parseInt(savedInstanceState.get("CatNum").toString()));
+                    artifactBag.setContents(savedInstanceState.get("Contents").toString());
+                    showDialog(artifactBag);
+                }
+            }
+        }
 
         //TODO: make this do something else (but what??). Fix in other activities
         // on seleting single level
@@ -90,15 +126,9 @@ public class AllArtifactsActivity extends ListActivity {
                     .toString();
                 pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
-                String su = ((TextView) view.findViewById(R.id.su)).getText().toString();
-                if(test)
-                {
-                    showDialog(testArtifactBags[Integer.parseInt(pid)]);
-                }
-                else
-                {
-                    showDialog(allArtifactBags.get(Integer.parseInt(su)));
-                }
+
+                artifactBag = allArtifactBags.get(allArtifactBags.indexOf(new ArtifactBag(site, unit, level, pid, "", -1, "" )));
+                showDialog(artifactBag);
 
 
                 //TODO: make these fields autofill, like the other edit screens
@@ -107,13 +137,14 @@ public class AllArtifactsActivity extends ListActivity {
             }
         });
 
-        //on clicking new Level button
-        //launching new level activity
-       Button newArtifact = (Button) findViewById(R.id.newArtifactBtn);
-        newArtifact.setOnClickListener(new View.OnClickListener() {
+        //on clicking new ArtifactBag button
+        //launching new artifact bag activity
+       Button newArtifactBag = (Button) findViewById(R.id.newArtifactBtn);
+        newArtifactBag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showDialog(null);
+                artifactBag = new ArtifactBag(site, unit, level, "", "", -1, "");
+                showDialog(artifactBag);
 
                 //TODO: When user clicks save, should save to server and add new artifactBag to list
             }
@@ -121,6 +152,61 @@ public class AllArtifactsActivity extends ListActivity {
 
     }
 
+    //method called by FirebaseHandler to populate listview
+    public void loadArtifactBags(ArrayList<ArtifactBag> newABags)
+    {
+        //adding new units passed from FirebaseHandler
+        for (int i = 0; i < newABags.size(); i++) {
+            ArtifactBag temp = newABags.get(i);
+            int index = allArtifactBags.indexOf(temp);
+            if (index < 0) {
+                allArtifactBags.add(temp);
+            } else {
+                allArtifactBags.set(index, temp);
+            }
+        }
+
+        //ArrayList containing unit datum and id to populate listview
+        artifactBagsList = new ArrayList<HashMap<String, String>>();
+
+        //Looping through all artifact bags to add them to listview
+        for(int i = 0; i < allArtifactBags.size(); i++)
+        {
+            ArtifactBag temp = allArtifactBags.get(i);
+
+            // creating new HashMap
+            HashMap<String, String> map = new HashMap<String, String>();
+            map.put(TAG_PID, temp.getID());
+            map.put(TAG_UNITNAME, temp.toString());
+
+            // adding HashList to ArrayList
+            artifactBagsList.add(map);
+        }
+
+        //adding arraylist to listview
+        runOnUiThread(new Runnable() {
+            public void run() {
+                /**
+                 * Updating parsed JSON data into ListView
+                 * */
+                ListAdapter adapter = new SimpleAdapter(
+                        AllArtifactBagsActivity.this, artifactBagsList,
+                        R.layout.list_item, new String[] { TAG_PID,
+                        TAG_UNITNAME},
+                        new int[] { R.id.pid, R.id.name }); //listview entries will contain unit's id and name
+
+                // updating listview
+                setListAdapter(adapter);
+            }
+        });
+    }
+
+    public Level getLevel()
+    {
+        return level;
+    }
+
+    //TODO: is this necessary
     // Response from Edit Product Activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -137,255 +223,6 @@ public class AllArtifactsActivity extends ListActivity {
 
     }
 
-    /**
-     * Background Async Task to Load all product by making HTTP Request
-     * */
-    class LoadAllArtifacts extends AsyncTask<String, String, String> {
-
-        /**
-         * Before starting background thread Show Progress Dialog
-         * */
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pDialog = new ProgressDialog(AllArtifactsActivity.this);
-            pDialog.setMessage("Loading artifacts. Please wait...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            pDialog.show();
-            //new UpdateDBs(getApplicationContext()).execute();
-        }
-
-        /**
-         * getting All artifacts from url
-         * */
-        protected String doInBackground(String... args) {
-            //allArtifactBags = rdb.loadAllArtifacts(level, null);
-            for(int i = 0; i< allArtifactBags.size(); i++)
-            {
-                ArtifactBag temp = allArtifactBags.get(i);
-
-                // creating new HashMap
-                HashMap<String, String> map = new HashMap<String, String>();
-
-                // adding each child node to HashMap key => value
-                map.put(TAG_PID, temp.getPk() + "");
-                map.put("name", temp.toString());
-                map.put("Level ArtifactBag", i + "");
-
-                // adding HashList to ArrayList
-                artifactsList.add(map);
-            }
-            /*// Building Parameters
-            HashMap params = new HashMap();
-
-            params.put("foreignKey", foreignKey);
-
-            // getting JSON string from URL
-            JSONObject json = jParser.makeHttpRequest(url_all_artifacts, "GET", params);
-
-            try {
-                // Check your log cat for JSON reponse
-                Log.d("All artifacts: ", json.toString());
-
-                try {
-                    // Checking for SUCCESS TAG
-                    int success = json.getInt(TAG_SUCCESS);
-
-                    if (success == 1) {
-                        // artifacts found
-                        // Getting Array of artifacts
-                        artifacts = json.getJSONArray(TAG_ARTIFACTS);
-
-                        // looping through All sites
-                        for (int i = 0; i < artifacts.length(); i++) {
-                            JSONObject c = artifacts.getJSONObject(i);
-
-                            // Storing each json item in variable
-                            String id = c.getString(TAG_PID);
-                            String anum = c.getString(TAG_ANUM);
-                            System.out.println(anum);
-                            int cnum = c.getInt(TAG_CNUM);
-                            String cont = c.getString(TAG_CONT);
-
-                            ArtifactBag temp = new ArtifactBag(site, unit, level, anum, cnum, cont, Integer.parseInt(id));
-                            String name = temp.toString();
-                            System.out.println(temp.toString());
-                            allArtifactBags.add(temp);
-
-                            // creating new HashMap
-                            HashMap<String, String> map = new HashMap<String, String>();
-
-                            // adding each child node to HashMap key => value
-                            map.put(TAG_PID, id);
-                            map.put("name", name);
-                            map.put("Level ArtifactBag", i + "");
-
-                            // adding HashList to ArrayList
-                            artifactsList.add(map);
-
-                            //save to local database
-                            if (ldb.updateArtifact(temp, temp.getLevel().getPk()) == 0) {
-                                System.out.println("Adding new artifactBag to SQLite DB");
-                                ldb.addArtifact(temp);
-                            } else {
-                                System.out.println();
-                            }
-                            System.out.println(ldb.getArtifactsCount());
-                            System.out.println(ldb.getArtifact(i));
-                            System.out.println(ldb.getAllArtifacts().toString());
-                        }
-                    } else {
-                        // no artifacts found
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }catch(NullPointerException e)
-            {
-                allArtifactBags = (ArrayList) ldb.getAllArtifactsFromLevel(level.getPk());
-                for(int i=0; i<allArtifactBags.size(); i++)
-                {
-                    ArtifactBag temp = allArtifactBags.get(i);
-
-                    // creating new HashMap
-                    HashMap<String, String> map = new HashMap<String, String>();
-
-                    // adding each child node to HashMap key => value
-                    map.put(TAG_PID, temp.getPk() + "");
-                    map.put("name", temp.toString());
-                    map.put("Level ArtifactBag", i + "");
-
-                    // adding HashList to ArrayList
-                    artifactsList.add(map);
-                }
-            }*/
-            return null;
-        }
-
-        /**
-         * After completing background task Dismiss the progress dialog
-         * **/
-        protected void onPostExecute(String file_url) {
-            // dismiss the dialog after getting all sites
-            pDialog.dismiss();
-            // updating UI from Background Thread
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    if(artifactsList.size()!=0) {
-                        /**
-                         * Updating parsed JSON data into ListView
-                         * */
-                        ListAdapter adapter = new SimpleAdapter(
-                                AllArtifactsActivity.this, artifactsList,
-                                R.layout.list_item, new String[]{TAG_PID,
-                                "name", "Level ArtifactBag"},
-                                new int[]{R.id.pid, R.id.name, R.id.su});
-                        // updating listview
-                        setListAdapter(adapter);
-                    }else
-                    {
-                        showDialog(null);
-                    }
-                }
-            });
-
-        }
-
-    }
-
-
-    /**
-     * Background Async Task to Create new artifactBag
-     * */
-    class CreateNewArtifact extends AsyncTask<String, String, String> {
-
-        /**
-         * Before starting background thread Show Progress Dialog
-         * */
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pDialog = new ProgressDialog(AllArtifactsActivity.this);
-            pDialog.setMessage("Creating ArtifactBag..");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(true);
-            pDialog.show();
-            //new UpdateDBs(getApplicationContext()).execute();
-        }
-
-        /**
-         * Creating artifactBag
-         * */
-        protected String doInBackground(String... args) {
-            if (true/*rdb.createNewArtifact(artifactBag)>0*/) {
-                // successfully created artifactBag
-                // closing this screen
-                finish();
-
-                //restarting activity so list will include new artifactBag
-                startActivity(getIntent());
-            } else {
-                // failed to create artifactBag
-            }
-            /*// Building Parameters
-            HashMap params = new HashMap();
-            params.put("foreignKey", foreignKey);
-            params.put("accNum", artifactBag.getAccessionNumber());
-            params.put("catNum", artifactBag.getCatalogNumber());
-            params.put("contents", artifactBag.getContents());
-
-            // getting JSON Object
-            // Note that create site url accepts POST method
-            JSONObject json = jsonParser.makeHttpRequest(url_create_artifact,
-                    "POST", params);
-
-            try {
-                // check log cat fro response
-                Log.d("Create Response", json.toString());
-
-                // check for success tag
-                try {
-                    int success = json.getInt(TAG_SUCCESS);
-
-                    if (success == 1) {
-
-                        // closing this screen
-                        finish();
-                        startActivity(getIntent());
-                    } else {
-                        // failed to create artifactBag
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }catch(NullPointerException e)
-            {
-                ldb.addArtifact(artifactBag);//TODO: ldb's primary keys must be the same as the remote server's, but this one isn't there and won't be until the user connects
-                                        //TODO: to the internet again. So what should we do? Let it default set for now and update it when we back up to remote server?
-                                        //TODO: Then the ldb.update methods will have to be able to update PKs which I'm not sure is allowed...
-                                        //TODO: Since both servers will have the same set of primary keys I guess we could just go with it and set the remote server's
-                                        //TODO: when we're updating...But then we have to do more PHP stuff I think
-                // closing this screen
-                finish();
-
-                //restarting activity so list will include new site
-                startActivity(getIntent());
-            }
-*/
-            return null;
-        }
-
-        /**
-         * After completing background task Dismiss the progress dialog
-         * **/
-        protected void onPostExecute(String file_url) {
-            // dismiss the dialog once done
-            pDialog.dismiss();
-        }
-
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         // Make sure to call the super method so that the states of our views are saved
@@ -394,8 +231,14 @@ public class AllArtifactsActivity extends ListActivity {
         if(alert!=null)
         {
             outState.putBoolean("alert", true);
-            outState.putString("Accession Number", accNum.getText().toString());
-            outState.putString("Catalog Number", catNum.getText().toString());
+            outState.putString("ID", artifactBag == null ? "" : artifactBag.getID());
+            outState.putString("AccNum", accNum.getText().toString());
+            try {
+                outState.putInt("CatNum", Integer.parseInt(catNum.getText().toString()));
+            }catch(NumberFormatException e)
+            {
+                outState.putInt("CatNum", -1);
+            }
             outState.putString("Contents", contents.getText().toString());
 
         }
@@ -404,7 +247,7 @@ public class AllArtifactsActivity extends ListActivity {
             outState.putBoolean("alert", false);
         }
     }
-    private void showDialog(ArtifactBag art)
+    private void showDialog(final ArtifactBag art)
     {
         LayoutInflater inflater = getLayoutInflater();
         final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
@@ -414,7 +257,7 @@ public class AllArtifactsActivity extends ListActivity {
         }
         else
         {
-            alert = new AlertDialog.Builder(AllArtifactsActivity.this);
+            alert = new AlertDialog.Builder(AllArtifactBagsActivity.this);
         }
         accNum = (EditText) artifactLayout.findViewById(R.id.accNum);
         catNum = (EditText) artifactLayout.findViewById(R.id.catNum);
@@ -422,9 +265,11 @@ public class AllArtifactsActivity extends ListActivity {
 
         if(art!=null)
         {
-            String cnum = art.getCatalogNumber() + "";
             accNum.setText(art.getAccessionNumber());
-            catNum.setText(cnum);
+            if(art.getCatalogNumber() > -1) {
+                String cnum = art.getCatalogNumber() + "";
+                catNum.setText(cnum);
+            }
             contents.setText(art.getContents());
         }
         alert.setTitle("Edit ArtifactBag");
@@ -440,19 +285,16 @@ public class AllArtifactsActivity extends ListActivity {
                 {
                     c=0;
                 }
-                artifactBag = new ArtifactBag(site, unit, level, accNum.getText().toString(), c, contents.getText().toString(), -1, -1, null, null);
+
+                if(art != null) {
+                    art.setAccessionNumber(accNum.getText().toString());
+                    art.setCatalogNumber(c);
+                    art.setContents(contents.getText().toString());
+                }
 
                 if(!(accNum.getText().toString().equals("")) && !(catNum.getText().toString().equals("")) && !(contents.getText().toString().equals("")))
                 {
-                    if(test) {
-                        CharSequence toastMessage = "Saving ArtifactBag...";
-                        Toast toast = Toast.makeText(artifactLayout.getContext(), toastMessage, Toast.LENGTH_LONG);
-                        toast.show();
-                    }
-                    else
-                    {
-                        new CreateNewArtifact().execute();
-                    }
+                    fbh.createArtifactBag(art);
                     alert=null;
                 }
                 else

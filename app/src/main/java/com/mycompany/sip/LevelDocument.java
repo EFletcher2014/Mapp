@@ -2,100 +2,48 @@ package com.mycompany.sip;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
-import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 import android.widget.ViewSwitcher;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.Socket;
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Date;
-import org.json.*;
-
-import static android.content.ContentValues.TAG;
-import static com.mycompany.sip.Global.*;
 
 //TODO: allow this to save a new level and also edit an old one
 
-public class MapHome extends AppCompatActivity {
+public class LevelDocument extends AppCompatActivity {
 
+    //TODO: is this needed
     public static boolean isActive;
-
-    // Progress Dialog
-    private ProgressDialog pDialog;
 
     //Firebase
     FirebaseHandler fbh = FirebaseHandler.getInstance();
 
     private static int SELECT_PICTURE = 1;
-    JSONParser jsonParser = new JSONParser();
   
     private Uri selectedImageUri = null;
-    private String userName = "root";
-    private String password = "";
-    private String dbms = "mysql";
-    private String serverName = "192.168.2.7";//"192.168.1.187"; //"184.53.49.56";
-    private String portNumber = "3306";
-    private String dbName = "mapp";
     private String siteName;
     private String siteNumber;
-    private String ID;
     private int pk = -1, fk = -1, lvlNum = -1;
     private String unitNumber = "";
     private String levelNumber;
-    private String levelDepth;
-    private String imageReference = "IMAGE";
-    private String description = "DESCRIPTION HERE2";
-    private String dateTime;
     private Site site;
     private Unit unit;
     private Level level;
@@ -107,7 +55,6 @@ public class MapHome extends AppCompatActivity {
     private ViewSwitcher switcher;
     private static final int CAMERA_REQUEST = 1888;
     private int rotation = 0;
-    private boolean madeLevel = false;
 
     @Override
     public void onStart()
@@ -179,7 +126,6 @@ public class MapHome extends AppCompatActivity {
             unit = level.getUnit();
             unitNumber = unit.getDatum();
             levelNumber = level.getNumber() + "";
-            levelDepth = level.getDepth();
             if(level.getBegDepth()!=-1)
             {
                 begDepth.setText(level.getBegDepth() + "");
@@ -239,7 +185,7 @@ public class MapHome extends AppCompatActivity {
             public void onClick(View view) {
                 if(level!=null) {
                     //Move to select on image activity
-                    Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactsActivity.class);
+                    Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactBagsActivity.class);
                     artifactActivityIntent.putExtra("name", site);
                     artifactActivityIntent.putExtra("datum", unit);
                     artifactActivityIntent.putExtra("depth", level);
@@ -297,6 +243,10 @@ public class MapHome extends AppCompatActivity {
                 level.setNotes(n);
 
                 fbh.createLevel(level);
+
+                //TODO: should probably check that level was saved
+                setResult(Activity.RESULT_OK);
+                finish();
             }
         });
 
@@ -342,7 +292,6 @@ public class MapHome extends AppCompatActivity {
                      switcher.showNext();
                  }
                  selectedImageUri = data.getData();
-                 imageReference = selectedImageUri.toString();
                  unitImage.setImageURI(selectedImageUri);
                  rotation = 0;
              }
@@ -371,7 +320,7 @@ public class MapHome extends AppCompatActivity {
         }
         else
         {
-            alert = new AlertDialog.Builder(MapHome.this);
+            alert = new AlertDialog.Builder(LevelDocument.this);
         }
         alert.setTitle("Cancel?");
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -398,7 +347,7 @@ public class MapHome extends AppCompatActivity {
     {
         LayoutInflater inflater = getLayoutInflater();
         final View chooserLayout = inflater.inflate(R.layout.chooser_dialog, null);
-        alert1 = new AlertDialog.Builder(MapHome.this);
+        alert1 = new AlertDialog.Builder(LevelDocument.this);
         alert1.setView(chooserLayout);
         alert1.setTitle("Add A Picture:");
         alert1.setIcon(R.drawable.ic_add_a_photo_white_24dp);
