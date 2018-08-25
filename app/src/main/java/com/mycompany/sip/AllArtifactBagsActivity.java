@@ -33,9 +33,6 @@ public class AllArtifactBagsActivity extends ListActivity {
     //Firebase
     FirebaseHandler fbh = FirebaseHandler.getInstance();
 
-    // Progress Dialog
-    private ProgressDialog pDialog;
-
     ArrayList<HashMap<String, String>> artifactBagsList;
 
     private static Site site;
@@ -81,7 +78,7 @@ public class AllArtifactBagsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/29/17
         Intent openIntent = getIntent();
-        //foreignKey = openIntent.getIntExtra("PrimaryKey", -1); tODO: is this still passed? Should it be?
+        //foreignKey = openIntent.getIntExtra("PrimaryKey", -1); TODO: is this still passed? Should it be?
         site = openIntent.getParcelableExtra("name");
         unit = openIntent.getParcelableExtra("datum");
         level = openIntent.getParcelableExtra("depth");
@@ -94,29 +91,18 @@ public class AllArtifactBagsActivity extends ListActivity {
         // Get listview
         ListView lv = getListView();
 
+        //if a dialog was up when the screen rotated, populate that dialog with the users' inputs
         if(savedInstanceState!=null)
         {
             if(savedInstanceState.getBoolean("alert"))
             {
-                if(savedInstanceState.get("ID").toString() == "")
-                {
-                    artifactBag = new ArtifactBag(site, unit, level, "", savedInstanceState.get("AccNum").toString(), Integer.parseInt(savedInstanceState.get("CatNum").toString()), savedInstanceState.get("Contents").toString());
-                    showDialog(artifactBag);
-                }
-                else {
-                    System.out.println(savedInstanceState.get("ID").toString() + " " + allArtifactBags);
-                    artifactBag = allArtifactBags.get(allArtifactBags.indexOf(new ArtifactBag(site, unit, level, savedInstanceState.get("ID").toString(), "", -1, "")));
-                    artifactBag.setAccessionNumber(savedInstanceState.get("AccNum").toString());
-                    artifactBag.setCatalogNumber(Integer.parseInt(savedInstanceState.get("CatNum").toString()));
-                    artifactBag.setContents(savedInstanceState.get("Contents").toString());
-                    showDialog(artifactBag);
-                }
+                artifactBag = new ArtifactBag(site, unit, level, savedInstanceState.get("ID").toString(), savedInstanceState.get("AccNum").toString(), Integer.parseInt(savedInstanceState.get("CatNum").toString()), savedInstanceState.get("Contents").toString());
+                showDialog(artifactBag);
             }
         }
 
-        //TODO: make this do something else (but what??). Fix in other activities
-        // on seleting single level
-        // launching Edit level Screen
+        // on selecting single artifact
+        // launching Edit artifact dialog
         lv.setOnItemClickListener(new OnItemClickListener() {
 
             @Override
@@ -130,23 +116,19 @@ public class AllArtifactBagsActivity extends ListActivity {
                 artifactBag = allArtifactBags.get(allArtifactBags.indexOf(new ArtifactBag(site, unit, level, pid, "", -1, "" )));
                 showDialog(artifactBag);
 
-
-                //TODO: make these fields autofill, like the other edit screens
-                // getting values from selected ListItem
+                //TODO: accNum can probably auto-fill, save with site?
 
             }
         });
 
         //on clicking new ArtifactBag button
-        //launching new artifact bag activity
+        //launching new artifact bag dialog
        Button newArtifactBag = (Button) findViewById(R.id.newArtifactBtn);
         newArtifactBag.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 artifactBag = new ArtifactBag(site, unit, level, "", "", -1, "");
                 showDialog(artifactBag);
-
-                //TODO: When user clicks save, should save to server and add new artifactBag to list
             }
         });
 
@@ -155,7 +137,7 @@ public class AllArtifactBagsActivity extends ListActivity {
     //method called by FirebaseHandler to populate listview
     public void loadArtifactBags(ArrayList<ArtifactBag> newABags)
     {
-        //adding new units passed from FirebaseHandler
+        //adding new artifact bags passed from FirebaseHandler
         for (int i = 0; i < newABags.size(); i++) {
             ArtifactBag temp = newABags.get(i);
             int index = allArtifactBags.indexOf(temp);
@@ -166,7 +148,7 @@ public class AllArtifactBagsActivity extends ListActivity {
             }
         }
 
-        //ArrayList containing unit datum and id to populate listview
+        //ArrayList containing artifact bag info and id to populate listview
         artifactBagsList = new ArrayList<HashMap<String, String>>();
 
         //Looping through all artifact bags to add them to listview
