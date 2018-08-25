@@ -2,6 +2,7 @@ package com.mycompany.sip;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,10 +14,12 @@ import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -41,11 +44,15 @@ import org.json.*;
 //TODO: allow this to save a new level and also edit an old one
 
 public class MapHome extends AppCompatActivity {
+    // Progress Dialog
+    private ProgressDialog pDialog;
+
     private static int SELECT_PICTURE = 1;
     JSONParser jsonParser = new JSONParser();
 
     // url to create new product
-    private static String url_update_product = "http://192.168.2.7:3306/mapp/android_connect/update_unit.php"; //http://192.168.2.4:3306/mapp/android_connect/update_unit.php"; //"http://192.168.2.4:3306/api.mapp.info/mapp/android_connect/update_unit.php"; //
+    private static String url_update_level = "http://75.134.106.101/mapp/update_level.php";
+    private static String url_create_level = "http://75.134.106.101/mapp/create_new_level.php";
 
     // JSON Node names
     private static final String TAG_SUCCESS = "success";
@@ -59,7 +66,7 @@ public class MapHome extends AppCompatActivity {
     private String dbName = "mapp";
     private String siteName;
     private String siteNumber;
-    private int pk = 1;
+    private int pk = -1, fk = -1, lvlNum = -1;
     private String unitNumber = "";
     private String levelNumber;
     private String levelDepth;
@@ -71,11 +78,13 @@ public class MapHome extends AppCompatActivity {
     private Level level;
     private EditText begDepth;
     private EditText endDepth;
+    private EditText excMeth, notes;
     private ImageView unitImage;
     private AlertDialog.Builder alert, alert1;
     private ViewSwitcher switcher;
     private static final int CAMERA_REQUEST = 1888;
     private int rotation = 0;
+    private boolean madeLevel = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -88,6 +97,8 @@ public class MapHome extends AppCompatActivity {
         switcher= (ViewSwitcher) findViewById(R.id.imageSwitch);
         begDepth = (EditText) findViewById(R.id.enterBegDepth);
         endDepth = (EditText) findViewById(R.id.enterEndDepth);
+        excMeth = (EditText) findViewById(R.id.techniques);
+        notes = (EditText) findViewById(R.id.level_notes);
         unitImage = (ImageView) findViewById(R.id.unitImgView);
 
 
@@ -118,6 +129,9 @@ public class MapHome extends AppCompatActivity {
         Intent openIntent = getIntent();
         System.out.println(openIntent);
         System.out.println(openIntent.getExtras());
+        fk = openIntent.getIntExtra("ForeignKey", -1); //Should never be -1
+        pk = openIntent.getIntExtra("PrimaryKey", -1); //TODO: if this is -1 it shows the level hasn't been saved. In this case, must save and query to get the real one
+        lvlNum = openIntent.getIntExtra("lvlNum", -1); //Should never be -1
         site = openIntent.getParcelableExtra("siteName");
         System.out.println(site);
         siteName=site.getName();
@@ -129,10 +143,10 @@ public class MapHome extends AppCompatActivity {
         if(level!=null) {
             levelNumber = level.getNumber() + "";
             levelDepth = level.getDepth();
-            EditText begDepthText = (EditText) findViewById(R.id.enterBegDepth);
-            begDepthText.setText(level.getBegDepth() + "");
-            EditText endDepthText = (EditText) findViewById(R.id.enterEndDepth);
-            endDepthText.setText(level.getEndDepth() + "");
+            begDepth.setText(level.getBegDepth() + "");
+            endDepth.setText(level.getEndDepth() + "");
+            excMeth.setText(level.getExcavationMethod() + "");
+            notes.setText(level.getNotes() + "");
         }
         else
         {
@@ -178,6 +192,7 @@ public class MapHome extends AppCompatActivity {
                     artifactActivityIntent.putExtra("name", site);
                     artifactActivityIntent.putExtra("datum", unit);
                     artifactActivityIntent.putExtra("depth", level);
+                    artifactActivityIntent.putExtra("PrimaryKey", pk);
                     startActivity(artifactActivityIntent);
                 }
                 else
@@ -197,7 +212,7 @@ public class MapHome extends AppCompatActivity {
                             Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
                             selectActivityIntent.putExtra("unit", unit);
                             selectActivityIntent.putExtra("rotation", rotation);
-                            startActivity(selectActivityIntent);
+                            startActivityForResult(selectActivityIntent, 33);
                         }
                         else
                         {
@@ -214,22 +229,26 @@ public class MapHome extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-                new Thread(new Runnable() {
-                    public void run() {
-                        //Connect to server
-                        System.out.println("Connecting to server...");
-                        try {
-                            queryServer();
+                System.out.println("Connecting to server...");
 
-                            //Class.forName("com.mysql.jdbc.Driver");
-                            //connect();
-                        }
-                        catch (ClassNotFoundException | SQLException ex)
-                        {
-                            System.out.println("Nope: " + ex);
-                        }
-                    }
-                }).start();
+                Double bd = Double.parseDouble(begDepth.getText().toString());
+                Double ed = Double.parseDouble(endDepth.getText().toString());
+                //String date = dateTime.getText().toString(); Don't have date started yet
+                String em = excMeth.getText().toString();
+                String n = notes.getText().toString();
+
+                if(pk==-1)
+                {
+                    level = new Level(lvlNum, bd, ed, site, unit, "0000-00-00 00:00:00", em, n);//TODO: add notes to level
+                }
+                else
+                {
+                    level.setBegDepth(bd);
+                    level.setEndDepth(ed);
+                    level.setExcavationMethod(em);
+                    level.setNotes(n);
+                }
+                new CreateNewLevel().execute();
             }
         });
 
@@ -266,139 +285,123 @@ public class MapHome extends AppCompatActivity {
     public void onBackPressed()
     {
         showCancelDialog();
-        /*LayoutInflater inflater = getLayoutInflater();
-        final View cancelLayout = inflater.inflate(R.layout.cancel_level_dialog, null);
-        AlertDialog.Builder alert = new AlertDialog.Builder(MapHome.this);
-        alert.setTitle("Cancel?");
-        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                finish();
-            }
-
-        });
-        alert.setNegativeButton("Nevermind", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                //Go back
-            }
-        });
-        alert.setView(cancelLayout);
-        AlertDialog dialog = alert.create();
-        dialog.show();*/
     }
     /**
      * FROM STACKOVERFLOW https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically*****
      */
      public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
+         if(requestCode == 33)
+         {
+             System.out.println("Activity resulting");
+             if(resultCode == RESULT_OK) {
+                 System.out.println("URIing");
+                 selectedImageUri = data.getParcelableExtra("newURI");
+                 System.out.println(selectedImageUri);
+                 unitImage.setImageURI(selectedImageUri);
+                 //Bitmap temp = ((BitmapDrawable)unitImage.getDrawable()).getBitmap();
+                 //unitImage.setImageBitmap(rotateBitmap(temp, rotation));
+             }
+         }
+         else {
+             if (resultCode == RESULT_OK) {
 
-            if(switcher.getNextView().equals(findViewById(R.id.pictures)))
+                 if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
+                     switcher.showNext();
+                 }
+                 selectedImageUri = data.getData();
+                 imageReference = selectedImageUri.toString();
+                 System.out.println("selectedImageUri is" + selectedImageUri);
+                 unitImage.setImageURI(selectedImageUri);
+                 rotation = 0;
+             }
+         }
+    }
+    /**
+     * Background Async Task to Create new level
+     * */
+    class CreateNewLevel extends AsyncTask<String, String, String> {
+
+        /**
+         * Before starting background thread Show Progress Dialog
+         * */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pDialog = new ProgressDialog(MapHome.this);
+            pDialog.setMessage("Creating Level..");
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(true);
+            pDialog.show();
+        }
+
+        /**
+         * Creating level
+         * */
+        protected String doInBackground(String... args) {
+
+            // Building Parameters
+            HashMap params = new HashMap();
+
+            if(pk!=-1)//if not a new level, update existing. TODO: edit php to include this
             {
-                switcher.showNext();
+                params.put("PrimaryKey", pk);
+                madeLevel=true;
             }
-            selectedImageUri = data.getData();
-            imageReference = selectedImageUri.toString();
-            System.out.println("selectedImageUri is" + selectedImageUri);
-            unitImage.setImageURI(selectedImageUri);
-            rotation=0;
-        }
-    }
-    public void queryServer() throws ClassNotFoundException, SQLException{
-        //get info from app
-        Date date = new Date();
-        Timestamp ts = new Timestamp(date.getTime());
-        SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
-        dateTime = format.format(ts);
-        EditText desc = (EditText) findViewById(R.id.unit_description);
-        description = desc.getText().toString();
+            params.put("foreignKey", fk);
+            params.put("lvlNum", level.getNumber());
+            params.put("begDepth", level.getBegDepth());
+            params.put("endDepth", level.getEndDepth());
+            params.put("dateStarted", level.getDateStarted());
+            params.put("excavationMethod", level.getExcavationMethod());
+            //TODO: add notes to the database
+            //TODO: add picture to the database
 
-        //update server
-        HashMap params = new HashMap();
-        params.put("primaryKey", pk);
-        params.put("imageReference", imageReference);
-        params.put("description", description);
-        params.put("dateTime", dateTime);
+            // getting JSON Object
+            // Note that create site url accepts POST method
+            JSONObject json = jsonParser.makeHttpRequest(url_create_level,
+                    "POST", params);
 
-        JSONObject json = jsonParser.makeHttpRequest(url_update_product,
-                "POST", params);
-        System.out.println("posted");
+            // check log cat fro response
+            Log.d("Create Response", json.toString());
 
-        // check json success tag
-        try {
-            int success = json.getInt(TAG_SUCCESS);
+            // check for success tag
+            try {
+                int success = json.getInt(TAG_SUCCESS);
 
-            if (success == 1) {
-                // successfully updated
-                System.out.println("success!");
-            } else {
-                // failed to update product
-                System.out.println("fail");
+                if (success == 1) {
+
+                    // closing this screen
+                    //finish();
+                    //startActivity(getIntent());
+                    madeLevel=true;
+                } else {
+                    // failed to create level
+                    madeLevel=false;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+
+            return null;
         }
-    }
 
-    public void connect() throws ClassNotFoundException, SQLException{
-        Connection conn = /*DriverManager.getConnection("jdbc:mysql://10.0.2.2:3306/mapp", "root", "");*/ getConnection();
-        Statement stmt = null;
-        Date date = new Date();
-        Timestamp ts = new Timestamp(date.getTime());
-        SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss");
-        dateTime = format.format(ts);
-        EditText desc = (EditText) findViewById(R.id.unit_description);
-        description = desc.getText().toString();
-
-        //also get picture link from user
-        String query = "SELECT PrimaryKey FROM units WHERE siteName='" + siteName + "' AND unitNumber=" + unitNumber + " AND levelNumber=" + levelNumber;
-        System.out.println("Querying server..." + query);
-        try {
-            stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-            System.out.println(query);
-            if(rs.next()){
-                System.out.println("worked to here");
-                int pk=rs.getInt(1);
-                stmt.executeUpdate("UPDATE mapp.units SET imageReference ='" + imageReference + "', description='" + description + "', dateTime='" + dateTime + "' WHERE PrimaryKey=" + pk );//Still need to find out how to actually update it
+        /**
+         * After completing background task Dismiss the progress dialog
+         * **/
+        protected void onPostExecute(String file_url) {
+            // dismiss the dialog once done
+            pDialog.dismiss();
+            if(madeLevel)
+            {
+                Toast.makeText(getApplicationContext(), "Saved level successfully", Toast.LENGTH_LONG).show();
+                madeLevel=false;
             }
-            else {
-                stmt.executeUpdate("INSERT INTO mapp.units (siteName, unitNumber, levelNumber, imageReference, description, dateTime) VALUES ('" + siteName + "', " + unitNumber + ", " + levelNumber + ", '" + imageReference + "', '" + description + "', '" + dateTime + "')");
+            else
+            {
+                Toast.makeText(getApplicationContext(), "Failed to save level", Toast.LENGTH_LONG).show();
             }
-        } catch (SQLException ex) {
-            System.err.println(ex);
-            System.out.println("**********no luck");
-        } finally {
-            if (stmt != null) {stmt.close();}
         }
-        conn.close();
-    }
-    /*********FROM ERIK HARTIG https://github.com/erikhartig/ValidationCreationSqlInterface/blob/master/src/Test.java
-	 * Note large parts of this code are either directly taken from
-	 * or are at least based off of code provided by java and sql tutorials
-	 * on connecting to databases.
-	 */
-    public Connection getConnection() throws SQLException, ClassNotFoundException {
-        System.out.println("getting connection...");
-        Connection conn = null;
-        Properties connectionProps = new Properties();
-        connectionProps.put("user", this.userName);
-        connectionProps.put("password", this.password);
 
-        if (this.dbms.equals("mysql")) {
-            System.out.println("Creating driver manager...");
-            conn = DriverManager.getConnection(
-                    "jdbc:" + this.dbms + "://" +
-                            this.serverName +
-                            ":" + this.portNumber + "/" + this.dbName,
-                    connectionProps);
-        } else if (this.dbms.equals("derby")) {
-            conn = DriverManager.getConnection(
-                    "jdbc:" + this.dbms + ":" +
-                            this.dbName +
-                            ";create=true",
-                    connectionProps);
-        }
-        System.out.println("Connected to database");
-        return conn;
     }
 
     @Override
@@ -421,6 +424,8 @@ public class MapHome extends AppCompatActivity {
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 alert=null;
+                Intent intent = new Intent();
+                setResult(Activity.RESULT_OK, intent);
                 finish();
             }
 

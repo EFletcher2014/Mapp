@@ -115,7 +115,9 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="17dip"
+            android:inputType="number"
+            android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
 
         <!-- Input NSDimensions -->
         <EditText android:id="@+id/inputNSDims"
@@ -123,7 +125,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:inputType="number"
+            android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
 
         <!-- EW Dimension Label -->
         <TextView android:layout_width="fill_parent"
@@ -132,7 +135,9 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="17dip"
+            android:inputType="number"
+            android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
 
         <!-- Input EWDimensions -->
         <EditText android:id="@+id/inputEWDims"

@@ -149,8 +149,16 @@ public class AllArtifactsActivity extends ListActivity {
                     .toString();
                 pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
+                String su = ((TextView) view.findViewById(R.id.su)).getText().toString();
+                if(test)
+                {
+                    showDialog(testArtifacts[Integer.parseInt(pid)]);
+                }
+                else
+                {
+                    showDialog(allArtifacts.get(Integer.parseInt(su)));
+                }
 
-                showDialog(testArtifacts[Integer.parseInt(pid)]);
 
                 //TODO: make these fields autofill, like the other edit screens
                 // getting values from selected ListItem
@@ -237,11 +245,13 @@ public class AllArtifactsActivity extends ListActivity {
                         // Storing each json item in variable
                         String id = c.getString(TAG_PID);
                         String anum = c.getString(TAG_ANUM);
+                        System.out.println(anum);
                         int cnum = c.getInt(TAG_CNUM);
                         String cont = c.getString(TAG_CONT);
 
                         Artifact temp = new Artifact(site, unit, level, anum, cnum, cont);
                         String name = temp.toString();
+                        System.out.println(temp.toString());
                         allArtifacts.add(temp);
 
                         // creating new HashMap
@@ -250,6 +260,7 @@ public class AllArtifactsActivity extends ListActivity {
                         // adding each child node to HashMap key => value
                         map.put(TAG_PID, id);
                         map.put("name", name);
+                        map.put("Level Artifact", i + "");
 
                         // adding HashList to ArrayList
                         artifactsList.add(map);
@@ -280,8 +291,8 @@ public class AllArtifactsActivity extends ListActivity {
                         ListAdapter adapter = new SimpleAdapter(
                                 AllArtifactsActivity.this, artifactsList,
                                 R.layout.list_item, new String[]{TAG_PID,
-                                "name"},
-                                new int[]{R.id.pid, R.id.name});
+                                "name", "Level Artifact"},
+                                new int[]{R.id.pid, R.id.name, R.id.su});
                         // updating listview
                         setListAdapter(adapter);
                     }else
@@ -392,8 +403,9 @@ public class AllArtifactsActivity extends ListActivity {
 
         if(art!=null)
         {
+            String cnum = art.getCatalogNumber() + "";
             accNum.setText(art.getAccessionNumber());
-            catNum.setText(art.getCatalogNumber());
+            catNum.setText(cnum);
             contents.setText(art.getContents());
         }
         alert.setTitle("Edit Artifact");

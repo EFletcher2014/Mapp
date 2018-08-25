@@ -71,6 +71,11 @@ public class Artifact{
         contents=c;
     }
 
+    public void setAccessionNumber(String a)
+    {
+        accessionNumber=a;
+    }
+
 
     //TODO: override .equals()
 }

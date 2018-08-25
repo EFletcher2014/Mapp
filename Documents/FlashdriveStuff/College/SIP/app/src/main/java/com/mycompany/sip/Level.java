@@ -15,8 +15,9 @@ public class Level implements Parcelable {
     private Unit unit;
     private String dateStarted;
     private String excavationMethod;
+    private String notes;
 
-    public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM)
+    public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM, String no)
     {
         this.number=n;
         this.begDepth=bD;
@@ -25,6 +26,7 @@ public class Level implements Parcelable {
         this.unit=u;
         this.dateStarted=date;
         this.excavationMethod=excM;
+        this.notes=no;
     }
 
     public Level(Parcel in)
@@ -78,6 +80,11 @@ public class Level implements Parcelable {
         return begDepth + "cmbd - " + endDepth + "cmbd";
     }
 
+    public String getNotes()
+    {
+        return notes;
+    }
+
     @Override
     public String toString()
     {
@@ -102,6 +109,11 @@ public class Level implements Parcelable {
     public void setExcavationMethod(String ex)
     {
         excavationMethod=ex;
+    }
+
+    public void setNotes(String no)
+    {
+        notes=no;
     }
 
     @Override

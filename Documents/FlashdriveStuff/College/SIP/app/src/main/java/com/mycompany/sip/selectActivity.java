@@ -1,5 +1,6 @@
 package com.mycompany.sip;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -24,13 +25,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 public class selectActivity extends AppCompatActivity {
 
     private static boolean fabMenuDeployed=false;
     private static DrawingView imageDraw;
-    public Bitmap bitmap;
+    public static Bitmap bitmap;
     private static ViewSwitcher switcher;
     private TextView hi;
     private TextView gr;
@@ -218,9 +221,9 @@ public class selectActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
                 imageDraw.setDrawingCacheEnabled(true);
                 imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-                Bitmap temp = Bitmap.createBitmap(imageDraw.getDrawingCache());
-                System.out.println("Yes!\nDrawing cache Bitmap: " + temp);
-                imageDraw.save(temp);
+                bitmap = Bitmap.createBitmap(imageDraw.getDrawingCache());
+                System.out.println("Yes!\nDrawing cache Bitmap: " + bitmap);
+                imageDraw.save(bitmap);
                 //TODO: get info about artifact and save to server
             }
 
@@ -268,4 +271,40 @@ public class selectActivity extends AppCompatActivity {
             return null;
         }
     }
+
+    @Override
+    public void onBackPressed()
+    {
+        System.out.println("going back!");
+        /*Intent intent = new Intent();
+        intent.putExtra("bitmap", bitmap);
+        setResult(33, intent);
+        finish();*/
+
+        //save to file
+        String filename = unit.getDatum();
+        File file = new File(context.getContext().getFilesDir(), filename);
+
+        /*if(file.exists())
+        {
+            file.delete();
+        }*/
+        try
+        {
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Uri newURI = Uri.fromFile(file);
+        System.out.println(newURI);
+        Intent intent = new Intent();
+        intent.putExtra("newURI", newURI);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+    }
+    //TODO: save layers/descriptions to server
+    //TODO: figure out what to do with grids
 }

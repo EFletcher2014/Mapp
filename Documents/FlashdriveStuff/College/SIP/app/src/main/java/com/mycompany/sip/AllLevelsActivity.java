@@ -54,6 +54,7 @@ public class AllLevelsActivity extends ListActivity {
     private static Level level;
     private static int levelNumber;
     private static int foreignKey;
+    private static int primaryKey;
 
     private AlertDialog.Builder alert;
     ArrayList<Level> allLevels = new ArrayList<>();
@@ -61,9 +62,9 @@ public class AllLevelsActivity extends ListActivity {
 
 
     boolean test=false;
-    Level[] testLevels = {new Level(1, 10.0, 15.0, site, unit, "11/03/1996", "shovel skimmed"),
-            new Level(2, 15.0, 20.0, site, unit, "07/22/17", "troweling"),
-            new Level(3, 20.0, 25.0, site, unit, "08/2/17", "backhoe")};
+    Level[] testLevels = {new Level(1, 10.0, 15.0, site, unit, "11/03/1996", "shovel skimmed", "we did things"),
+            new Level(2, 15.0, 20.0, site, unit, "07/22/17", "troweling", "more things"),
+            new Level(3, 20.0, 25.0, site, unit, "08/2/17", "backhoe", "more things")};
 
     // levels JSONArray
     JSONArray levels = null;
@@ -138,7 +139,14 @@ public class AllLevelsActivity extends ListActivity {
                 String su = ((TextView) view.findViewById(R.id.su)).getText()
                         .toString();
                 levelNumber=Integer.parseInt(su);
-                level=testLevels[levelNumber];
+                if(test) {
+                    level = testLevels[levelNumber];
+                }
+                else
+                {
+                    level = allLevels.get(levelNumber);
+                }
+                primaryKey = Integer.parseInt(((TextView) view.findViewById(R.id.pid)).getText().toString());
                 System.out.println(level.toString());
 
                 showDialog(level);
@@ -154,6 +162,8 @@ public class AllLevelsActivity extends ListActivity {
                 // Launch Add New product Activity
                 Intent i = new Intent(view.getContext(),
                         MapHome.class);
+                i.putExtra("ForeignKey", foreignKey);
+                i.putExtra("lvlNum", allLevels.size()+1);
                 i.putExtra("siteName", site);
                 i.putExtra("unitNumber", unit);
                 // Closing all previous activities
@@ -168,8 +178,16 @@ public class AllLevelsActivity extends ListActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 333)
+        {
+            if(resultCode == RESULT_OK)
+            {
+                finish();
+                startActivity(getIntent());
+            }
+        }
         // if result code 100
-        if (resultCode == 100) {
+        if (resultCode == RESULT_OK) {
             // if result code 100 is received
             // means user edited/deleted level
             // reload this screen again
@@ -234,7 +252,7 @@ public class AllLevelsActivity extends ListActivity {
                         String date = c.getString(TAG_DATE);
                         String excm = c.getString(TAG_EXCM);
 
-                        Level temp = new Level(num, bd, ed, site, unit, date, excm);
+                        Level temp = new Level(num, bd, ed, site, unit, date, excm, "");
                         allLevels.add(temp);
                         String name = temp.toString();
 
@@ -292,11 +310,13 @@ public class AllLevelsActivity extends ListActivity {
                     {
                         Intent i = new Intent(findViewById(R.id.newLevelBtn).getContext(),
                                 MapHome.class);
+                        i.putExtra("ForeignKey", foreignKey);
+                        i.putExtra("lvlNum", 1);
                         i.putExtra("siteName", site);
                         i.putExtra("unitNumber", unit);
                         // Closing all previous activities
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(i);
+                        startActivityForResult(i, 333);
                     }
                 }
             });
@@ -341,7 +361,9 @@ public class AllLevelsActivity extends ListActivity {
                         MapHome.class);
                 System.out.println(in);
                 // sending pid to next activity
-                in.putExtra("PrimaryKey", levelNumber);
+                in.putExtra("ForeignKey", foreignKey);
+                in.putExtra("PrimaryKey", primaryKey);
+                in.putExtra("lvlNum", level.getNumber());
                 in.putExtra("depth", level);
                 in.putExtra("unitNumber", unit);
                 in.putExtra("siteName", site);
