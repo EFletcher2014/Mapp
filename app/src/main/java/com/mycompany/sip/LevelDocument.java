@@ -201,8 +201,8 @@ public class LevelDocument extends AppCompatActivity {
                     if(level!=null) {
                         if(selectedImageUri!=null) {
                             //Move to select on image activity
-                            Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), selectActivity.class);
-                            selectActivityIntent.putExtra("unit", unit);
+                            Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
+                            selectActivityIntent.putExtra("level", level);
                             selectActivityIntent.putExtra("rotation", rotation);
                             startActivityForResult(selectActivityIntent, 33);
                         }

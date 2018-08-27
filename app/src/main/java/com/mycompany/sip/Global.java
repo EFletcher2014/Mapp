@@ -100,6 +100,9 @@ public class Global {
     public static final String TAG_CNUM = "catNum";
     public static final String TAG_CONT = "contents";
 
+    //Artifact tags
+    public static final String TAG_ARTIFACT = "artifact";
+
     // Timestamps for online/offline
     public static Timestamp onlineSince = new Timestamp(0);
     public static Timestamp offlineSince = new Timestamp(System.currentTimeMillis());

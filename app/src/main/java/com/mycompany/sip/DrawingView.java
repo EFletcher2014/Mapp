@@ -3,9 +3,6 @@ package com.mycompany.sip;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.util.AttributeSet;
 import android.view.View;
 import android.graphics.Bitmap;
@@ -87,9 +84,10 @@ public class DrawingView extends View {
         }
         else
         {
-            String[] dimensions = selectActivity.getUnitDimensions();
-            ewDim = Float.parseFloat(dimensions[1]);
-            nsDim = Float.parseFloat(dimensions[0]);
+            //TODO: should we allow dimensions to be floats?
+            int[] dimensions = LevelMap.getUnitDimensions();
+            ewDim = dimensions[1];
+            nsDim = dimensions[0];
             if(this.whichTool.equals("grid"))
             {
                 canvas.drawPath(gridPath, drawPaint);
@@ -127,7 +125,7 @@ public class DrawingView extends View {
                     break;
                 case MotionEvent.ACTION_UP:
                     //invalidate();
-                    selectActivity.saveLayer();
+                    LevelMap.saveLayer();
                     break;
                 default:
                     return false;
@@ -157,7 +155,7 @@ public class DrawingView extends View {
                         endX = touchX;
                         endY = touchY;
                         gridPath = drawGrid();
-                        selectActivity.saveLayer();
+                        LevelMap.saveLayer();
                         //invalidate();
                         break;
                     default:
@@ -192,7 +190,7 @@ public class DrawingView extends View {
                                 //drawKeystone(keystonePoints);
                                 keystone = new Grid("keystone", keystonePoints, nsDim, ewDim, /*canvas,*/ drawPaint);
                                 keyPath=keystone.drawGrid(drawPaint);
-                                selectActivity.saveLayer();
+                                LevelMap.saveLayer();
                                 //invalidate();
                             }
                             break;
