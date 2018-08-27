@@ -17,8 +17,6 @@ public class Unit implements Parcelable {
     private int EWCoor;
     private int NSDim;
     private int EWDim;
-    private String nsDimension;
-    private String ewDimension;
     private Site site;
     private String excavators;
     private String reasonForOpening;
@@ -46,8 +44,6 @@ public class Unit implements Parcelable {
         this.EWDim = in.readInt();
         this.datum=in.readString();
         this.dateOpened=in.readString();
-        this.nsDimension=in.readString();
-        this.ewDimension=in.readString();
         this.site=in.readParcelable(Site.class.getClassLoader());
         this.excavators=in.readString();
         this.reasonForOpening=in.readString();
@@ -85,14 +81,14 @@ public class Unit implements Parcelable {
         return dateOpened;
     }
 
-    public String getNsDimension()
+    public int getNsDimension()
     {
-        return nsDimension;
+        return NSDim;
     }
 
-    public String getEwDimension()
+    public int getEwDimension()
     {
-        return ewDimension;
+        return EWDim;
     }
 
     public Site getSite()
@@ -126,14 +122,14 @@ public class Unit implements Parcelable {
         dateOpened=d;
     }
 
-    public void setNsDimension(String ns)
+    public void setNsDimension(int ns)
     {
-        nsDimension=ns;
+        NSDim=ns;
     }
 
-    public void setEwDimension(String ew)
+    public void setEwDimension(int ew)
     {
-        ewDimension=ew;
+        EWDim=ew;
     }
 
     public void setExcavators(String ex)
@@ -156,8 +152,6 @@ public class Unit implements Parcelable {
         dest.writeInt(EWDim);
         dest.writeString(datum);
         dest.writeString(dateOpened);
-        dest.writeString(nsDimension);
-        dest.writeString(ewDimension);
         dest.writeParcelable(site, flags);
         dest.writeString(excavators);
         dest.writeString(reasonForOpening);

@@ -18,7 +18,7 @@
             android:windowSoftInputMode="stateHidden"
             android:configChanges="orientation">
         </activity>
-        <activity android:name=".selectActivity"
+        <activity android:name=".LevelMap"
             android:label="@string/title_activity_select"
             android:screenOrientation="landscape"
             android:windowSoftInputMode="stateHidden" >

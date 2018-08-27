@@ -8,6 +8,7 @@ import android.util.Log;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -37,6 +38,7 @@ public class FirebaseHandler {
     CollectionReference unitsRef;
     CollectionReference levelsRef;
     CollectionReference artifactBagsRef;
+    CollectionReference artifactsRef;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReference();
     Task<QuerySnapshot> task;
@@ -53,6 +55,9 @@ public class FirebaseHandler {
 
     //Level documentation
     private static WeakReference<LevelDocument> levelDocActivityRef;
+
+    //Level map
+    private static WeakReference<LevelMap> levelMapActivityRef;
 
     //Artifact Bags
     private static WeakReference<AllArtifactBagsActivity> artifactBagsActivityRef;
@@ -80,6 +85,10 @@ public class FirebaseHandler {
 
     public static void updateLevelDocActivity(LevelDocument activity) {
         levelDocActivityRef = new WeakReference<LevelDocument>(activity);
+    }
+
+    public static void updateLevelMapActivity(LevelMap activity) {
+        levelMapActivityRef = new WeakReference<LevelMap>(activity);
     }
 
     public static void updateArtifactBagActivity(AllArtifactBagsActivity activity) {
@@ -251,11 +260,11 @@ public class FirebaseHandler {
         });
 
         artifactBagsRef = mappDB.collection("sites").document(selectedSite.getID()).collection("artifactBags");
+        final ArrayList<ArtifactBag> artifactBags = new ArrayList<ArtifactBag>();
         artifactBagsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-                ArrayList<ArtifactBag> artifactBags = new ArrayList<ArtifactBag>();
 
                 if(artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
 
@@ -281,6 +290,48 @@ public class FirebaseHandler {
                         }
                     }
                     artifactBagsActivityRef.get().loadArtifactBags(artifactBags);
+                }
+            }
+        });
+
+        artifactsRef = mappDB.collection("sites").document(selectedSite.getID()).collection("artifacts");
+        artifactsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                final ArrayList<Artifact> artifacts = new ArrayList<Artifact>();
+
+                if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        if (doc != null) {
+                            final Object tempID = doc.getId();
+                            final Object tempDesc = doc.get("Description");
+                            doc.getDocumentReference("ArtifactBag").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                   final Object tempLevelID = documentSnapshot.get("LevelID");
+
+                                   if(tempLevelID.toString().equals(levelMapActivityRef.get().getLevel().getID()))
+                                   {
+                                       final Object tempABagID = documentSnapshot.getId();
+                                       Artifact temp = new Artifact(selectedSite, levelMapActivityRef.get().getLevel().getUnit(), levelMapActivityRef.get().getLevel(),
+                                               new ArtifactBag(null, null, null, tempABagID.toString(), "", -1, ""),
+                                               tempID.toString(),
+                                               tempDesc.toString());
+
+                                       artifacts.add(temp);
+                                   }
+                                }
+                            });
+                        }
+                    }
+                    levelMapActivityRef.get().loadArtifacts(artifacts);
                 }
             }
         });
@@ -343,6 +394,51 @@ public class FirebaseHandler {
                 }
             }
             artifactBagsActivityRef.get().loadArtifactBags(aBags);
+            }
+        });
+    }
+
+    public void getArtifactsFromLevel(final Level selectedLevel)
+    {
+        final ArrayList<Artifact> artifacts = new ArrayList<Artifact>();
+        artifactBagsRef.whereEqualTo("LevelID", selectedLevel.getID()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                for (QueryDocumentSnapshot bagDoc : queryDocumentSnapshots) {
+                    final Object bagID = bagDoc.getId();
+                    final Object tempA = bagDoc.get("AccessionNumber");
+                    final Object tempCatNum = bagDoc.get("CatalogNumber");
+                    final Object tempContents = bagDoc.get("Contents");
+
+                    final ArtifactBag tempABag = new ArtifactBag(selectedLevel.getSite(), selectedLevel.getUnit(),
+                            selectedLevel,
+                            bagID.toString(),
+                            tempA.toString(),
+                            Integer.parseInt(tempCatNum.toString()),
+                            tempContents.toString());
+
+                    artifactsRef.whereEqualTo("ArtifactBagID", bagID.toString()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                        @Override
+                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                            for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                                if (doc != null) {
+                                    final Object tempID = doc.getId();
+                                    final Object tempDesc = doc.get("Description");
+
+                                    Artifact temp = new Artifact(selectedLevel.getSite(), selectedLevel.getUnit(),
+                                            selectedLevel,
+                                            tempABag,
+                                            tempID.toString(),
+                                            tempDesc.toString());
+
+                                    artifacts.add(temp);
+                                }
+                            }
+                            levelMapActivityRef.get().loadArtifacts(artifacts);
+                        }
+                    });
+                }
             }
         });
     }
