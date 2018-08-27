@@ -118,6 +118,7 @@ public class LevelDocument extends AppCompatActivity {
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
         level = openIntent.getParcelableExtra("depth");
+
         if(level!=null) {
             lvlNum = level.getNumber();
             site = level.getSite();
@@ -136,14 +137,8 @@ public class LevelDocument extends AppCompatActivity {
             }
             excMeth.setText(level.getExcavationMethod() + "");
             notes.setText(level.getNotes() + "");
-            Uri tempUri = fbh.getImage(level,site.getNumber() + "/" + unit.getDatum() + "/", "level" + level.getNumber() + "Map");
-            if(tempUri != null) {
-                selectedImageUri = tempUri;
-                //unitImage.setImageURI(selectedImageUri);
-                if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
-                    switcher.showNext();
-                }
-            }
+
+            fbh.getImage(level,site.getNumber() + "/" + unit.getDatum() + "/" + "level" + level.getNumber() + "/","map", this.getCacheDir());
         }
         else
         {
@@ -244,6 +239,11 @@ public class LevelDocument extends AppCompatActivity {
 
                 fbh.createLevel(level);
 
+                if(selectedImageUri != null)
+                {
+                    fbh.setImage(site.getNumber() + "/" + unit.getDatum() + "/level" + level.getNumber() + "/", "map", ".jpg", selectedImageUri);
+                }
+
                 //TODO: should probably check that level was saved
                 setResult(Activity.RESULT_OK);
                 finish();
@@ -260,6 +260,17 @@ public class LevelDocument extends AppCompatActivity {
             }
         });
 
+    }
+
+    public void setURI(Uri u)
+    {
+        if(u != null) {
+            selectedImageUri = u;
+            unitImage.setImageURI(selectedImageUri);
+            if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
+                switcher.showNext();
+            }
+        }
     }
 
     /**Displays cancel dialog ("Are you sure you want to go back? You will lose your progress")

@@ -1,10 +1,13 @@
 package com.mycompany.sip;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
@@ -16,6 +19,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -505,11 +509,16 @@ public class FirebaseHandler {
 
     }
 
-    public Uri getImage(Level l, String path, String name)
+    public void setImage(String path, String name, String extension, Uri u)
     {
-        downloadImage dl = new downloadImage(l, path, name);
+        StorageReference imageRef = storageRef.child(path + "" + name + "" + extension);
+        UploadTask uploadTask = imageRef.putFile(u);
+    }
+
+    public void getImage(Level l, String path, String name, File f)
+    {
+        downloadImage dl = new downloadImage(l, path, name, f);
         dl.execute();
-        return dl.getLocalImageUri();
     }
 
     class downloadImage extends AsyncTask<String, String, String> {
@@ -518,12 +527,14 @@ public class FirebaseHandler {
         String locLocation;
         String name;
         Uri localImageUri;
+        File dir;
 
-        public downloadImage(Level l, String lLoc, String n) {
+        public downloadImage(Level l, String lLoc, String n, File f) {
             level = l;
             name = n;
-            remLocation = lLoc + n;
+            remLocation = lLoc + n + ".jpg";
             locLocation = lLoc;
+            dir = f;
         }
 
         @Override
@@ -534,8 +545,10 @@ public class FirebaseHandler {
         protected String doInBackground(String... args) {
             StorageReference levelImageRef = storageRef.child(remLocation);
             try {
-                File tempF = new File(locLocation);
-                tempF.mkdirs();
+                File tempF = new File(dir, locLocation);
+                if(!tempF.exists()) {
+                    tempF.mkdirs();
+                }
                 localFile = File.createTempFile(name,".jpg", tempF);
                 levelImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
@@ -543,6 +556,15 @@ public class FirebaseHandler {
                         String tempPath = localFile.getPath();
 
                         localImageUri = Uri.parse(tempPath);
+                        if(levelDocActivityRef.get().isActive())
+                        {
+                            levelDocActivityRef.get().setURI(localImageUri);
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        System.out.println(e);
                     }
                 });
             } catch (IOException x) {
@@ -553,13 +575,6 @@ public class FirebaseHandler {
             return null;
         }
         protected void onPostExecute(String file_url) {
-
-
-        }
-
-        public Uri getLocalImageUri()
-        {
-            return localImageUri;
         }
     }
 
