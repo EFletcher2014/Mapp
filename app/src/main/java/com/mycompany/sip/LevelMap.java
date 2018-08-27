@@ -132,8 +132,8 @@ public class LevelMap extends AppCompatActivity {
         //adding new units passed from FirebaseHandler
         for (int i = 0; i < newArtifacts.size(); i++) {
             Artifact temp = newArtifacts.get(i);
-            int index = newArtifacts.indexOf(temp);
-            if (index < 0 || allArtifacts.isEmpty()) {
+            int index = allArtifacts.indexOf(temp);
+            if (index < 0) {
                 allArtifacts.add(temp);
             } else {
                 allArtifacts.set(index, temp);

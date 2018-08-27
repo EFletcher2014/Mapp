@@ -56,5 +56,13 @@ public class Artifact {
     {
         return this.description;
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        String i = ((Artifact) o).getID();
+
+        return this.ID.equals(i);
+    }
     //TODO; should this be parcelable?
 }

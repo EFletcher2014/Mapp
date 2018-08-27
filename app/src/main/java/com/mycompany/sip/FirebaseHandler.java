@@ -330,12 +330,12 @@ public class FirebaseHandler {
                                                tempDesc.toString());
 
                                        artifacts.add(temp);
+                                       levelMapActivityRef.get().loadArtifacts(artifacts);
                                    }
                                 }
                             });
                         }
                     }
-                    levelMapActivityRef.get().loadArtifacts(artifacts);
                 }
             }
         });
