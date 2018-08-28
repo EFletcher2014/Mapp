@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
@@ -232,7 +231,7 @@ public class AllArtifactBagsActivity extends ListActivity {
     private void showDialog(final ArtifactBag art)
     {
         LayoutInflater inflater = getLayoutInflater();
-        final View artifactLayout = inflater.inflate(R.layout.new_artifact_dialog, null);
+        final View artifactLayout = inflater.inflate(R.layout.new_artifact_bag_dialog, null);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
             alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));

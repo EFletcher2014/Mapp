@@ -95,7 +95,7 @@ public class Global {
     public static final String TAG_IMPATH = "imagePath";
 
     // ArtifactBag JSON Node names
-    public static final String TAG_ARTIFACTS = "artifacts";
+    public static final String TAG_ARTIFACT_BAG = "artifactBag";
     public static final String TAG_ANUM = "accNum";
     public static final String TAG_CNUM = "catNum";
     public static final String TAG_CONT = "contents";

@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.view.MotionEvent;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -41,6 +42,13 @@ public class DrawingView extends View {
     private float nsDim, ewDim;
     private Bitmap temp;
     private Bitmap toUndo;
+
+    //Level map
+    private static WeakReference<LevelMap> levelMapActivityRef;
+
+    public static void updateLevelMapActivity(LevelMap activity) {
+        levelMapActivityRef = new WeakReference<LevelMap>(activity);
+    }
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -85,7 +93,7 @@ public class DrawingView extends View {
         else
         {
             //TODO: should we allow dimensions to be floats?
-            int[] dimensions = LevelMap.getUnitDimensions();
+            int[] dimensions = levelMapActivityRef.get().getUnitDimensions();
             ewDim = dimensions[1];
             nsDim = dimensions[0];
             if(this.whichTool.equals("grid"))
@@ -125,7 +133,7 @@ public class DrawingView extends View {
                     break;
                 case MotionEvent.ACTION_UP:
                     //invalidate();
-                    LevelMap.saveLayer();
+                    levelMapActivityRef.get().saveLayer();
                     break;
                 default:
                     return false;
@@ -155,7 +163,7 @@ public class DrawingView extends View {
                         endX = touchX;
                         endY = touchY;
                         gridPath = drawGrid();
-                        LevelMap.saveLayer();
+                        levelMapActivityRef.get().saveLayer();
                         //invalidate();
                         break;
                     default:
@@ -190,7 +198,7 @@ public class DrawingView extends View {
                                 //drawKeystone(keystonePoints);
                                 keystone = new Grid("keystone", keystonePoints, nsDim, ewDim, /*canvas,*/ drawPaint);
                                 keyPath=keystone.drawGrid(drawPaint);
-                                LevelMap.saveLayer();
+                                levelMapActivityRef.get().saveLayer();
                                 //invalidate();
                             }
                             break;

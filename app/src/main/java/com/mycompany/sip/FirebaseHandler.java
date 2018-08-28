@@ -11,6 +11,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -21,6 +22,8 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import org.w3c.dom.Document;
 
 import java.io.File;
 import java.io.IOException;
@@ -270,7 +273,8 @@ public class FirebaseHandler {
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
 
-                if(artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
+                if((artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive())
+                        || levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
 
                     if (e != null) {
                         Log.w(TAG, "Listen failed.", e);
@@ -278,7 +282,9 @@ public class FirebaseHandler {
                     }
 
                     for (QueryDocumentSnapshot doc : snapshot) {
-                        if (doc != null && doc.get("LevelID") != null && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID())) {
+                        if (doc != null && doc.get("LevelID") != null
+                                && ((artifactBagsActivityRef != null && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID()))
+                                || (levelMapActivityRef != null && doc.get("LevelID").toString().equals(levelMapActivityRef.get().getLevel().getID())))) {
                             final Object tempID = doc.getId();
                             final Object tempANum = doc.get("AccessionNumber");
                             final Object tempCNum = doc.get("CatalogNumber");
@@ -293,7 +299,13 @@ public class FirebaseHandler {
                             artifactBags.add(temp);
                         }
                     }
-                    artifactBagsActivityRef.get().loadArtifactBags(artifactBags);
+                    if (artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
+                        artifactBagsActivityRef.get().loadArtifactBags(artifactBags);
+                    } else {
+                        if (levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+                            levelMapActivityRef.get().loadArtifactBags(artifactBags);
+                        }
+                    }
                 }
             }
         });
@@ -315,7 +327,7 @@ public class FirebaseHandler {
                     for (QueryDocumentSnapshot doc : snapshot) {
                         if (doc != null) {
                             final Object tempID = doc.getId();
-                            final Object tempDesc = doc.get("Description");
+                            final Object tempDesc = doc.get("Name");
                             doc.getDocumentReference("ArtifactBag").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                 @Override
                                 public void onSuccess(DocumentSnapshot documentSnapshot) {
@@ -397,8 +409,14 @@ public class FirebaseHandler {
                     aBags.add(temp);
                 }
             }
-            artifactBagsActivityRef.get().loadArtifactBags(aBags);
+            if (artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
+                artifactBagsActivityRef.get().loadArtifactBags(aBags);
+            } else {
+                if (levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+                    levelMapActivityRef.get().loadArtifactBags(aBags);
+                }
             }
+        }
         });
     }
 
@@ -428,7 +446,7 @@ public class FirebaseHandler {
                             for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                                 if (doc != null) {
                                     final Object tempID = doc.getId();
-                                    final Object tempDesc = doc.get("Description");
+                                    final Object tempDesc = doc.get("Name");
 
                                     Artifact temp = new Artifact(selectedLevel.getSite(), selectedLevel.getUnit(),
                                             selectedLevel,
@@ -592,6 +610,59 @@ public class FirebaseHandler {
             else
             {
                 mappDB.collection("sites").document(newABag.getSite().getID()).collection("artifactBags").document(newABag.getID()).set(temp);
+            }
+            return null;
+        }
+
+        /**
+         * After completing background task Dismiss the progress dialog
+         * **/
+        protected void onPostExecute(String file_url) {
+
+        }
+
+    }
+
+    public void createArtifact(Artifact art)
+    {
+        new CreateNewArtifact(art).execute();
+    }
+
+    class CreateNewArtifact extends AsyncTask<String, String, String> {
+
+        Artifact newArt;
+        DocumentReference artBag;
+
+        public CreateNewArtifact(Artifact n)
+        {
+            newArt = n;
+        }
+
+        /**
+         * Before starting background thread Show Progress Dialog
+         * */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        /**
+         * Creating artifactBag
+         * */
+        protected String doInBackground(String... args) {
+
+            Map<String, Object> temp = new HashMap<>();
+            temp.put("ArtifactBag", mappDB.collection("sites").document(newArt.getSite().getID())
+                    .collection("artifactBags").document(newArt.getArtifactBag().getID()));
+            temp.put("ArtifactBagID", newArt.getArtifactBag().getID());
+            temp.put("Name", newArt.getDescription());
+
+            if(newArt.getID() == null || newArt.getID() == "") {
+                mappDB.collection("sites").document(newArt.getSite().getID()).collection("artifacts").document().set(temp);
+            }
+            else
+            {
+                mappDB.collection("sites").document(newArt.getSite().getID()).collection("artifacts").document(newArt.getID()).set(temp);
             }
             return null;
         }

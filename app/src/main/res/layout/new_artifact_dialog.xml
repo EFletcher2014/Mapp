@@ -2,37 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Accession number:"/>
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/accNum"
-        android:hint="##-#"
-        android:inputType="number"
-        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Catalog number:"/>
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/catNum"
-        android:hint="#"
-        android:inputType="number"
-        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Contents:"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
-        android:hint="Describe artifact here"
-        android:id="@+id/contents"/>
-    <!--should add something to add a picture of the artifact too and maybe save coordinates-->
+        android:hint="Name artifact"
+        android:id="@+id/artifactName"
+        android:layout_gravity="center"/>
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/artifactBagSelect"
+        android:layout_gravity="center"/>
 </LinearLayout>
