@@ -132,8 +132,8 @@ public class DrawingView extends View {
                     //invalidate();
                     break;
                 case MotionEvent.ACTION_UP:
-                    //invalidate();
-                    levelMapActivityRef.get().saveLayer();
+                    levelMapActivityRef.get().saveImage();
+                    invalidate();
                     break;
                 default:
                     return false;
@@ -163,7 +163,7 @@ public class DrawingView extends View {
                         endX = touchX;
                         endY = touchY;
                         gridPath = drawGrid();
-                        levelMapActivityRef.get().saveLayer();
+                        levelMapActivityRef.get().saveImage();
                         //invalidate();
                         break;
                     default:
@@ -198,7 +198,7 @@ public class DrawingView extends View {
                                 //drawKeystone(keystonePoints);
                                 keystone = new Grid("keystone", keystonePoints, nsDim, ewDim, /*canvas,*/ drawPaint);
                                 keyPath=keystone.drawGrid(drawPaint);
-                                levelMapActivityRef.get().saveLayer();
+                                levelMapActivityRef.get().saveImage();
                                 //invalidate();
                             }
                             break;

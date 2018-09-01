@@ -341,6 +341,9 @@ public class FirebaseHandler {
                                                tempID.toString(),
                                                tempDesc.toString());
 
+                                       //getImage(selectedSite.getNumber() + "/" + levelMapActivityRef.get().getLevel().getUnit().getDatum() + "/level" + levelMapActivityRef.get().getLevel().getNumber() + "/",
+                                               //temp.getID() +  ".jpg", levelMapActivityRef.get().getCacheDir());
+
                                        artifacts.add(temp);
                                        levelMapActivityRef.get().loadArtifacts(artifacts);
                                    }
@@ -454,10 +457,18 @@ public class FirebaseHandler {
                                             tempID.toString(),
                                             tempDesc.toString());
 
+                                    if(levelMapActivityRef != null && levelMapActivityRef.get() != null)
+                                    {
+                                        getImage(levelMapActivityRef.get().getLevel().getSite().getNumber() + "/" + levelMapActivityRef.get().getLevel().getUnit().getDatum() + "/level" + levelMapActivityRef.get().getLevel().getNumber() + "/",
+                                                temp.getID(), levelMapActivityRef.get().getCacheDir());
+                                    }
+
                                     artifacts.add(temp);
                                 }
                             }
-                            levelMapActivityRef.get().loadArtifacts(artifacts);
+                            if(levelMapActivityRef != null && levelMapActivityRef.get() != null) {
+                                levelMapActivityRef.get().loadArtifacts(artifacts);
+                            }
                         }
                     });
                 }
@@ -631,7 +642,6 @@ public class FirebaseHandler {
     class CreateNewArtifact extends AsyncTask<String, String, String> {
 
         Artifact newArt;
-        DocumentReference artBag;
 
         public CreateNewArtifact(Artifact n)
         {
@@ -682,22 +692,20 @@ public class FirebaseHandler {
         UploadTask uploadTask = imageRef.putFile(u);
     }
 
-    public void getImage(Level l, String path, String name, File f)
+    public void getImage(String path, String name, File f)
     {
-        downloadImage dl = new downloadImage(l, path, name, f);
+        downloadImage dl = new downloadImage(path, name, f);
         dl.execute();
     }
 
     class downloadImage extends AsyncTask<String, String, String> {
-        Level level;
         String remLocation;
         String locLocation;
         String name;
         Uri localImageUri;
         File dir;
 
-        public downloadImage(Level l, String lLoc, String n, File f) {
-            level = l;
+        public downloadImage(String lLoc, String n, File f) {
             name = n;
             remLocation = lLoc + n + ".jpg";
             locLocation = lLoc;
@@ -720,11 +728,75 @@ public class FirebaseHandler {
                 levelImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                        Uri tempPath = Uri.fromFile(localFile);
+
+                        localImageUri = tempPath;
+                        if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive())
+                        {
+                            levelDocActivityRef.get().setURI(localImageUri);
+                        }
+                        if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
+                        {
+                            levelMapActivityRef.get().loadImage(localFile);
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        System.out.println(e);
+                    }
+                });
+            } catch (IOException x) {
+                System.err.println(x);
+
+                //TODO: handle errors
+            }
+            return null;
+        }
+        protected void onPostExecute(String file_url) {
+        }
+    }
+
+    public void getAllImagesFromLevel(String path, String name, File f)
+    {
+        downloadImagesFromLevel dl = new downloadImagesFromLevel(path, name, f);
+        dl.execute();
+    }
+
+    class downloadImagesFromLevel extends AsyncTask<String, String, String> {
+        String remLocation;
+        String locLocation;
+        String name;
+        Uri localImageUri;
+        File dir;
+
+        public downloadImagesFromLevel(String lLoc, String n, File f) {
+            name = n;
+            remLocation = lLoc + n + ".jpg";
+            locLocation = lLoc;
+            dir = f;
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        protected String doInBackground(String... args) {
+            StorageReference levelImageRef = storageRef.child(remLocation);
+            try {
+                File tempF = new File(dir, locLocation);
+                if (!tempF.exists()) {
+                    tempF.mkdirs();
+                }
+                localFile = File.createTempFile(name, ".jpg", tempF);
+                levelImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                         String tempPath = localFile.getPath();
 
                         localImageUri = Uri.parse(tempPath);
-                        if(levelDocActivityRef.get().isActive())
-                        {
+                        if (levelDocActivityRef.get().isActive()) {
                             levelDocActivityRef.get().setURI(localImageUri);
                         }
                     }
@@ -741,6 +813,7 @@ public class FirebaseHandler {
             }
             return null;
         }
+
         protected void onPostExecute(String file_url) {
         }
     }

@@ -138,7 +138,7 @@ public class LevelDocument extends AppCompatActivity {
             excMeth.setText(level.getExcavationMethod() + "");
             notes.setText(level.getNotes() + "");
 
-            fbh.getImage(level,site.getNumber() + "/" + unit.getDatum() + "/" + "level" + level.getNumber() + "/","map", this.getCacheDir());
+            fbh.getImage(site.getNumber() + "/" + unit.getDatum() + "/" + "level" + level.getNumber() + "/","map", this.getCacheDir());
         }
         else
         {

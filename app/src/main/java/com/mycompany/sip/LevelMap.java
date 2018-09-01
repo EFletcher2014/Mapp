@@ -57,6 +57,10 @@ public class LevelMap extends AppCompatActivity {
     private EditText name;
     private String aBagID;
     private View saveArtifact;
+    private Uri selectedImageUri;
+    private File cache;
+    private ArrayList<File> artifactsImages = new ArrayList<>();
+    private File displayedImage = null;
 
     private static Unit unit;
     private Level level;
@@ -89,10 +93,11 @@ public class LevelMap extends AppCompatActivity {
         setContentView(R.layout.activity_select);
         context = findViewById(R.id.selectActivity);
         Intent openIntent = getIntent();
-        final Uri selectedImageUri = openIntent.getData();
+        selectedImageUri = openIntent.getData();
         level = openIntent.getParcelableExtra("level");
         unit = level.getUnit();
         rotation = openIntent.getIntExtra("rotation", 0);
+        cache = this.getCacheDir();
 
         //switcher switches between displaying a warning that an image must be added and an image, if there is one
         //TODO: is this still needed? The user can't get to this screen without an image selected
@@ -131,7 +136,38 @@ public class LevelMap extends AppCompatActivity {
         }
 
 
+        //TODO: make this align right
         artifacts = (ListView) findViewById(R.id.artifactListMap);
+        artifacts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                if(displayedImage == null || displayedImage != artifactsImages.get((int) id)) {
+                    try {
+                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(artifactsImages.get((int) id))));
+                        displayedImage = artifactsImages.get((int) id);
+                    } catch (IOException e) {
+                        System.out.println(e);
+                    }
+                }
+                else
+                {
+                    if(displayedImage == artifactsImages.get((int) id)) {
+                        try {
+                            Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
+                            bitmap = rotateBitmap(bm, rotation);
+                            imageDraw.setCanvasBitmap(bitmap);
+                            displayedImage = null;
+                        } catch(IOException e)
+                        {
+                            System.out.println(e);
+                        }
+                    }
+                }
+                switcher.showNext();
+                switcher.showNext();
+            }
+        });
 
         //load all artifacts
         fbh.getArtifactsFromLevel(level);
@@ -146,13 +182,14 @@ public class LevelMap extends AppCompatActivity {
 
             if(selectedImageUri!=null)//TODO: make this turn off automatically
             {
-                if(imageDraw.getTool().equals("highlight"))
-                {
-                    imageDraw.noDraw();
-                }
-                else {
-                    imageDraw.highlight();
-                }
+//                if(imageDraw.getTool().equals("highlight"))
+//                {
+//                    imageDraw.noDraw();
+//                }
+//                else {
+//                    imageDraw.highlight();
+//                }
+                saveLayer();
             }
             }
         });
@@ -220,6 +257,10 @@ public class LevelMap extends AppCompatActivity {
             } else {
                 allArtifacts.set(index, temp);
             }
+
+
+            //TODO: should change this to use IDs only
+            //fbh.getImage(level.getSite().getNumber() + "/" + level.getUnit().getDatum() + "/level" + level.getNumber() + "/", newArtifacts.get(i).getID(), cache);
         }
 
         //ArrayList containing artifact info and id to populate listview
@@ -257,6 +298,46 @@ public class LevelMap extends AppCompatActivity {
         });
     }
 
+    public void loadImage(File newImage)
+    {
+        if(!artifactsImages.contains(newImage)) {
+            artifactsImages.add(newImage);
+        }
+    }
+
+    public void saveImage()
+    {
+        imageDraw.setDrawingCacheEnabled(true);
+        imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        Bitmap artifactBitmap = Bitmap.createBitmap(imageDraw.getDrawingCache());
+        //imageDraw.save(artifactBitmap);
+        //TODO: will need to save images to unique identifier for artifact
+        //TODO: will also need to figure out how this will work when offline
+        File tempF = new File(cache, level.getSite().getNumber() + "/" + level.getUnit().getDatum() + "/level" + level.getNumber());
+        if(!tempF.exists()) {
+            tempF.mkdirs();
+        }
+        File localFile = new File(tempF, allArtifacts.get(allArtifacts.size()-1).getID()+".jpg");
+
+        try {
+            localFile = File.createTempFile(allArtifacts.get(allArtifacts.size()-1).getID(), ".jpg", tempF);
+
+
+
+            FileOutputStream fOut = new FileOutputStream(localFile);
+
+            artifactBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
+            fOut.flush(); // Not really required
+            fOut.close(); // do not forget to close the stream
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+
+        artifactsImages.add(localFile);
+        fbh.setImage(level.getSite().getNumber() + "/" + level.getUnit().getDatum() + "/level" + level.getNumber() + "/", allArtifacts.get(allArtifacts.size()-1).getID(), ".jpg", Uri.fromFile(localFile));
+        imageDraw.undo();
+    }
+
     public Level getLevel()
     {
         return level;
@@ -279,15 +360,24 @@ public class LevelMap extends AppCompatActivity {
         alert.setView(saveArtifact);
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                imageDraw.setDrawingCacheEnabled(true);
-                imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
-                bitmap = Bitmap.createBitmap(imageDraw.getDrawingCache());
-                imageDraw.save(bitmap);
+                //imageDraw.setDrawingCacheEnabled(true);
+                //imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+                //bitmap = Bitmap.createBitmap(imageDraw.getDrawingCache());
+                //imageDraw.save(bitmap);
                 aBagChoose.getSelectedItem();
 
-                //TODO: get info about artifact and save to server
                 Artifact a = new Artifact(unit.getSite(), unit, level, (new ArtifactBag(null, null, null, aBagID, "", -1, "")), "", name.getText().toString());
                 fbh.createArtifact(a);
+
+                //TODO: make it clear that the user must now highlight
+                if(imageDraw.getTool().equals("highlight"))
+                {
+                    imageDraw.noDraw();
+                }
+                else {
+                    imageDraw.highlight();
+                }
+
             }
 
         });
