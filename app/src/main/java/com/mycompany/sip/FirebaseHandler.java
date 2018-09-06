@@ -46,6 +46,8 @@ public class FirebaseHandler {
     CollectionReference levelsRef;
     CollectionReference artifactBagsRef;
     CollectionReference artifactsRef;
+    CollectionReference featuresRef;
+    CollectionReference featuresLinkRef;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReference();
     Task<QuerySnapshot> task;
@@ -68,6 +70,9 @@ public class FirebaseHandler {
 
     //Artifact Bags
     private static WeakReference<AllArtifactBagsActivity> artifactBagsActivityRef;
+
+    //Features list
+    private static ArrayList<Feature> siteFeatures = new ArrayList<>();
 
     public static FirebaseHandler getInstance()
     {
@@ -108,7 +113,7 @@ public class FirebaseHandler {
             @Override
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-                if (siteActivityRef.get().isActive()) {
+                if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
                     ArrayList<Site> sites = new ArrayList<Site>();
 
                     if (e != null) {
@@ -194,7 +199,7 @@ public class FirebaseHandler {
             @Override
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-                if (unitActivityRef.get().isActive()) {
+                if (unitActivityRef != null && unitActivityRef.get() != null && unitActivityRef.get().isActive()) {
                     ArrayList<Unit> units = new ArrayList<Unit>();
 
                     if (e != null) {
@@ -273,7 +278,7 @@ public class FirebaseHandler {
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
 
-                if((artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive())
+                if((artifactBagsActivityRef != null && artifactBagsActivityRef != null && artifactBagsActivityRef.get().isActive())
                         || levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
 
                     if (e != null) {
@@ -283,8 +288,8 @@ public class FirebaseHandler {
 
                     for (QueryDocumentSnapshot doc : snapshot) {
                         if (doc != null && doc.get("LevelID") != null
-                                && ((artifactBagsActivityRef != null && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID()))
-                                || (levelMapActivityRef != null && doc.get("LevelID").toString().equals(levelMapActivityRef.get().getLevel().getID())))) {
+                                && ((artifactBagsActivityRef.get() != null && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID()))
+                                || (levelMapActivityRef.get() != null && doc.get("LevelID").toString().equals(levelMapActivityRef.get().getLevel().getID())))) {
                             final Object tempID = doc.getId();
                             final Object tempANum = doc.get("AccessionNumber");
                             final Object tempCNum = doc.get("CatalogNumber");
@@ -341,14 +346,75 @@ public class FirebaseHandler {
                                                tempID.toString(),
                                                tempDesc.toString());
 
-                                       //getImage(selectedSite.getNumber() + "/" + levelMapActivityRef.get().getLevel().getUnit().getDatum() + "/level" + levelMapActivityRef.get().getLevel().getNumber() + "/",
-                                               //temp.getID() +  ".jpg", levelMapActivityRef.get().getCacheDir());
-
                                        artifacts.add(temp);
                                        levelMapActivityRef.get().loadArtifacts(artifacts);
                                    }
                                 }
                             });
+                        }
+                    }
+                }
+            }
+        });
+
+        featuresRef = mappDB.collection("sites").document(selectedSite.getID()).collection("features");
+        featuresRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                final ArrayList<Artifact> artifacts = new ArrayList<Artifact>();
+
+                    if (e != null) {
+                        Log.w(TAG, "Listen failed.", e);
+                        return;
+                    }
+
+                    for (QueryDocumentSnapshot doc : snapshot) {
+                        if (doc != null) {
+                            final Object tempID = doc.getId();
+                            final Object tempDesc = doc.get("Description");
+                            final Object tempNum = doc.get("Number");
+
+                            //TODO: link to levels somehow
+
+                            Feature temp = new Feature (tempID.toString(), tempDesc.toString(), Integer.parseInt(tempNum.toString()), selectedSite, new ArrayList<Level>());
+
+                            siteFeatures.add(temp);
+                    }
+
+                    //TODO: check if this is associated with the current level
+                    if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+                        levelMapActivityRef.get().loadAllSiteFeatures(siteFeatures);
+                    }
+                }
+            }
+        });
+
+        featuresLinkRef = mappDB.collection("sites").document(selectedSite.getID()).collection("featureLinks");
+        featuresLinkRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot snapshot,
+                                @Nullable FirebaseFirestoreException e) {
+                final ArrayList<Feature> features = new ArrayList<Feature>();
+
+                if (e != null) {
+                    Log.w(TAG, "Listen failed.", e);
+                    return;
+                }
+
+                for (QueryDocumentSnapshot doc : snapshot) {
+                    if (doc != null) {
+                        final Object levID = doc.get("LevelID");
+                        final Object featID = doc.get("FeatureID");
+
+                        Level temp = new Level(null, null, levID.toString(), -1, 0.0, 0.0, "", "", null);
+                        Feature tempF = new Feature(featID.toString(), "", -1, null, new ArrayList<Level>());
+
+                        if (levelMapActivityRef != null && levelMapActivityRef.get() != null
+                                && levelMapActivityRef.get().getLevel().equals(temp)
+                                && siteFeatures.contains(tempF))
+                        {
+                            levelMapActivityRef.get().linkFeature(siteFeatures.get(siteFeatures.indexOf(tempF)), temp);
                         }
                     }
                 }
@@ -471,6 +537,70 @@ public class FirebaseHandler {
                             }
                         }
                     });
+                }
+            }
+        });
+    }
+
+    public void getFeaturesFromSite()
+    {
+        featuresRef.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                ArrayList<Feature> features = new ArrayList<Feature>();
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    if (doc != null) {
+                        final Object tempID = doc.getId();
+                        final Object tempDesc = doc.get("Description");
+                        final Object tempNum = doc.get("Number");
+
+                        Feature temp = new Feature(tempID.toString(), tempDesc.toString(), Integer.parseInt(tempNum.toString()), levelMapActivityRef.get().getLevel().getSite(), new ArrayList<Level>());
+
+                        features.add(temp);
+                    }
+                }
+                if(levelMapActivityRef != null && levelMapActivityRef.get() != null
+                        && levelMapActivityRef.get().isActive()) {
+                    levelMapActivityRef.get().loadAllSiteFeatures(features);
+                }
+            }
+        });
+    }
+
+    public void getFeaturesFromLevel(final Level selectedLevel)
+    {
+        featuresLinkRef.whereEqualTo("LevelID", selectedLevel.getID()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                final ArrayList<Feature> features = new ArrayList<Feature>();
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    if (doc != null) {
+                        final Object levID = doc.get("LevelID");
+                        final Object featID = doc.get("FeatureID");
+
+                        featuresRef.document(featID.toString()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot doc1) {
+                                if (doc1 != null)
+                                {
+                                    final Object desc = doc1.get("Description");
+                                    final Object num = doc1.get("Number");
+
+                                    ArrayList<Level> levs = new ArrayList<>();
+                                    levs.add(new Level(null, null, levID.toString(), -1, 0.0, 0.0, "", "", null));
+                                    Feature temp = new Feature(featID.toString(), desc.toString(), Integer.parseInt(num.toString()), selectedLevel.getSite(), levs);
+
+                                    features.add(temp);
+                                }
+
+                                if (levelMapActivityRef != null && levelMapActivityRef.get() != null
+                                        && levelMapActivityRef.get().getLevel().getID().equals(levID.toString()))
+                                {
+                                    levelMapActivityRef.get().loadFeatures(features);
+                                }
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -657,7 +787,7 @@ public class FirebaseHandler {
         }
 
         /**
-         * Creating artifactBag
+         * Creating artifact
          * */
         protected String doInBackground(String... args) {
 
@@ -674,6 +804,102 @@ public class FirebaseHandler {
             {
                 mappDB.collection("sites").document(newArt.getSite().getID()).collection("artifacts").document(newArt.getID()).set(temp);
             }
+            return null;
+        }
+
+        /**
+         * After completing background task Dismiss the progress dialog
+         * **/
+        protected void onPostExecute(String file_url) {
+
+        }
+
+    }
+
+    public void createFeature(Feature f)
+    {
+        new CreateNewFeature(f).execute();
+    }
+
+    class CreateNewFeature extends AsyncTask<String, String, String> {
+
+        Feature newFeat;
+
+        public CreateNewFeature(Feature f)
+        {
+            newFeat = f;
+        }
+
+        /**
+         * Before starting background thread Show Progress Dialog
+         * */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        /**
+         * Creating feature
+         * */
+        protected String doInBackground(String... args) {
+
+            Map<String, Object> temp = new HashMap<>();
+            temp.put("Description", newFeat.getDescription());
+            temp.put("Number", siteFeatures.size());
+
+            if(newFeat.getID() == null || newFeat.getID() == "") {
+                mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").document().set(temp);
+            }
+            else
+            {
+                mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").document(newFeat.getID()).set(temp);
+            }
+            return null;
+        }
+
+        /**
+         * After completing background task Dismiss the progress dialog
+         * **/
+        protected void onPostExecute(String file_url) {
+
+        }
+
+    }
+
+    public void createFeatureLink(Feature f, Level l)
+    {
+        new CreateNewFeatureLink(f, l).execute();
+    }
+
+    class CreateNewFeatureLink extends AsyncTask<String, String, String> {
+
+        Feature feat;
+        Level lev;
+
+        public CreateNewFeatureLink(Feature f, Level l)
+        {
+            feat = f;
+            lev = l;
+        }
+
+        /**
+         * Before starting background thread Show Progress Dialog
+         * */
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        /**
+         * Creating feature link
+         * */
+        protected String doInBackground(String... args) {
+
+            Map<String, Object> temp = new HashMap<>();
+            temp.put("FeatureID", feat.getID());
+            temp.put("LevelID", lev.getID());
+
+            mappDB.collection("sites").document(lev.getSite().getID()).collection("featureLinks").document().set(temp);
             return null;
         }
 
@@ -737,7 +963,7 @@ public class FirebaseHandler {
                         }
                         if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
                         {
-                            levelMapActivityRef.get().loadImage(localFile);
+                            levelMapActivityRef.get().loadArtifactImage(localFile);
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {

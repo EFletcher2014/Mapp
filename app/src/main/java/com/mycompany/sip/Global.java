@@ -103,6 +103,9 @@ public class Global {
     //Artifact tags
     public static final String TAG_ARTIFACT = "artifact";
 
+    //Feature tags
+    public static final String TAG_FEATURE = "feature";
+
     // Timestamps for online/offline
     public static Timestamp onlineSince = new Timestamp(0);
     public static Timestamp offlineSince = new Timestamp(System.currentTimeMillis());
