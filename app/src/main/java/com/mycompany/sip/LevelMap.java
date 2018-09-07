@@ -483,6 +483,14 @@ public class LevelMap extends AppCompatActivity {
         }
     }
 
+    public void loadFeatureImage(File newImage)
+    {
+        if(!featuresImages.contains(newImage))
+        {
+            featuresImages.add(newImage);
+        }
+    }
+
     public void saveImage()
     {
         imageDraw.setDrawingCacheEnabled(true);
@@ -518,15 +526,16 @@ public class LevelMap extends AppCompatActivity {
             if(drawType.equals("feature"))
             {
                 //TODO: will also need to figure out how this will work when offline
-                //TODO: will have to figure out how I want to save feature images
-                File tempF = new File(cache, "");
+                File tempF = new File(cache, level.getSite().getID() + "/");
                 if (!tempF.exists()) {
                     tempF.mkdirs();
                 }
-                File localFile = new File(tempF, features.get(features.size() - 1).getID() + ".jpg");
+
+                //TODO: do we need this local file thing twice
+                File localFile = new File(tempF, level.getID() + "-" + features.get(features.size() - 1).getID() + ".jpg");
 
                 try {
-                    localFile = File.createTempFile(features.get(features.size() - 1).getID(), ".jpg", tempF);
+                    localFile = File.createTempFile(level.getID() + "-" + features.get(features.size() - 1).getID(), ".jpg", tempF);
 
 
                     FileOutputStream fOut = new FileOutputStream(localFile);
@@ -539,8 +548,7 @@ public class LevelMap extends AppCompatActivity {
                 }
 
                 featuresImages.add(localFile);
-                //TODO: how should I save feature images
-                //fbh.setImage(level.getSite().getNumber() + "/" + level.getUnit().getDatum() + "/level" + level.getNumber() + "/", features.get(features.size() - 1).getID(), ".jpg", Uri.fromFile(localFile));
+                fbh.setImage(level.getSite().getNumber() + "/", level.getID() + "-" + features.get(features.size() -1).getID(), ".jpg", Uri.fromFile(localFile));
 
             }
         }
@@ -611,7 +619,6 @@ public class LevelMap extends AppCompatActivity {
 
         alert.setTitle("Link a new feature: ");
         alert.setView(saveFeature);
-        //TODO: add ability for user to create a new feature here or select from existing
         alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
@@ -619,6 +626,8 @@ public class LevelMap extends AppCompatActivity {
                 ArrayList<Level> levels = new ArrayList<>();
                 levels.add(level);
                 Feature temp = new Feature(featureID, "", -1, level.getSite(), levels);
+
+                //TODO: Should only allow user to select a feature which isn't already linked
                 if(!features.contains(temp)) {
                     fbh.createFeatureLink(temp, level);
                 }

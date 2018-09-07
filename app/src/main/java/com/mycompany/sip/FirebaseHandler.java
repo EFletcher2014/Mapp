@@ -410,6 +410,7 @@ public class FirebaseHandler {
                         Level temp = new Level(null, null, levID.toString(), -1, 0.0, 0.0, "", "", null);
                         Feature tempF = new Feature(featID.toString(), "", -1, null, new ArrayList<Level>());
 
+                        getImage(selectedSite + "/", levID.toString()+ "-" + featID.toString() + "/", siteActivityRef.get().getCacheDir(), "f");
                         if (levelMapActivityRef != null && levelMapActivityRef.get() != null
                                 && levelMapActivityRef.get().getLevel().equals(temp)
                                 && siteFeatures.contains(tempF))
@@ -526,7 +527,7 @@ public class FirebaseHandler {
                                     if(levelMapActivityRef != null && levelMapActivityRef.get() != null)
                                     {
                                         getImage(levelMapActivityRef.get().getLevel().getSite().getNumber() + "/" + levelMapActivityRef.get().getLevel().getUnit().getDatum() + "/level" + levelMapActivityRef.get().getLevel().getNumber() + "/",
-                                                temp.getID(), levelMapActivityRef.get().getCacheDir());
+                                                temp.getID(), levelMapActivityRef.get().getCacheDir(), "a");
                                     }
 
                                     artifacts.add(temp);
@@ -918,9 +919,9 @@ public class FirebaseHandler {
         UploadTask uploadTask = imageRef.putFile(u);
     }
 
-    public void getImage(String path, String name, File f)
+    public void getImage(String path, String name, File f, String method)
     {
-        downloadImage dl = new downloadImage(path, name, f);
+        downloadImage dl = new downloadImage(path, name, f, method);
         dl.execute();
     }
 
@@ -928,11 +929,13 @@ public class FirebaseHandler {
         String remLocation;
         String locLocation;
         String name;
+        String type;
         Uri localImageUri;
         File dir;
 
-        public downloadImage(String lLoc, String n, File f) {
+        public downloadImage(String lLoc, String n, File f, String t) {
             name = n;
+            type = t;
             remLocation = lLoc + n + ".jpg";
             locLocation = lLoc;
             dir = f;
@@ -944,14 +947,14 @@ public class FirebaseHandler {
         }
 
         protected String doInBackground(String... args) {
-            StorageReference levelImageRef = storageRef.child(remLocation);
+            StorageReference imageRef = storageRef.child(remLocation);
             try {
                 File tempF = new File(dir, locLocation);
                 if(!tempF.exists()) {
                     tempF.mkdirs();
                 }
                 localFile = File.createTempFile(name,".jpg", tempF);
-                levelImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                imageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                         Uri tempPath = Uri.fromFile(localFile);
@@ -963,7 +966,15 @@ public class FirebaseHandler {
                         }
                         if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
                         {
-                            levelMapActivityRef.get().loadArtifactImage(localFile);
+                            if(type.equals("a")) {
+                                levelMapActivityRef.get().loadArtifactImage(localFile);
+                            }
+                            else
+                            {
+                                if(type.equals("f")) {
+                                    levelMapActivityRef.get().loadFeatureImage(localFile);
+                                }
+                            }
                         }
                     }
                 }).addOnFailureListener(new OnFailureListener() {
