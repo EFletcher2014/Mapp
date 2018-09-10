@@ -51,7 +51,7 @@ public class FirebaseHandler {
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReference();
     Task<QuerySnapshot> task;
-    File localFile;
+    //File localFile;
 
     //Sites
     private static WeakReference<AllSitesActivity> siteActivityRef;
@@ -362,7 +362,7 @@ public class FirebaseHandler {
             @Override
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-                final ArrayList<Artifact> artifacts = new ArrayList<Artifact>();
+                final ArrayList<Feature> features = new ArrayList<Feature>();
 
                     if (e != null) {
                         Log.w(TAG, "Listen failed.", e);
@@ -410,7 +410,7 @@ public class FirebaseHandler {
                         Level temp = new Level(null, null, levID.toString(), -1, 0.0, 0.0, "", "", null);
                         Feature tempF = new Feature(featID.toString(), "", -1, null, new ArrayList<Level>());
 
-                        getImage(selectedSite + "/", levID.toString()+ "-" + featID.toString() + "/", siteActivityRef.get().getCacheDir(), "f");
+                        //getImage(selectedSite.getNumber() + "/", levID.toString()+ "-" + featID.toString(), siteActivityRef.get().getCacheDir(), "f");
                         if (levelMapActivityRef != null && levelMapActivityRef.get() != null
                                 && levelMapActivityRef.get().getLevel().equals(temp)
                                 && siteFeatures.contains(tempF))
@@ -592,10 +592,15 @@ public class FirebaseHandler {
                                     Feature temp = new Feature(featID.toString(), desc.toString(), Integer.parseInt(num.toString()), selectedLevel.getSite(), levs);
 
                                     features.add(temp);
+
+                                    if (levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().getLevel().getID().equals(levID.toString()) && levelMapActivityRef.get().isActive())
+                                    {
+                                        getImage(levelMapActivityRef.get().getLevel().getSite().getNumber() + "/", levID.toString() + "-" + featID.toString(), levelMapActivityRef.get().getCacheDir(), "f");
+                                    }
                                 }
 
                                 if (levelMapActivityRef != null && levelMapActivityRef.get() != null
-                                        && levelMapActivityRef.get().getLevel().getID().equals(levID.toString()))
+                                        && levelMapActivityRef.get().isActive() && levelMapActivityRef.get().getLevel().getID().equals(levID.toString()))
                                 {
                                     levelMapActivityRef.get().loadFeatures(features);
                                 }
@@ -921,6 +926,7 @@ public class FirebaseHandler {
 
     public void getImage(String path, String name, File f, String method)
     {
+
         downloadImage dl = new downloadImage(path, name, f, method);
         dl.execute();
     }
@@ -953,7 +959,7 @@ public class FirebaseHandler {
                 if(!tempF.exists()) {
                     tempF.mkdirs();
                 }
-                localFile = File.createTempFile(name,".jpg", tempF);
+                final File localFile = File.createTempFile(name,".jpg", tempF);
                 imageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
@@ -1026,7 +1032,7 @@ public class FirebaseHandler {
                 if (!tempF.exists()) {
                     tempF.mkdirs();
                 }
-                localFile = File.createTempFile(name, ".jpg", tempF);
+                final File localFile = File.createTempFile(name, ".jpg", tempF);
                 levelImageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {

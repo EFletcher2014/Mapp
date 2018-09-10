@@ -200,7 +200,7 @@ public class LevelMap extends AppCompatActivity {
 
                 if(displayedImage == null || displayedImage != featuresImages.get((int) id)) {
                     try {
-                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(featuresImages.get((int) id))));
+                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(featuresLV.getContext().getContentResolver(), Uri.fromFile(featuresImages.get((int) id))));
                         displayedImage = featuresImages.get((int) id);
                     } catch (IOException e) {
                         System.out.println(e);
