@@ -81,6 +81,7 @@ public class LevelDocument extends AppCompatActivity {
         //requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mytitle);
         super.onCreate(savedInstanceState);
+        this.isActive = true;
         fbh.updateLevelDocActivity(this);
 
         setContentView(R.layout.activity_map_home);
@@ -138,7 +139,7 @@ public class LevelDocument extends AppCompatActivity {
             excMeth.setText(level.getExcavationMethod() + "");
             notes.setText(level.getNotes() + "");
 
-            fbh.getImage(site.getID() + "/" +  level.getID(), "map", this.getCacheDir(), "");
+            fbh.getImage(site.getID() + "/" , level.getID() + "map", this.getCacheDir(), "");
         }
         else
         {

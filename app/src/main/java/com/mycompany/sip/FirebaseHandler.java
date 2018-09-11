@@ -991,46 +991,40 @@ public class FirebaseHandler {
 
         protected String doInBackground(String... args) {
             StorageReference imageRef = storageRef.child(remLocation);
-            try {
-                File tempF = new File(dir, locLocation);
-                if(!tempF.exists()) {
-                    tempF.mkdirs();
-                }
-                final File localFile = File.createTempFile(name,".jpg", tempF);
-                imageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        Uri tempPath = Uri.fromFile(localFile);
-
-                        localImageUri = tempPath;
-                        if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive())
-                        {
-                            levelDocActivityRef.get().setURI(localImageUri);
-                        }
-                        if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
-                        {
-                            if(type.equals("a")) {
-                                levelMapActivityRef.get().loadArtifactImage(localFile);
-                            }
-                            else
-                            {
-                                if(type.equals("f")) {
-                                    levelMapActivityRef.get().loadFeatureImage(localFile);
-                                }
-                            }
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        System.out.println(e);
-                    }
-                });
-            } catch (IOException x) {
-                System.err.println(x);
-
-                //TODO: handle errors
+            File tempF = new File(dir, locLocation);
+            if(!tempF.exists()) {
+                tempF.mkdirs();
             }
+            final File localFile = new File(tempF, name + ".jpg");
+            imageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Uri tempPath = Uri.fromFile(localFile);
+
+                    localImageUri = tempPath;
+                    if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive())
+                    {
+                        levelDocActivityRef.get().setURI(localImageUri);
+                    }
+                    if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
+                    {
+                        if(type.equals("a")) {
+                            levelMapActivityRef.get().loadArtifactImage(localFile);
+                        }
+                        else
+                        {
+                            if(type.equals("f")) {
+                                levelMapActivityRef.get().loadFeatureImage(localFile);
+                            }
+                        }
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    System.out.println(e);
+                }
+            });
             return null;
         }
         protected void onPostExecute(String file_url) {

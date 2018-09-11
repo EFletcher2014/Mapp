@@ -103,6 +103,7 @@ public class LevelMap extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         fbh.updateLevelMapActivity(this);
         imageDraw.updateLevelMapActivity(this);
+        this.isActive = true;
         setContentView(R.layout.activity_select);
         context = findViewById(R.id.selectActivity);
         Intent openIntent = getIntent();
