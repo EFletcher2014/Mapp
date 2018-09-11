@@ -47,7 +47,8 @@ public class LevelMap extends AppCompatActivity {
     private static ViewSwitcher switcher;
     private static View context;
     private int rotation;
-    private AlertDialog.Builder alert;
+    private AlertDialog.Builder artifactAlert;
+    private AlertDialog.Builder featureAlert;
     private ArrayList<Artifact> allArtifacts = new ArrayList<>();
     private ArrayList<ArtifactBag> allArtifactBags = new ArrayList<>();
     private ArrayList<Feature> allSiteFeatures = new ArrayList<>();
@@ -481,6 +482,7 @@ public class LevelMap extends AppCompatActivity {
         if(!artifactsImages.contains(newImage)) {
             artifactsImages.add(newImage);
         }
+        imageDraw.noDraw();
     }
 
     public void loadFeatureImage(File newImage)
@@ -489,6 +491,7 @@ public class LevelMap extends AppCompatActivity {
         {
             featuresImages.add(newImage);
         }
+        imageDraw.noDraw();
     }
 
     public void saveImage()
@@ -499,7 +502,7 @@ public class LevelMap extends AppCompatActivity {
 
         if(drawType.equals("artifact")) {
             //TODO: will also need to figure out how this will work when offline
-            File tempF = new File(cache, level.getSite().getNumber() + "/" + level.getUnit().getDatum() + "/level" + level.getNumber());
+            File tempF = new File(cache, level.getSite().getID() + "/" + level.getID());
             if (!tempF.exists()) {
                 tempF.mkdirs();
             }
@@ -519,7 +522,7 @@ public class LevelMap extends AppCompatActivity {
             }
 
             artifactsImages.add(localFile);
-            fbh.setImage(level.getSite().getNumber() + "/" + level.getUnit().getDatum() + "/level" + level.getNumber() + "/", allArtifacts.get(allArtifacts.size() - 1).getID(), ".jpg", Uri.fromFile(localFile));
+            fbh.setImage(level.getSite().getID() + "/", allArtifacts.get(allArtifacts.size() - 1).getID(), ".jpg", Uri.fromFile(localFile));
         }
         else
         {
@@ -548,7 +551,7 @@ public class LevelMap extends AppCompatActivity {
                 }
 
                 featuresImages.add(localFile);
-                fbh.setImage(level.getSite().getNumber() + "/", level.getID() + "-" + features.get(features.size() -1).getID(), ".jpg", Uri.fromFile(localFile));
+                fbh.setImage(level.getSite().getID() + "/", level.getID() + "-" + features.get(features.size() -1).getID(), ".jpg", Uri.fromFile(localFile));
 
             }
         }
@@ -567,16 +570,16 @@ public class LevelMap extends AppCompatActivity {
         //TODO: make different titles/functionality for features/artifacts etc
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
-            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+            artifactAlert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
         }
         else
         {
-            alert = new AlertDialog.Builder(LevelMap.this);
+            artifactAlert = new AlertDialog.Builder(LevelMap.this);
         }
 
-        alert.setTitle("Create a new artifact: ");
-        alert.setView(saveArtifact);
-        alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+        artifactAlert.setTitle("Create a new artifact: ");
+        artifactAlert.setView(saveArtifact);
+        artifactAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 aBagChoose.getSelectedItem();
                 Artifact a = new Artifact(unit.getSite(), unit, level, (new ArtifactBag(null, null, null, aBagID, "", -1, "")), "", name.getText().toString());
@@ -595,11 +598,11 @@ public class LevelMap extends AppCompatActivity {
             }
 
         });
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        artifactAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             }
         });
-        AlertDialog d = alert.create();
+        AlertDialog d = artifactAlert.create();
         d.show();
         imageDraw.setDrawingCacheEnabled(false);
     }
@@ -610,16 +613,20 @@ public class LevelMap extends AppCompatActivity {
         //TODO: make different titles/functionality for features/artifacts etc
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
-            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+            featureAlert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
         }
         else
         {
-            alert = new AlertDialog.Builder(LevelMap.this);
+            featureAlert = new AlertDialog.Builder(LevelMap.this);
         }
 
-        alert.setTitle("Link a new feature: ");
-        alert.setView(saveFeature);
-        alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+        featureAlert.setTitle("Link a new feature: ");
+
+        if(featureAlert.getContext() != null)
+        {
+            featureAlert.setView(saveFeature);
+        }
+        featureAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
                 featureChoose.getSelectedItem();
@@ -642,15 +649,14 @@ public class LevelMap extends AppCompatActivity {
                     imageDraw.highlight();
                     drawType = "feature";
                 }
-
             }
 
         });
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        featureAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
             }
         });
-        AlertDialog d = alert.create();
+        AlertDialog d = featureAlert.create();
         d.show();
         imageDraw.setDrawingCacheEnabled(false);
     }

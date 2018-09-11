@@ -138,7 +138,7 @@ public class LevelDocument extends AppCompatActivity {
             excMeth.setText(level.getExcavationMethod() + "");
             notes.setText(level.getNotes() + "");
 
-            fbh.getImage(site.getNumber() + "/" + unit.getDatum() + "/" + "level" + level.getNumber() + "/","map", this.getCacheDir(), "");
+            fbh.getImage(site.getID() + "/" +  level.getID(), "map", this.getCacheDir(), "");
         }
         else
         {
@@ -241,7 +241,7 @@ public class LevelDocument extends AppCompatActivity {
 
                 if(selectedImageUri != null)
                 {
-                    fbh.setImage(site.getNumber() + "/" + unit.getDatum() + "/level" + level.getNumber() + "/", "map", ".jpg", selectedImageUri);
+                    fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
                 }
 
                 //TODO: should probably check that level was saved
