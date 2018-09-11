@@ -694,38 +694,6 @@ public class LevelMap extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onBackPressed()
-    {
-        /*Intent intent = new Intent();
-        intent.putExtra("bitmap", bitmap);
-        setResult(33, intent);
-        finish();*/
-
-        //save to file
-        String filename = unit.getDatum();
-        File file = new File(context.getContext().getFilesDir(), filename);
-
-        /*if(file.exists())
-        {
-            file.delete();
-        }*/
-        try
-        {
-            FileOutputStream out = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Uri newURI = Uri.fromFile(file);
-        System.out.println(newURI);
-        Intent intent = new Intent();
-        intent.putExtra("newURI", newURI);
-        setResult(Activity.RESULT_OK, intent);
-        finish();
-    }
     //TODO: save layers/descriptions to server
     //TODO: figure out what to do with grids
 }

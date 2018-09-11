@@ -205,7 +205,7 @@ public class LevelDocument extends AppCompatActivity {
                             Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
                             selectActivityIntent.putExtra("level", level);
                             selectActivityIntent.putExtra("rotation", rotation);
-                            startActivityForResult(selectActivityIntent, 33);
+                            startActivity(selectActivityIntent);
                         }
                         else
                         {
@@ -286,27 +286,15 @@ public class LevelDocument extends AppCompatActivity {
      * FROM STACKOVERFLOW https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically*****
      */
      public void onActivityResult(int requestCode, int resultCode, Intent data) {
-         if(requestCode == 33)
-         {
-             if(resultCode == RESULT_OK) {
-                 //TODO: will this work? is it necessary
-                 selectedImageUri = data.getParcelableExtra("newURI");
 
-                 final int takeFlags = (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+         if (resultCode == RESULT_OK) {
 
-                 unitImage.setImageURI(selectedImageUri);
+             if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
+                 switcher.showNext();
              }
-         }
-         else {
-             if (resultCode == RESULT_OK) {
-
-                 if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
-                     switcher.showNext();
-                 }
-                 selectedImageUri = data.getData();
-                 unitImage.setImageURI(selectedImageUri);
-                 rotation = 0;
-             }
+             selectedImageUri = data.getData();
+             unitImage.setImageURI(selectedImageUri);
+             rotation = 0;
          }
     }
 
