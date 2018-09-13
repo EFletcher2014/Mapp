@@ -106,12 +106,13 @@
             android:layout_marginBottom="16dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp">
-            <TextView
+            <!--<TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/drawAlertTitle"
                 android:layout_weight="1"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center"
+                android:theme="@style/titleTheme"/>-->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import java.io.File;
@@ -650,26 +651,31 @@ public class LevelMap extends AppCompatActivity {
         featureAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-                featureChoose.getSelectedItem();
-                ArrayList<Level> levels = new ArrayList<>();
-                levels.add(level);
-                Feature temp = new Feature(featureID, "", -1, level.getSite(), levels);
+            featureChoose.getSelectedItem();
+            ArrayList<Level> levels = new ArrayList<>();
+            levels.add(level);
+            Feature temp = new Feature(featureID, "", -1, level.getSite(), levels);
 
-                //TODO: Should only allow user to select a feature which isn't already linked
-                if(!features.contains(temp)) {
-                    fbh.createFeatureLink(temp, level);
-                }
+            //TODO: Should only allow user to select a feature which isn't already linked
+            if(!features.contains(temp)) {
+                fbh.createFeatureLink(temp, level);
+            }
 
 
-                //TODO: make it clear that the user must now highlight
-                if(imageDraw.getTool().equals("highlight"))
-                {
-                    imageDraw.noDraw();
-                }
-                else {
-                    imageDraw.highlight();
-                    drawType = "feature";
-                }
+            //TODO: make it clear that the user must now highlight
+            if(imageDraw.getTool().equals("highlight"))
+            {
+                imageDraw.noDraw();
+            }
+            else {
+                imageDraw.highlight();
+                drawType = "feature";
+            }
+
+            if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
+            {
+                keySwitcher.showNext();
+            }
             }
 
         });
