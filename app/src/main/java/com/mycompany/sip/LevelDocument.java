@@ -84,7 +84,7 @@ public class LevelDocument extends AppCompatActivity {
         this.isActive = true;
         fbh.updateLevelDocActivity(this);
 
-        setContentView(R.layout.activity_map_home);
+        setContentView(R.layout.activity_level_document);
         switcher= (ViewSwitcher) findViewById(R.id.imageSwitch);
         begDepth = (EditText) findViewById(R.id.enterBegDepth);
         endDepth = (EditText) findViewById(R.id.enterEndDepth);

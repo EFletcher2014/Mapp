@@ -1,6 +1,5 @@
 package com.mycompany.sip;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -45,6 +44,7 @@ public class LevelMap extends AppCompatActivity {
     private DrawingView imageDraw;
     public static Bitmap bitmap;
     private static ViewSwitcher switcher;
+    private static ViewSwitcher keySwitcher;
     private static View context;
     private int rotation;
     private AlertDialog.Builder artifactAlert;
@@ -104,7 +104,7 @@ public class LevelMap extends AppCompatActivity {
         fbh.updateLevelMapActivity(this);
         imageDraw.updateLevelMapActivity(this);
         this.isActive = true;
-        setContentView(R.layout.activity_select);
+        setContentView(R.layout.activity_level_map);
         context = findViewById(R.id.selectActivity);
         Intent openIntent = getIntent();
         selectedImageUri = openIntent.getData();
@@ -112,6 +112,12 @@ public class LevelMap extends AppCompatActivity {
         unit = level.getUnit();
         rotation = openIntent.getIntExtra("rotation", 0);
         cache = this.getCacheDir();
+        keySwitcher = findViewById(R.id.keySwitcher);
+
+        if(keySwitcher.getNextView() == findViewById(R.id.artifactFeatureList))
+        {
+            keySwitcher.showNext();
+        }
 
         //switcher switches between displaying a warning that an image must be added and an image, if there is one
         //TODO: is this still needed? The user can't get to this screen without an image selected
@@ -495,7 +501,7 @@ public class LevelMap extends AppCompatActivity {
         imageDraw.noDraw();
     }
 
-    public void saveImage()
+    public void saveImage(View view)
     {
         imageDraw.setDrawingCacheEnabled(true);
         imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
@@ -558,6 +564,16 @@ public class LevelMap extends AppCompatActivity {
         }
         drawType = "";
         imageDraw.undo();
+
+        if(keySwitcher.getNextView() == findViewById(R.id.artifactFeatureList))
+        {
+            keySwitcher.showNext();
+        }
+    }
+
+    public void clearImage(View view)
+    {
+        imageDraw.undo();
     }
 
     public Level getLevel()
@@ -596,6 +612,10 @@ public class LevelMap extends AppCompatActivity {
                     drawType = "artifact";
                 }
 
+                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
+                {
+                    keySwitcher.showNext();
+                }
             }
 
         });
