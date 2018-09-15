@@ -345,7 +345,7 @@ public class FirebaseHandler {
                                    final Object tempLevelID = documentSnapshot.get("LevelID");
 
                                     getImage(selectedSite.getID() + "/",
-                                            documentSnapshot.getId(), siteActivityRef.get().getCacheDir(), "a");
+                                            tempID.toString(), siteActivityRef.get().getCacheDir(), "a");
                                    if(tempLevelID.toString().equals(levelMapActivityRef.get().getLevel().getID()))
                                    {
                                        final Object tempABagID = documentSnapshot.getId();
@@ -355,7 +355,7 @@ public class FirebaseHandler {
                                                tempDesc.toString());
 
                                        artifacts.add(temp);
-                                       levelMapActivityRef.get().loadArtifacts(artifacts);
+                                       levelMapActivityRef.get().addArtifacts(artifacts);
                                    }
                                 }
                             });
@@ -534,7 +534,7 @@ public class FirebaseHandler {
 
                                     if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
                                     {
-                                        getImage(levelMapActivityRef.get().getLevel().getSite().getID() + "/" + levelMapActivityRef.get().getLevel().getID() + "/",
+                                        getImage(levelMapActivityRef.get().getLevel().getSite().getID() + "/",
                                                 temp.getID(), levelMapActivityRef.get().getCacheDir(), "a");
                                     }
 
@@ -542,7 +542,8 @@ public class FirebaseHandler {
                                 }
                             }
                             if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
-                                levelMapActivityRef.get().loadArtifacts(artifacts);
+                                levelMapActivityRef.get().addArtifacts(artifacts);
+                                levelMapActivityRef.get().loadArtifacts();
                             }
                         }
                     });
@@ -610,7 +611,7 @@ public class FirebaseHandler {
                                 if (levelMapActivityRef != null && levelMapActivityRef.get() != null
                                         && levelMapActivityRef.get().isActive() && levelMapActivityRef.get().getLevel().getID().equals(levID.toString()))
                                 {
-                                    levelMapActivityRef.get().loadFeatures(features);
+                                    levelMapActivityRef.get().addFeatures(features);
                                 }
                             }
                         });
@@ -945,19 +946,6 @@ public class FirebaseHandler {
         }
         else
         {
-            if (levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
-            {
-                if(method.equals("a")) {
-                    levelMapActivityRef.get().loadArtifactImage(localFile);
-                }
-                else
-                {
-                    if(method.equals("f")) {
-                        levelMapActivityRef.get().loadFeatureImage(localFile);
-                    }
-                }
-            }
-
             Uri tempPath = Uri.fromFile(localFile);
 
             Uri localImageUri = tempPath;
@@ -999,25 +987,13 @@ public class FirebaseHandler {
             imageRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Uri tempPath = Uri.fromFile(localFile);
+                Uri tempPath = Uri.fromFile(localFile);
 
-                    localImageUri = tempPath;
-                    if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive())
-                    {
-                        levelDocActivityRef.get().setURI(localImageUri);
-                    }
-                    if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
-                    {
-                        if(type.equals("a")) {
-                            levelMapActivityRef.get().loadArtifactImage(localFile);
-                        }
-                        else
-                        {
-                            if(type.equals("f")) {
-                                levelMapActivityRef.get().loadFeatureImage(localFile);
-                            }
-                        }
-                    }
+                localImageUri = tempPath;
+                if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive())
+                {
+                    levelDocActivityRef.get().setURI(localImageUri);
+                }
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override

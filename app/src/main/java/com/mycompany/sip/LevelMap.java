@@ -51,9 +51,11 @@ public class LevelMap extends AppCompatActivity {
     private AlertDialog.Builder artifactAlert;
     private AlertDialog.Builder featureAlert;
     private ArrayList<Artifact> allArtifacts = new ArrayList<>();
+    private ArrayList<Artifact> newArtifacts = new ArrayList<>();
     private ArrayList<ArtifactBag> allArtifactBags = new ArrayList<>();
     private ArrayList<Feature> allSiteFeatures = new ArrayList<>();
     private ArrayList<Feature> features = new ArrayList<>();
+    private ArrayList<Feature> newFeatures = new ArrayList<>();
     ArrayList<HashMap<String, String>> siteFeaturesList;
     ArrayList<HashMap<String, String>> featuresList;
     ArrayList<HashMap<String, String>> artifactsList;
@@ -71,9 +73,9 @@ public class LevelMap extends AppCompatActivity {
     private View saveFeature;
     private Uri selectedImageUri;
     private File cache;
-    private ArrayList<File> artifactsImages = new ArrayList<>();
-    private ArrayList<File> featuresImages = new ArrayList<>();
-    private File displayedImage = null;
+    private ArrayList<String> artifactsImages = new ArrayList<>();
+    private ArrayList<String> featuresImages = new ArrayList<>();
+    private String displayedImage = "";
     private String drawType = "";
 
     private static Unit unit;
@@ -137,7 +139,6 @@ public class LevelMap extends AppCompatActivity {
                 bitmap = rotateBitmap(bm, rotation);
                 imageDraw.setCanvasBitmap(bitmap);
 
-
                 LayoutInflater inflater = getLayoutInflater();
                 saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null);
                 saveFeature = inflater.inflate(R.layout.new_feature_dialog, null);
@@ -175,9 +176,10 @@ public class LevelMap extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                if(displayedImage == null || displayedImage != artifactsImages.get((int) id)) {
+                File selectedFile = new File(artifacts.getContext().getCacheDir(), artifactsImages.get((int) id));
+                if(!displayedImage.equals(artifactsImages.get((int) id))){
                     try {
-                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(artifactsImages.get((int) id))));
+                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = artifactsImages.get((int) id);
                     } catch (IOException e) {
                         System.out.println(e);
@@ -185,16 +187,14 @@ public class LevelMap extends AppCompatActivity {
                 }
                 else
                 {
-                    if(displayedImage == artifactsImages.get((int) id)) {
-                        try {
-                            Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
-                            bitmap = rotateBitmap(bm, rotation);
-                            imageDraw.setCanvasBitmap(bitmap);
-                            displayedImage = null;
-                        } catch(IOException e)
-                        {
-                            System.out.println(e);
-                        }
+                    try {
+                        Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
+                        bitmap = rotateBitmap(bm, rotation);
+                        imageDraw.setCanvasBitmap(bitmap);
+                        displayedImage = "";
+                    } catch(IOException e)
+                    {
+                        System.out.println(e);
                     }
                 }
                 switcher.showNext();
@@ -207,9 +207,10 @@ public class LevelMap extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                if(displayedImage == null || displayedImage != featuresImages.get((int) id)) {
+                File selectedFile = new File(featuresLV.getContext().getCacheDir(), featuresImages.get((int) id));
+                if(!displayedImage.equals(featuresImages.get((int) id))) {
                     try {
-                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(featuresLV.getContext().getContentResolver(), Uri.fromFile(featuresImages.get((int) id))));
+                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(featuresLV.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = featuresImages.get((int) id);
                     } catch (IOException e) {
                         System.out.println(e);
@@ -217,16 +218,14 @@ public class LevelMap extends AppCompatActivity {
                 }
                 else
                 {
-                    if(displayedImage == featuresImages.get((int) id)) {
-                        try {
-                            Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
-                            bitmap = rotateBitmap(bm, rotation);
-                            imageDraw.setCanvasBitmap(bitmap);
-                            displayedImage = null;
-                        } catch(IOException e)
-                        {
-                            System.out.println(e);
-                        }
+                    try {
+                        Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
+                        bitmap = rotateBitmap(bm, rotation);
+                        imageDraw.setCanvasBitmap(bitmap);
+                        displayedImage = "";
+                    } catch(IOException e)
+                    {
+                        System.out.println(e);
                     }
                 }
                 switcher.showNext();
@@ -321,16 +320,44 @@ public class LevelMap extends AppCompatActivity {
 
     }
 
-    public void loadArtifacts(ArrayList<Artifact> newArtifacts)
+    public void addArtifacts(ArrayList<Artifact> n)
+    {
+        newArtifacts.addAll(n);
+    }
+
+    public void loadArtifacts()
     {
         //adding new artifacts passed from FirebaseHandler
-        for (int i = 0; i < newArtifacts.size(); i++) {
-            Artifact temp = newArtifacts.get(i);
+        while (!newArtifacts.isEmpty()) {
+            Artifact temp = newArtifacts.get(0);
             int index = allArtifacts.indexOf(temp);
             if (index < 0) {
                 allArtifacts.add(temp);
             } else {
                 allArtifacts.set(index, temp);
+            }
+
+            if(!artifactsImages.contains(newArtifacts.get(0).getImagePath()))
+            {
+                artifactsImages.add(newArtifacts.get(0).getImagePath());
+            }
+
+            File artifactImage = new File(this.getCacheDir(), newArtifacts.get(0).getImagePath());
+
+            if(!artifactImage.exists())
+            {
+                imageDraw.highlight();
+                drawType = "artifact";
+
+                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
+                {
+                    keySwitcher.showNext();
+                }
+                break;
+            }
+            else
+            {
+                newArtifacts.remove(0);
             }
         }
 
@@ -367,18 +394,46 @@ public class LevelMap extends AppCompatActivity {
                 artifacts.setAdapter(adapter);
             }
         });
+
+        loadFeatures();
     }
 
-    public void loadFeatures(ArrayList<Feature> newFeatures)
+    public void addFeatures(ArrayList<Feature> n)
     {
-        //adding new features passed from FirebaseHandler
-        for (int i = 0; i < newFeatures.size(); i++) {
-            Feature temp = newFeatures.get(i);
+        newFeatures.addAll(n);
+    }
+
+    public void loadFeatures()
+    {
+        while (!newFeatures.isEmpty()) {
+            Feature temp = newFeatures.get(0);
             int index = features.indexOf(temp);
             if (index < 0) {
                 features.add(temp);
             } else {
                 features.set(index, temp);
+            }
+
+            if(!featuresImages.contains(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg"))
+            {
+                featuresImages.add(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
+            }
+
+            File featureImage = new File(this.getCacheDir(), level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
+
+            if(!featureImage.exists())
+            {
+                imageDraw.highlight();
+                drawType = "feature";
+
+                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
+                {
+                    keySwitcher.showNext();
+                }
+                break;
+            }
+            else {
+                newFeatures.remove(0);
             }
         }
 
@@ -479,27 +534,10 @@ public class LevelMap extends AppCompatActivity {
                 {
                     ArrayList<Feature> temp = new ArrayList<>();
                     temp.add(allSiteFeatures.get(i));
-                    loadFeatures(temp);
+                    addFeatures(temp);
                 }
             }
         }
-    }
-
-    public void loadArtifactImage(File newImage)
-    {
-        if(!artifactsImages.contains(newImage)) {
-            artifactsImages.add(newImage);
-        }
-        imageDraw.noDraw();
-    }
-
-    public void loadFeatureImage(File newImage)
-    {
-        if(!featuresImages.contains(newImage))
-        {
-            featuresImages.add(newImage);
-        }
-        imageDraw.noDraw();
     }
 
     public void saveImage(View view)
@@ -510,15 +548,13 @@ public class LevelMap extends AppCompatActivity {
 
         if(drawType.equals("artifact")) {
             //TODO: will also need to figure out how this will work when offline
-            File tempF = new File(cache, level.getSite().getID() + "/" + level.getID());
+            File tempF = new File(cache, level.getSite().getID() + "/");
             if (!tempF.exists()) {
                 tempF.mkdirs();
             }
-            File localFile = new File(tempF, allArtifacts.get(allArtifacts.size() - 1).getID() + ".jpg");
+            File localFile = new File(tempF, newArtifacts.get(0).getID() + ".jpg");
 
             try {
-                localFile = File.createTempFile(allArtifacts.get(allArtifacts.size() - 1).getID(), ".jpg", tempF);
-
 
                 FileOutputStream fOut = new FileOutputStream(localFile);
 
@@ -529,8 +565,7 @@ public class LevelMap extends AppCompatActivity {
                 System.out.println(e);
             }
 
-            artifactsImages.add(localFile);
-            fbh.setImage(level.getSite().getID() + "/", allArtifacts.get(allArtifacts.size() - 1).getID(), ".jpg", Uri.fromFile(localFile));
+            fbh.setImage(level.getSite().getID() + "/", newArtifacts.get(0).getID(), ".jpg", Uri.fromFile(localFile));
         }
         else
         {
@@ -543,11 +578,9 @@ public class LevelMap extends AppCompatActivity {
                 }
 
                 //TODO: do we need this local file thing twice
-                File localFile = new File(tempF, level.getID() + "-" + features.get(features.size() - 1).getID() + ".jpg");
+                File localFile = new File(tempF, level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
 
                 try {
-                    localFile = File.createTempFile(level.getID() + "-" + features.get(features.size() - 1).getID(), ".jpg", tempF);
-
 
                     FileOutputStream fOut = new FileOutputStream(localFile);
 
@@ -558,17 +591,25 @@ public class LevelMap extends AppCompatActivity {
                     System.out.println(e);
                 }
 
-                featuresImages.add(localFile);
-                fbh.setImage(level.getSite().getID() + "/", level.getID() + "-" + features.get(features.size() -1).getID(), ".jpg", Uri.fromFile(localFile));
+                fbh.setImage(level.getSite().getID() + "/", level.getID() + "-" + newFeatures.get(0).getID(), ".jpg", Uri.fromFile(localFile));
 
             }
         }
         drawType = "";
         imageDraw.undo();
+        imageDraw.setDrawingCacheEnabled(false);
 
         if(keySwitcher.getNextView() == findViewById(R.id.artifactFeatureList))
         {
             keySwitcher.showNext();
+            if(!newArtifacts.isEmpty()) {
+                loadArtifacts();
+            }
+            else {
+                if(!newFeatures.isEmpty()) {
+                    loadFeatures();
+                }
+            }
         }
     }
 
@@ -602,21 +643,6 @@ public class LevelMap extends AppCompatActivity {
                 aBagChoose.getSelectedItem();
                 Artifact a = new Artifact(unit.getSite(), unit, level, (new ArtifactBag(null, null, null, aBagID, "", -1, "")), "", name.getText().toString());
                 fbh.createArtifact(a);
-
-                //TODO: make it clear that the user must now highlight
-                if(imageDraw.getTool().equals("highlight"))
-                {
-                    imageDraw.noDraw();
-                }
-                else {
-                    imageDraw.highlight();
-                    drawType = "artifact";
-                }
-
-                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
-                {
-                    keySwitcher.showNext();
-                }
             }
 
         });
@@ -651,31 +677,15 @@ public class LevelMap extends AppCompatActivity {
         featureAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-            featureChoose.getSelectedItem();
-            ArrayList<Level> levels = new ArrayList<>();
-            levels.add(level);
-            Feature temp = new Feature(featureID, "", -1, level.getSite(), levels);
+                featureChoose.getSelectedItem();
+                ArrayList<Level> levels = new ArrayList<>();
+                levels.add(level);
+                Feature temp = new Feature(featureID, "", -1, level.getSite(), levels);
 
-            //TODO: Should only allow user to select a feature which isn't already linked
-            if(!features.contains(temp)) {
-                fbh.createFeatureLink(temp, level);
-            }
-
-
-            //TODO: make it clear that the user must now highlight
-            if(imageDraw.getTool().equals("highlight"))
-            {
-                imageDraw.noDraw();
-            }
-            else {
-                imageDraw.highlight();
-                drawType = "feature";
-            }
-
-            if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
-            {
-                keySwitcher.showNext();
-            }
+                //TODO: Should only allow user to select a feature which isn't already linked
+                if(!features.contains(temp)) {
+                    fbh.createFeatureLink(temp, level);
+                }
             }
 
         });
