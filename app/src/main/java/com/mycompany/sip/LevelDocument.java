@@ -158,11 +158,19 @@ public class LevelDocument extends AppCompatActivity {
         switcher.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showChooserDialog();
+
+                if(selectedImageUri == null) {
+                    showChooserDialog();
+                }
             }
         });
 
         final FloatingActionButton rotate = (FloatingActionButton) findViewById(R.id.rotateFab);
+
+        if(selectedImageUri != null)
+        {
+            rotate.hide();
+        }
         rotate.setOnClickListener(new View.OnClickListener()
         {
             @Override
