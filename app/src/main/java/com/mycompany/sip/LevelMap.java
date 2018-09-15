@@ -734,7 +734,4 @@ public class LevelMap extends AppCompatActivity {
             return null;
         }
     }
-
-    //TODO: save layers/descriptions to server
-    //TODO: figure out what to do with grids
 }
