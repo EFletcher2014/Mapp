@@ -24,6 +24,8 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -349,8 +351,10 @@ public class LevelMap extends AppCompatActivity {
                 imageDraw.highlight();
                 drawType = "artifact";
 
+                TextView title = findViewById(R.id.drawAlertTitle);
                 if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
                 {
+                    title.setText("Artifact " + newArtifacts.get(0).toString());
                     keySwitcher.showNext();
                 }
                 break;
@@ -361,41 +365,42 @@ public class LevelMap extends AppCompatActivity {
             }
         }
 
-        //ArrayList containing artifact info and id to populate listview
-        artifactsList = new ArrayList<HashMap<String, String>>();
+        if(newArtifacts.isEmpty()) {
+            //ArrayList containing artifact info and id to populate listview
+            artifactsList = new ArrayList<HashMap<String, String>>();
 
-        //Looping through all artifacts to add them to listview
-        for(int i = 0; i < allArtifacts.size(); i++)
-        {
-            Artifact temp = allArtifacts.get(i);
+            //Looping through all artifacts to add them to listview
+            for (int i = 0; i < allArtifacts.size(); i++) {
+                Artifact temp = allArtifacts.get(i);
 
-            // creating new HashMap
-            HashMap<String, String> map = new HashMap<String, String>();
-            map.put(TAG_PID, temp.getID());
-            map.put(TAG_ARTIFACT, temp.toString());
+                // creating new HashMap
+                HashMap<String, String> map = new HashMap<String, String>();
+                map.put(TAG_PID, temp.getID());
+                map.put(TAG_ARTIFACT, temp.toString());
 
-            // adding HashList to ArrayList
-            artifactsList.add(map);
-        }
-
-        //adding arraylist to listview
-        runOnUiThread(new Runnable() {
-            public void run() {
-                /**
-                 * Updating parsed JSON data into ListView
-                 * */
-                ListAdapter adapter = new SimpleAdapter(
-                        LevelMap.this, artifactsList,
-                        R.layout.list_item, new String[] { TAG_PID,
-                        TAG_ARTIFACT},
-                        new int[] { R.id.pid, R.id.name }); //listview entries will contain artifact's id and name
-
-                // updating listview
-                artifacts.setAdapter(adapter);
+                // adding HashList to ArrayList
+                artifactsList.add(map);
             }
-        });
 
-        loadFeatures();
+            //adding arraylist to listview
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    /**
+                     * Updating parsed JSON data into ListView
+                     * */
+                    ListAdapter adapter = new SimpleAdapter(
+                            LevelMap.this, artifactsList,
+                            R.layout.list_item, new String[]{TAG_PID,
+                            TAG_ARTIFACT},
+                            new int[]{R.id.pid, R.id.name}); //listview entries will contain artifact's id and name
+
+                    // updating listview
+                    artifacts.setAdapter(adapter);
+                }
+            });
+
+            loadFeatures();
+        }
     }
 
     public void addFeatures(ArrayList<Feature> n)
@@ -426,8 +431,10 @@ public class LevelMap extends AppCompatActivity {
                 imageDraw.highlight();
                 drawType = "feature";
 
+                TextView title = findViewById(R.id.drawAlertTitle);
                 if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
                 {
+                    title.setText(newFeatures.get(0).toString());
                     keySwitcher.showNext();
                 }
                 break;
@@ -437,39 +444,40 @@ public class LevelMap extends AppCompatActivity {
             }
         }
 
-        //ArrayList containing feature info and id to populate listview
-        featuresList = new ArrayList<HashMap<String, String>>();
+        if(newFeatures.isEmpty()) {
+            //ArrayList containing feature info and id to populate listview
+            featuresList = new ArrayList<HashMap<String, String>>();
 
-        //Looping through all features to add them to listview
-        for(int i = 0; i < features.size(); i++)
-        {
-            Feature temp = features.get(i);
+            //Looping through all features to add them to listview
+            for (int i = 0; i < features.size(); i++) {
+                Feature temp = features.get(i);
 
-            // creating new HashMap
-            HashMap<String, String> map = new HashMap<String, String>();
-            map.put(TAG_PID, temp.getID());
-            map.put(TAG_FEATURE, temp.toString());
+                // creating new HashMap
+                HashMap<String, String> map = new HashMap<String, String>();
+                map.put(TAG_PID, temp.getID());
+                map.put(TAG_FEATURE, temp.toString());
 
-            // adding HashList to ArrayList
-            featuresList.add(map);
-        }
-
-        //adding arraylist to listview
-        runOnUiThread(new Runnable() {
-            public void run() {
-                /**
-                 * Updating parsed JSON data into ListView
-                 * */
-                ListAdapter adapter = new SimpleAdapter(
-                        LevelMap.this, featuresList,
-                        R.layout.list_item, new String[] { TAG_PID,
-                        TAG_FEATURE},
-                        new int[] { R.id.pid, R.id.name }); //listview entries will contain feature's id and name
-
-                // updating listview
-                featuresLV.setAdapter(adapter);
+                // adding HashList to ArrayList
+                featuresList.add(map);
             }
-        });
+
+            //adding arraylist to listview
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    /**
+                     * Updating parsed JSON data into ListView
+                     * */
+                    ListAdapter adapter = new SimpleAdapter(
+                            LevelMap.this, featuresList,
+                            R.layout.list_item, new String[]{TAG_PID,
+                            TAG_FEATURE},
+                            new int[]{R.id.pid, R.id.name}); //listview entries will contain feature's id and name
+
+                    // updating listview
+                    featuresLV.setAdapter(adapter);
+                }
+            });
+        }
     }
 
     public void loadAllSiteFeatures(ArrayList<Feature> newSiteFeatures)
@@ -547,7 +555,6 @@ public class LevelMap extends AppCompatActivity {
         Bitmap tempBitmap = Bitmap.createBitmap(imageDraw.getDrawingCache());
 
         if(drawType.equals("artifact")) {
-            //TODO: will also need to figure out how this will work when offline
             File tempF = new File(cache, level.getSite().getID() + "/");
             if (!tempF.exists()) {
                 tempF.mkdirs();
@@ -571,13 +578,11 @@ public class LevelMap extends AppCompatActivity {
         {
             if(drawType.equals("feature"))
             {
-                //TODO: will also need to figure out how this will work when offline
                 File tempF = new File(cache, level.getSite().getID() + "/");
                 if (!tempF.exists()) {
                     tempF.mkdirs();
                 }
 
-                //TODO: do we need this local file thing twice
                 File localFile = new File(tempF, level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
 
                 try {
