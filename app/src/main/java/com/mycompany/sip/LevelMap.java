@@ -833,4 +833,23 @@ public class LevelMap extends AppCompatActivity {
             return null;
         }
     }
+
+    @Override
+    public void onBackPressed()
+    {
+        if (!displayedImage.equals("") && imageDraw != null) {
+            try {
+                //display the level map
+                Bitmap bm = MediaStore.Images.Media.getBitmap(imageDraw.getContext().getContentResolver(), selectedImageUri);
+                bitmap = rotateBitmap(bm, rotation);
+                imageDraw.setCanvasBitmap(bitmap);
+                displayedImage = "";
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+            switcher.showNext();
+            switcher.showNext();
+        }
+        super.onBackPressed();
+    }
 }
