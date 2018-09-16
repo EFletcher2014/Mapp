@@ -325,6 +325,11 @@ public class LevelMap extends AppCompatActivity {
     public void addArtifacts(ArrayList<Artifact> n)
     {
         newArtifacts.addAll(n);
+
+        if(newArtifacts.size() == n.size())
+        {
+            loadArtifacts();
+        }
     }
 
     public void loadArtifacts()
@@ -406,6 +411,11 @@ public class LevelMap extends AppCompatActivity {
     public void addFeatures(ArrayList<Feature> n)
     {
         newFeatures.addAll(n);
+
+        if(newArtifacts.isEmpty())
+        {
+            loadFeatures();
+        }
     }
 
     public void loadFeatures()
