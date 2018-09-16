@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -155,7 +156,7 @@ public class LevelMap extends AppCompatActivity {
                     }
                 });
                 name = (EditText) saveArtifact.findViewById(R.id.artifactName);
-
+                
                 featureChoose = (Spinner) saveFeature.findViewById(R.id.featureSelect);
                 featureChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
@@ -641,7 +642,6 @@ public class LevelMap extends AppCompatActivity {
     //When the user clicks the add artifact button this dialog is displayed
     public void createArtifact()
     {
-        //TODO: make different titles/functionality for features/artifacts etc
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
             artifactAlert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
@@ -650,9 +650,7 @@ public class LevelMap extends AppCompatActivity {
         {
             artifactAlert = new AlertDialog.Builder(LevelMap.this);
         }
-
         artifactAlert.setTitle("Create a new artifact: ");
-        artifactAlert.setView(saveArtifact);
         artifactAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 aBagChoose.getSelectedItem();
@@ -665,6 +663,11 @@ public class LevelMap extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
             }
         });
+        if(saveArtifact.getParent() != null)
+        {
+            ((ViewGroup) saveArtifact.getParent()).removeView(saveArtifact);
+        }
+        artifactAlert.setView(saveArtifact);
         AlertDialog d = artifactAlert.create();
         d.show();
         imageDraw.setDrawingCacheEnabled(false);
@@ -673,7 +676,6 @@ public class LevelMap extends AppCompatActivity {
     //When the user clicks the add feature button this dialog is displayed
     public void createFeature()
     {
-        //TODO: make different titles/functionality for features/artifacts etc
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
             featureAlert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
@@ -685,10 +687,6 @@ public class LevelMap extends AppCompatActivity {
 
         featureAlert.setTitle("Link a new feature: ");
 
-        if(featureAlert.getContext() != null)
-        {
-            featureAlert.setView(saveFeature);
-        }
         featureAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
@@ -708,6 +706,12 @@ public class LevelMap extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
             }
         });
+
+        if(saveFeature.getParent() != null)
+        {
+            ((ViewGroup) saveFeature.getParent()).removeView(saveFeature);
+        }
+        featureAlert.setView(saveFeature);
         AlertDialog d = featureAlert.create();
         d.show();
         imageDraw.setDrawingCacheEnabled(false);
