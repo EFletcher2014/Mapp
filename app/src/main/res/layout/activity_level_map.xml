@@ -125,7 +125,7 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Save"
+                    android:text="Done"
                     android:id="@+id/DrawAlertSave"
                     android:layout_gravity="end"
                     android:onClick="saveImage"/>

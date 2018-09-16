@@ -23,10 +23,8 @@ import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher;
-
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -49,7 +47,6 @@ public class LevelMap extends AppCompatActivity {
     public static Bitmap bitmap;
     private static ViewSwitcher switcher;
     private static ViewSwitcher keySwitcher;
-    private static View context;
     private int rotation;
     private AlertDialog.Builder artifactAlert;
     private AlertDialog.Builder featureAlert;
@@ -84,6 +81,7 @@ public class LevelMap extends AppCompatActivity {
     private static Unit unit;
     private Level level;
 
+    //Used to tell FirebaseHandler and DrawingView if this activity is active
     @Override
     public void onStart()
     {
@@ -107,20 +105,20 @@ public class LevelMap extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         bitmap=null;
         super.onCreate(savedInstanceState);
-        fbh.updateLevelMapActivity(this);
+        fbh.updateLevelMapActivity(this); //give fbh and imageDraw a reference to this activity so they can get data from it
         imageDraw.updateLevelMapActivity(this);
         this.isActive = true;
         setContentView(R.layout.activity_level_map);
-        context = findViewById(R.id.selectActivity);
         Intent openIntent = getIntent();
         selectedImageUri = openIntent.getData();
         level = openIntent.getParcelableExtra("level");
         unit = level.getUnit();
         rotation = openIntent.getIntExtra("rotation", 0);
         cache = this.getCacheDir();
-        keySwitcher = findViewById(R.id.keySwitcher);
 
-        if(keySwitcher.getNextView() == findViewById(R.id.artifactFeatureList))
+        keySwitcher = findViewById(R.id.keySwitcher); //switcher view which will alternate between showing the key and an alert that the user might highlight something
+
+        if(keySwitcher.getNextView() == findViewById(R.id.artifactFeatureList)) //should start by showing map key
         {
             keySwitcher.showNext();
         }
@@ -139,14 +137,14 @@ public class LevelMap extends AppCompatActivity {
             try {
                 imageDraw = (DrawingView) findViewById(R.id.draw);  //the canvas to draw on
                 Bitmap bm = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
-                bitmap = rotateBitmap(bm, rotation);
+                bitmap = rotateBitmap(bm, rotation); //if user rotated image in levelDocument activity, rotate it here TODO: how are rotated images saved to firebase
                 imageDraw.setCanvasBitmap(bitmap);
 
                 LayoutInflater inflater = getLayoutInflater();
-                saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null);
-                saveFeature = inflater.inflate(R.layout.new_feature_dialog, null);
+                saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null); //the alert to save a new artifact
+                saveFeature = inflater.inflate(R.layout.new_feature_dialog, null); //the alert to save a new feature
 
-                aBagChoose = (Spinner) saveArtifact.findViewById(R.id.artifactBagSelect);
+                aBagChoose = (Spinner) saveArtifact.findViewById(R.id.artifactBagSelect); //in the saveArtifact alert, this allows the user to link their artifact to an artifact bag
                 aBagChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                         Object item = parent.getItemAtPosition(pos);
@@ -156,8 +154,8 @@ public class LevelMap extends AppCompatActivity {
                     }
                 });
                 name = (EditText) saveArtifact.findViewById(R.id.artifactName);
-                
-                featureChoose = (Spinner) saveFeature.findViewById(R.id.featureSelect);
+
+                featureChoose = (Spinner) saveFeature.findViewById(R.id.featureSelect); //in the saveFeature alert, this allows a user to choose from existing features
                 featureChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
                         Object item = parent.getItemAtPosition(pos);
@@ -169,28 +167,31 @@ public class LevelMap extends AppCompatActivity {
             } catch (IOException e) {
                 System.err.println("Error: image URI is null");
             }
-            switcher.showNext();
+            switcher.showNext(); //if image not null, this switcher should show the image, not the warning to save an image first
         }
 
 
-        //TODO: make this align right
-        artifacts = (ListView) findViewById(R.id.artifactListMap);
+        //TODO: make this align right. Will have to edit list view
+        artifacts = (ListView) findViewById(R.id.artifactListMap); //list of artifacts to display in the map key
         artifacts.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
+                //get the file associated with this artifact
                 File selectedFile = new File(artifacts.getContext().getCacheDir(), artifactsImages.get((int) id));
-                if(!displayedImage.equals(artifactsImages.get((int) id))){
+                if(!displayedImage.equals(artifactsImages.get((int) id))){ //if that file isn't displayed currently:
                     try {
+                        //display that file
                         imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = artifactsImages.get((int) id);
                     } catch (IOException e) {
                         System.out.println(e);
                     }
                 }
-                else
+                else //if the file is displayed currently
                 {
                     try {
+                        //display the level map
                         Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
                         bitmap = rotateBitmap(bm, rotation);
                         imageDraw.setCanvasBitmap(bitmap);
@@ -200,28 +201,31 @@ public class LevelMap extends AppCompatActivity {
                         System.out.println(e);
                     }
                 }
+                //refresh the image
                 switcher.showNext();
                 switcher.showNext();
             }
         });
 
-        featuresLV = (ListView) findViewById(R.id.featureListMap);
+        featuresLV = (ListView) findViewById(R.id.featureListMap); //list of features for the map key
         featuresLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                //get the file associated with this feature
                 File selectedFile = new File(featuresLV.getContext().getCacheDir(), featuresImages.get((int) id));
-                if(!displayedImage.equals(featuresImages.get((int) id))) {
+                if(!displayedImage.equals(featuresImages.get((int) id))) { //if that file isn't displayed right now:
                     try {
+                        //display it
                         imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(featuresLV.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = featuresImages.get((int) id);
                     } catch (IOException e) {
                         System.out.println(e);
                     }
                 }
-                else
+                else // if that file is displayed right now
                 {
                     try {
+                        //display the level map
                         Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
                         bitmap = rotateBitmap(bm, rotation);
                         imageDraw.setCanvasBitmap(bitmap);
@@ -231,47 +235,90 @@ public class LevelMap extends AppCompatActivity {
                         System.out.println(e);
                     }
                 }
+                //refresh image
                 switcher.showNext();
                 switcher.showNext();
             }
         });
 
 
-        //load all artifacts
+        //load items from Firebase
         fbh.getArtifactsFromLevel(level);
         fbh.getArtifactBagsFromLevel(level);
         fbh.getFeaturesFromLevel(level);
         fbh.getFeaturesFromSite();
 
+        //the button to add a new artifact to the list
         final Button addArtifact = (Button) findViewById(R.id.addArtifactButton);
 
-        //if button to add an artifact is clicked, allow user to draw on the image
+        //if button to add an artifact is clicked, display dialog to create a new artifact
         addArtifact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-            if(selectedImageUri!=null)//TODO: make this turn off automatically
+            if(selectedImageUri != null) //if an image is displayed, allow user to create an artifact
             {
-                createArtifact();
+                if(!allArtifactBags.isEmpty()) {
+
+                    if (!displayedImage.equals("")) {
+                        try {
+                            //display the level map
+                            Bitmap bm = MediaStore.Images.Media.getBitmap(addArtifact.getContext().getContentResolver(), selectedImageUri);
+                            bitmap = rotateBitmap(bm, rotation);
+                            imageDraw.setCanvasBitmap(bitmap);
+                            displayedImage = "";
+                        } catch (IOException e) {
+                            System.out.println(e);
+                        }
+                        switcher.showNext();
+                        switcher.showNext();
+                    }
+                    createArtifact();
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Cannot create an artifact without an artifact bag. Please return to the previous page and create one.", Toast.LENGTH_SHORT).show();
+                }
             }
             }
         });
 
+        //the button to add a new feature to the list
         final Button addFeature = (Button) findViewById(R.id.addFeatureButton);
 
-        //if button to add a feature is clicked, allow user to draw on the image
+        //if button to add a feature is clicked, display dialog to create a new feature
         addFeature.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if(selectedImageUri!=null)//TODO: make this turn off automatically
+                if(selectedImageUri != null) //if an image is displayed, allow user to create a feature
                 {
-                    createFeature();
+                    if(!allSiteFeatures.isEmpty()) {
+                        if (!displayedImage.equals("")) {
+                            try {
+                                //display the level map
+                                Bitmap bm = MediaStore.Images.Media.getBitmap(addFeature.getContext().getContentResolver(), selectedImageUri);
+                                bitmap = rotateBitmap(bm, rotation);
+                                imageDraw.setCanvasBitmap(bitmap);
+                                displayedImage = "";
+                            } catch (IOException e) {
+                                System.out.println(e);
+                            }
+                            switcher.showNext();
+                            switcher.showNext();
+                        }
+                        createFeature(); //displays an alert
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(), "This site has no features, so you cannot link one to this level. Please contact your site director to add a feature.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
     }
 
+    //called by fbh to load the artifact bags associated with this level so that they can populate the aBagChoose
+    //and the user can link their new artifact to one
     public void loadArtifactBags(ArrayList<ArtifactBag> newArtifactBags)
     {
         //adding new artifact bags passed from FirebaseHandler
@@ -306,7 +353,7 @@ public class LevelMap extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             public void run() {
                 /**
-                 * Updating parsed JSON data into ListView
+                 * Updating ListView
                  * */
                 aBagAdapter = new SimpleAdapter(
                         LevelMap.this, artifactBagsList,
@@ -316,6 +363,7 @@ public class LevelMap extends AppCompatActivity {
             }
         });
 
+        //if aBagChoose exists, populate it with these bags
         if(aBagChoose != null)
         {
             aBagChoose.setAdapter(aBagAdapter);
@@ -323,51 +371,59 @@ public class LevelMap extends AppCompatActivity {
 
     }
 
+    //called by fbh to notify this activity that it needs to load new artifacts
     public void addArtifacts(ArrayList<Artifact> n)
     {
+        //add artifacts to list of those to load
         newArtifacts.addAll(n);
 
+        //if newArtifacts was empty before, this means it had completed loading, so we need to tell it to load again
         if(newArtifacts.size() == n.size())
         {
             loadArtifacts();
         }
     }
 
+    //loads artifacts, makes sure they all have images, and then populates list with them
     public void loadArtifacts()
     {
-        //adding new artifacts passed from FirebaseHandler
+        //if there are still artifacts to load
         while (!newArtifacts.isEmpty()) {
-            Artifact temp = newArtifacts.get(0);
+            Artifact temp = newArtifacts.get(0); //get the first one
+
             int index = allArtifacts.indexOf(temp);
-            if (index < 0) {
+            if (index < 0) { //if this artifact hasn't already been loaded to the list, add it
                 allArtifacts.add(temp);
-            } else {
+            } else { //otherwise, overwrite it
                 allArtifacts.set(index, temp);
             }
 
-            if(!artifactsImages.contains(newArtifacts.get(0).getImagePath()))
+            //loads images
+            if(!artifactsImages.contains(newArtifacts.get(0).getImagePath()))//adds image paths to a list
             {
                 artifactsImages.add(newArtifacts.get(0).getImagePath());
             }
 
+            //gets image from that path
             File artifactImage = new File(this.getCacheDir(), newArtifacts.get(0).getImagePath());
 
-            if(!artifactImage.exists())
+            if(!artifactImage.exists()) //if that file doesn't exist, it needs to. Make it.
             {
+                //Make user highlight this artifact on the canvas
                 imageDraw.highlight();
                 drawType = "artifact";
 
                 TextView title = findViewById(R.id.drawAlertTitle);
-                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
+                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert)) //display alert that user must highlight
                 {
-                    title.setText("Artifact " + newArtifacts.get(0).toString());
+                    title.setText("Artifact " + newArtifacts.get(0).toString()); //show artifact's name so user knows which one they're highlighting
                     keySwitcher.showNext();
                 }
-                break;
+                break; //break while loop so user can highlight this artifact before others load
             }
-            else
+            else //if the image does exist, this artifact is all set and is officially loaded
             {
-                newArtifacts.remove(0);
+                newArtifacts.remove(0); //remove it from the list which needs to be loaded
             }
         }
 
@@ -392,7 +448,7 @@ public class LevelMap extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 public void run() {
                     /**
-                     * Updating parsed JSON data into ListView
+                     * Updating ListView
                      * */
                     ListAdapter adapter = new SimpleAdapter(
                             LevelMap.this, artifactsList,
@@ -405,40 +461,49 @@ public class LevelMap extends AppCompatActivity {
                 }
             });
 
+            //once artifacts are loaded, load features
             loadFeatures();
         }
     }
 
+    //called by fbh to notify levelmap activity that new features need to be loaded
     public void addFeatures(ArrayList<Feature> n)
     {
+        //adds new features to list which needs to be loaded
         newFeatures.addAll(n);
 
-        if(newArtifacts.isEmpty())
+        if(newArtifacts.isEmpty() //if there are still artifacts to load, features will be loaded after them
+                && newFeatures.size() == n.size()) //But if there are no artifacts to load and features were empty, features were finished loading.
         {
             loadFeatures();
         }
     }
 
+    //loads features into list view and loads their images, then populates list view
     public void loadFeatures()
     {
-        while (!newFeatures.isEmpty()) {
-            Feature temp = newFeatures.get(0);
+        while (!newFeatures.isEmpty()) { //while there are still features to load
+            Feature temp = newFeatures.get(0); //load the first
+
             int index = features.indexOf(temp);
             if (index < 0) {
-                features.add(temp);
+                features.add(temp); //if feature isn't already in list of features, add it
             } else {
-                features.set(index, temp);
+                features.set(index, temp); //else, overwrite it
             }
 
-            if(!featuresImages.contains(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg"))
+            //load image associated with feature
+            if(!featuresImages.contains(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg")) //if feature image path isn't already loaded, add it
             {
                 featuresImages.add(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
             }
 
+            //get file from that path
             File featureImage = new File(this.getCacheDir(), level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
 
-            if(!featureImage.exists())
+            if(!featureImage.exists()) //if that image doesn't exist, it needs to. Make it
             {
+                //make user highlight this feature
                 imageDraw.highlight();
                 drawType = "feature";
 
@@ -446,16 +511,16 @@ public class LevelMap extends AppCompatActivity {
                 if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
                 {
                     title.setText(newFeatures.get(0).toString());
-                    keySwitcher.showNext();
+                    keySwitcher.showNext(); //display draw alert for this feature
                 }
-                break;
+                break; //break while loop so other features don't load while this one is being highlighted
             }
-            else {
-                newFeatures.remove(0);
+            else { //if the feature's image exists, it's all set!
+                newFeatures.remove(0); //remove it from list to load
             }
         }
 
-        if(newFeatures.isEmpty()) {
+        if(newFeatures.isEmpty()) { //only populate ListView if all features have been loaded
             //ArrayList containing feature info and id to populate listview
             featuresList = new ArrayList<HashMap<String, String>>();
 
@@ -476,7 +541,7 @@ public class LevelMap extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 public void run() {
                     /**
-                     * Updating parsed JSON data into ListView
+                     * Updating ListView
                      * */
                     ListAdapter adapter = new SimpleAdapter(
                             LevelMap.this, featuresList,
@@ -491,6 +556,7 @@ public class LevelMap extends AppCompatActivity {
         }
     }
 
+    //called by fbh to populate featureChoose with the list of features associated with the site so that the user may choose one to link to their level
     public void loadAllSiteFeatures(ArrayList<Feature> newSiteFeatures)
     {
         //adding new site features passed from FirebaseHandler
@@ -535,6 +601,7 @@ public class LevelMap extends AppCompatActivity {
             }
         });
 
+        //populates list on new feature alert so that user can link their level to a new feature
         if(featureChoose != null)
         {
             featureChoose.setAdapter(featureAdapter);
@@ -542,14 +609,15 @@ public class LevelMap extends AppCompatActivity {
 
     }
 
+    //called by fbh when it gets a new feature from the site
     public void linkFeature(Feature f, Level l)
     {
         for(int i = 0; i<allSiteFeatures.size(); i++)
         {
-            if(allSiteFeatures.get(i).equals(f))
+            if(allSiteFeatures.get(i).equals(f)) //finds the feature
             {
-                allSiteFeatures.get(i).addLevel(l);
-                if(l.equals(level) && !features.contains(allSiteFeatures.get(i)))
+                allSiteFeatures.get(i).addLevel(l); //adds the given level to its list of levels. Not useful now, but might be for the full site activity
+                if(l.equals(level) && !features.contains(allSiteFeatures.get(i))) //if linked to the current level, add it to the list to load
                 {
                     ArrayList<Feature> temp = new ArrayList<>();
                     temp.add(allSiteFeatures.get(i));
@@ -559,13 +627,16 @@ public class LevelMap extends AppCompatActivity {
         }
     }
 
+    //called when the user clicks "save" on the draw alert
     public void saveImage(View view)
     {
+        //create bitmap from canvas's drawing cache
         imageDraw.setDrawingCacheEnabled(true);
         imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         Bitmap tempBitmap = Bitmap.createBitmap(imageDraw.getDrawingCache());
 
-        if(drawType.equals("artifact")) {
+        if(drawType.equals("artifact")) { //if an artifact was highlighted
+            //creates file
             File tempF = new File(cache, level.getSite().getID() + "/");
             if (!tempF.exists()) {
                 tempF.mkdirs();
@@ -573,7 +644,7 @@ public class LevelMap extends AppCompatActivity {
             File localFile = new File(tempF, newArtifacts.get(0).getID() + ".jpg");
 
             try {
-
+                //adds bitmap to that file
                 FileOutputStream fOut = new FileOutputStream(localFile);
 
                 tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
@@ -583,12 +654,13 @@ public class LevelMap extends AppCompatActivity {
                 System.out.println(e);
             }
 
-            fbh.setImage(level.getSite().getID() + "/", newArtifacts.get(0).getID(), ".jpg", Uri.fromFile(localFile));
+            fbh.setImage(level.getSite().getID() + "/", newArtifacts.get(0).getID(), ".jpg", Uri.fromFile(localFile)); //uploads image to firebase
         }
         else
         {
-            if(drawType.equals("feature"))
+            if(drawType.equals("feature")) //saves that feature image
             {
+                //loads file
                 File tempF = new File(cache, level.getSite().getID() + "/");
                 if (!tempF.exists()) {
                     tempF.mkdirs();
@@ -597,7 +669,7 @@ public class LevelMap extends AppCompatActivity {
                 File localFile = new File(tempF, level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
 
                 try {
-
+                    //adds bitmap to that file
                     FileOutputStream fOut = new FileOutputStream(localFile);
 
                     tempBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
@@ -607,33 +679,35 @@ public class LevelMap extends AppCompatActivity {
                     System.out.println(e);
                 }
 
-                fbh.setImage(level.getSite().getID() + "/", level.getID() + "-" + newFeatures.get(0).getID(), ".jpg", Uri.fromFile(localFile));
+                fbh.setImage(level.getSite().getID() + "/", level.getID() + "-" + newFeatures.get(0).getID(), ".jpg", Uri.fromFile(localFile)); //uploads file to Firebase
 
             }
         }
-        drawType = "";
-        imageDraw.undo();
+        drawType = ""; //not highlighting anything
+        imageDraw.undo(); //return to original map
         imageDraw.setDrawingCacheEnabled(false);
 
-        if(keySwitcher.getNextView() == findViewById(R.id.artifactFeatureList))
+        if(keySwitcher.getNextView() == findViewById(R.id.artifactFeatureList)) //switch to displaying key
         {
             keySwitcher.showNext();
-            if(!newArtifacts.isEmpty()) {
+            if(!newArtifacts.isEmpty()) { //if there are still artifacts to load, load them
                 loadArtifacts();
             }
             else {
-                if(!newFeatures.isEmpty()) {
+                if(!newFeatures.isEmpty()) { //if there aren't any artifacts to load, but there are features, load the features
                     loadFeatures();
                 }
             }
         }
     }
 
+    //called when the user clicks "clear" on the draw alert
     public void clearImage(View view)
     {
-        imageDraw.undo();
+        imageDraw.undo(); //displays level map again, but alert stays visible
     }
 
+    //used by fbh and imageDraw to get the level
     public Level getLevel()
     {
         return level;
@@ -651,11 +725,12 @@ public class LevelMap extends AppCompatActivity {
             artifactAlert = new AlertDialog.Builder(LevelMap.this);
         }
         artifactAlert.setTitle("Create a new artifact: ");
+        name.setText("");
         artifactAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                aBagChoose.getSelectedItem();
+                aBagChoose.getSelectedItem(); //gets the selected artifact bag to link to
                 Artifact a = new Artifact(unit.getSite(), unit, level, (new ArtifactBag(null, null, null, aBagID, "", -1, "")), "", name.getText().toString());
-                fbh.createArtifact(a);
+                fbh.createArtifact(a); //create artifact in firebase
             }
 
         });
@@ -663,11 +738,14 @@ public class LevelMap extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
             }
         });
+
+        //if this view has been displayed before, remove its view so it can be added again
         if(saveArtifact.getParent() != null)
         {
             ((ViewGroup) saveArtifact.getParent()).removeView(saveArtifact);
         }
         artifactAlert.setView(saveArtifact);
+
         AlertDialog d = artifactAlert.create();
         d.show();
         imageDraw.setDrawingCacheEnabled(false);
@@ -690,7 +768,7 @@ public class LevelMap extends AppCompatActivity {
         featureAlert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-                featureChoose.getSelectedItem();
+                featureChoose.getSelectedItem(); //gets the feature the user wishes to link to this level
                 ArrayList<Level> levels = new ArrayList<>();
                 levels.add(level);
                 Feature temp = new Feature(featureID, "", -1, level.getSite(), levels);
@@ -698,6 +776,10 @@ public class LevelMap extends AppCompatActivity {
                 //TODO: Should only allow user to select a feature which isn't already linked
                 if(!features.contains(temp)) {
                     fbh.createFeatureLink(temp, level);
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "That feature has already been linked to this level", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -707,11 +789,13 @@ public class LevelMap extends AppCompatActivity {
             }
         });
 
+        //if this view has already been displayed, remove it and add it again
         if(saveFeature.getParent() != null)
         {
             ((ViewGroup) saveFeature.getParent()).removeView(saveFeature);
         }
         featureAlert.setView(saveFeature);
+
         AlertDialog d = featureAlert.create();
         d.show();
         imageDraw.setDrawingCacheEnabled(false);
@@ -730,6 +814,7 @@ public class LevelMap extends AppCompatActivity {
 
         return dimensions;
     }
+
     //From https://stackoverflow.com/questions/31781150/auto-image-rotated-from-portrait-to-landscape
     //ensures that the image is rotated as it was on the MapHome activity
     public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {

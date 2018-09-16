@@ -294,26 +294,43 @@ public class FirebaseHandler {
 
                     for (QueryDocumentSnapshot doc : snapshot) {
                         if (doc != null && doc.get("LevelID") != null
-                                && ((artifactBagsActivityRef.get() != null && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID()))
-                                || (levelMapActivityRef.get() != null && doc.get("LevelID").toString().equals(levelMapActivityRef.get().getLevel().getID())))) {
+                                && ((artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID()))
+                                || (levelMapActivityRef != null && levelMapActivityRef.get() != null && doc.get("LevelID").toString().equals(levelMapActivityRef.get().getLevel().getID())))) {
                             final Object tempID = doc.getId();
                             final Object tempANum = doc.get("AccessionNumber");
                             final Object tempCNum = doc.get("CatalogNumber");
                             final Object tempCon = doc.get("Contents");
 
-                            ArtifactBag temp = new ArtifactBag(selectedSite, artifactBagsActivityRef.get().getLevel().getUnit(), artifactBagsActivityRef.get().getLevel(),
-                                    tempID.toString(),
-                                    tempANum.toString(),
-                                    Integer.parseInt(tempCNum.toString()),
-                                    tempCon.toString());
+                            ArtifactBag temp = null;
 
-                            artifactBags.add(temp);
+                            if(artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null) {
+                                temp = new ArtifactBag(selectedSite, artifactBagsActivityRef.get().getLevel().getUnit(), artifactBagsActivityRef.get().getLevel(),
+                                        tempID.toString(),
+                                        tempANum.toString(),
+                                        Integer.parseInt(tempCNum.toString()),
+                                        tempCon.toString());
+                            }
+                            else
+                            {
+                                if(levelMapActivityRef != null && levelMapActivityRef.get() != null)
+                                {
+                                    temp = new ArtifactBag(selectedSite, levelMapActivityRef.get().getLevel().getUnit(), levelMapActivityRef.get().getLevel(),
+                                            tempID.toString(),
+                                            tempANum.toString(),
+                                            Integer.parseInt(tempCNum.toString()),
+                                            tempCon.toString());
+                                }
+                            }
+
+                            if(temp != null) {
+                                artifactBags.add(temp);
+                            }
                         }
                     }
-                    if (artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
+                    if (artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
                         artifactBagsActivityRef.get().loadArtifactBags(artifactBags);
                     } else {
-                        if (levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+                        if (levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
                             levelMapActivityRef.get().loadArtifactBags(artifactBags);
                         }
                     }
@@ -346,7 +363,7 @@ public class FirebaseHandler {
 
                                     getImage(selectedSite.getID() + "/",
                                             tempID.toString(), siteActivityRef.get().getCacheDir(), "a");
-                                   if(tempLevelID.toString().equals(levelMapActivityRef.get().getLevel().getID()))
+                                   if(tempLevelID != null && tempLevelID.toString().equals(levelMapActivityRef.get().getLevel().getID()))
                                    {
                                        final Object tempABagID = documentSnapshot.getId();
                                        Artifact temp = new Artifact(selectedSite, levelMapActivityRef.get().getLevel().getUnit(), levelMapActivityRef.get().getLevel(),

@@ -26,6 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import java.io.File;
+
 //TODO: allow this to save a new level and also edit an old one
 
 public class LevelDocument extends AppCompatActivity {
@@ -187,7 +189,7 @@ public class LevelDocument extends AppCompatActivity {
         toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(level!=null) {
+                if(level!=null) { //TODO: this isn't working
                     //Move to select on image activity
                     Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactBagsActivity.class);
                     artifactActivityIntent.putExtra("name", site);
@@ -209,11 +211,21 @@ public class LevelDocument extends AppCompatActivity {
               public void onClick(View view) {
                     if(level!=null) {
                         if(selectedImageUri!=null) {
-                            //Move to select on image activity
-                            Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
-                            selectActivityIntent.putExtra("level", level);
-                            selectActivityIntent.putExtra("rotation", rotation);
-                            startActivity(selectActivityIntent);
+
+                            //check if image has been saved
+                            File levelMap = new File(toSelectOnImageActivity.getContext().getCacheDir(),  site.getID() + "/" + level.getID() + "map.jpg");
+
+                            if(levelMap.exists()) {
+                                //Move to select on image activity
+                                Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
+                                selectActivityIntent.putExtra("level", level);
+                                selectActivityIntent.putExtra("rotation", rotation);
+                                startActivity(selectActivityIntent);
+                            }
+                            else
+                            {
+                                Toast.makeText(getApplicationContext(), "You must save your level before using this feature", Toast.LENGTH_SHORT).show();
+                            }
                         }
                         else
                         {

@@ -174,13 +174,6 @@ public class DrawingView extends View {
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
 
-        if(heightSize > widthSize)
-        {
-            int temp = heightSize;
-            heightSize = widthSize;
-            widthSize = temp;
-        }
-
         int width;
         int height;
 
