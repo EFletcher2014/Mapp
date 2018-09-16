@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.view.MotionEvent;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 /**
@@ -41,6 +42,13 @@ public class DrawingView extends View {
     private float nsDim, ewDim;
     private Bitmap temp;
     private Bitmap toUndo;
+
+    //Level map
+    private static WeakReference<LevelMap> levelMapActivityRef;
+
+    public static void updateLevelMapActivity(LevelMap activity) {
+        levelMapActivityRef = new WeakReference<LevelMap>(activity);
+    }
 
     public DrawingView(Context context, AttributeSet attrs){
         super(context, attrs);
@@ -85,7 +93,7 @@ public class DrawingView extends View {
         else
         {
             //TODO: should we allow dimensions to be floats?
-            int[] dimensions = LevelMap.getUnitDimensions();
+            int[] dimensions = levelMapActivityRef.get().getUnitDimensions();
             ewDim = dimensions[1];
             nsDim = dimensions[0];
             if(this.whichTool.equals("grid"))
@@ -115,7 +123,6 @@ public class DrawingView extends View {
             this.drawPaint.setAlpha(100);
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    drawPath.reset();
                     drawPath.moveTo(touchX, touchY);
                     //invalidate();
                     break;
@@ -124,80 +131,9 @@ public class DrawingView extends View {
                     //invalidate();
                     break;
                 case MotionEvent.ACTION_UP:
-                    //invalidate();
-                    LevelMap.saveLayer();
                     break;
                 default:
                     return false;
-            }
-        }else
-        {
-            drawPaint.setAlpha(255);
-            drawPaint.setStrokeWidth(2);
-            if(this.whichTool.equals("grid")) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        gridPath.reset();
-                        startX = touchX;
-                        startY = touchY;
-                        endX = touchX;
-                        endY = touchY;
-                        gridPath = drawGrid();
-                        //invalidate();
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        endX = touchX;
-                        endY = touchY;
-                        gridPath = drawGrid();
-                        //invalidate();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        endX = touchX;
-                        endY = touchY;
-                        gridPath = drawGrid();
-                        LevelMap.saveLayer();
-                        //invalidate();
-                        break;
-                    default:
-                        return false;
-                }
-            }
-            else
-            {
-                if(this.whichTool.equals("keystone")) {
-                    System.out.println("keystoning!!!!");
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            if(keystoneCounter==0)
-                            {
-                                keyPath.reset();
-                            }
-                            if(keystoneCounter<4) {
-                                keystonePoints[keystoneCounter][0] = touchX;
-                                keystonePoints[keystoneCounter][1] = touchY;
-
-                                keystone = new Grid("keystone", keystonePoints, nsDim, ewDim, /*canvas,*/ drawPaint);
-                                keyPath=keystone.drawGrid(drawPaint);
-                                keystoneCounter++;
-                            }
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            if(keystoneCounter==4)
-                            {
-                                System.out.println("drawing keystone!");
-                                //drawKeystone(keystonePoints);
-                                keystone = new Grid("keystone", keystonePoints, nsDim, ewDim, /*canvas,*/ drawPaint);
-                                keyPath=keystone.drawGrid(drawPaint);
-                                LevelMap.saveLayer();
-                                //invalidate();
-                            }
-                            break;
-                        default:
-                            return false;
-                    }
-                }
             }
         }
         invalidate();

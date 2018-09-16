@@ -26,6 +26,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import java.io.File;
+
 //TODO: allow this to save a new level and also edit an old one
 
 public class LevelDocument extends AppCompatActivity {
@@ -81,9 +83,10 @@ public class LevelDocument extends AppCompatActivity {
         //requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
         //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mytitle);
         super.onCreate(savedInstanceState);
+        this.isActive = true;
         fbh.updateLevelDocActivity(this);
 
-        setContentView(R.layout.activity_map_home);
+        setContentView(R.layout.activity_level_document);
         switcher= (ViewSwitcher) findViewById(R.id.imageSwitch);
         begDepth = (EditText) findViewById(R.id.enterBegDepth);
         endDepth = (EditText) findViewById(R.id.enterEndDepth);
@@ -138,7 +141,7 @@ public class LevelDocument extends AppCompatActivity {
             excMeth.setText(level.getExcavationMethod() + "");
             notes.setText(level.getNotes() + "");
 
-            fbh.getImage(level,site.getNumber() + "/" + unit.getDatum() + "/" + "level" + level.getNumber() + "/","map", this.getCacheDir());
+            fbh.getImage(site.getID() + "/" , level.getID() + "map", this.getCacheDir(), "");
         }
         else
         {
@@ -157,11 +160,19 @@ public class LevelDocument extends AppCompatActivity {
         switcher.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showChooserDialog();
+
+                if(selectedImageUri == null) {
+                    showChooserDialog();
+                }
             }
         });
 
         final FloatingActionButton rotate = (FloatingActionButton) findViewById(R.id.rotateFab);
+
+        if(selectedImageUri != null)
+        {
+            rotate.hide();
+        }
         rotate.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -178,7 +189,7 @@ public class LevelDocument extends AppCompatActivity {
         toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(level!=null) {
+                if(level!=null) { //TODO: this isn't working
                     //Move to select on image activity
                     Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactBagsActivity.class);
                     artifactActivityIntent.putExtra("name", site);
@@ -200,11 +211,21 @@ public class LevelDocument extends AppCompatActivity {
               public void onClick(View view) {
                     if(level!=null) {
                         if(selectedImageUri!=null) {
-                            //Move to select on image activity
-                            Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
-                            selectActivityIntent.putExtra("level", level);
-                            selectActivityIntent.putExtra("rotation", rotation);
-                            startActivityForResult(selectActivityIntent, 33);
+
+                            //check if image has been saved
+                            File levelMap = new File(toSelectOnImageActivity.getContext().getCacheDir(),  site.getID() + "/" + level.getID() + "map.jpg");
+
+                            if(levelMap.exists()) {
+                                //Move to select on image activity
+                                Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
+                                selectActivityIntent.putExtra("level", level);
+                                selectActivityIntent.putExtra("rotation", rotation);
+                                startActivity(selectActivityIntent);
+                            }
+                            else
+                            {
+                                Toast.makeText(getApplicationContext(), "You must save your level before using this feature", Toast.LENGTH_SHORT).show();
+                            }
                         }
                         else
                         {
@@ -241,7 +262,7 @@ public class LevelDocument extends AppCompatActivity {
 
                 if(selectedImageUri != null)
                 {
-                    fbh.setImage(site.getNumber() + "/" + unit.getDatum() + "/level" + level.getNumber() + "/", "map", ".jpg", selectedImageUri);
+                    fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
                 }
 
                 //TODO: should probably check that level was saved
@@ -285,27 +306,15 @@ public class LevelDocument extends AppCompatActivity {
      * FROM STACKOVERFLOW https://stackoverflow.com/questions/2169649/get-pick-an-image-from-androids-built-in-gallery-app-programmatically*****
      */
      public void onActivityResult(int requestCode, int resultCode, Intent data) {
-         if(requestCode == 33)
-         {
-             if(resultCode == RESULT_OK) {
-                 //TODO: will this work? is it necessary
-                 selectedImageUri = data.getParcelableExtra("newURI");
 
-                 final int takeFlags = (Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+         if (resultCode == RESULT_OK) {
 
-                 unitImage.setImageURI(selectedImageUri);
+             if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
+                 switcher.showNext();
              }
-         }
-         else {
-             if (resultCode == RESULT_OK) {
-
-                 if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
-                     switcher.showNext();
-                 }
-                 selectedImageUri = data.getData();
-                 unitImage.setImageURI(selectedImageUri);
-                 rotation = 0;
-             }
+             selectedImageUri = data.getData();
+             unitImage.setImageURI(selectedImageUri);
+             rotation = 0;
          }
     }
 

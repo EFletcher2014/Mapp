@@ -95,13 +95,16 @@ public class Global {
     public static final String TAG_IMPATH = "imagePath";
 
     // ArtifactBag JSON Node names
-    public static final String TAG_ARTIFACTS = "artifacts";
+    public static final String TAG_ARTIFACT_BAG = "artifactBag";
     public static final String TAG_ANUM = "accNum";
     public static final String TAG_CNUM = "catNum";
     public static final String TAG_CONT = "contents";
 
     //Artifact tags
     public static final String TAG_ARTIFACT = "artifact";
+
+    //Feature tags
+    public static final String TAG_FEATURE = "feature";
 
     // Timestamps for online/offline
     public static Timestamp onlineSince = new Timestamp(0);

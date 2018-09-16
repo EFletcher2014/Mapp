@@ -8,6 +8,7 @@ public class Artifact {
     private ArtifactBag artifactBag;
     private String ID;
     private String description;
+    private String imagePath;
 
     public Artifact(Site s, Unit u, Level l, ArtifactBag a, String i, String d)
     {
@@ -17,6 +18,11 @@ public class Artifact {
         this.artifactBag = a;
         this.ID = i;
         this.description = d;
+
+        if(site != null && ID != null)
+        {
+            this.imagePath = site.getID() + "/" + ID + ".jpg";
+        }
     }
 
     public Site getSite()
@@ -44,6 +50,10 @@ public class Artifact {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getImagePath() {
+        return imagePath;
     }
 
     public void setDescription(String d)
