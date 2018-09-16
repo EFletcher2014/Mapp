@@ -50,8 +50,6 @@ public class FirebaseHandler {
     CollectionReference featuresLinkRef;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReference();
-    Task<QuerySnapshot> task;
-    //File localFile;
 
     //Sites
     private static WeakReference<AllSitesActivity> siteActivityRef;

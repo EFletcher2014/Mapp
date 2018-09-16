@@ -1,41 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mycompany.sip" >
+    package="com.mycompany.sip">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
-    <uses-permission android:name="android.permission.READ_USER_DICTIONARY"/>
-    <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY"/>
+    <uses-permission android:name="android.permission.READ_USER_DICTIONARY" />
+    <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
-        <activity android:name=".LevelDocument"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="orientation">
-        </activity>
-        <activity android:name=".LevelMap"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".LevelDocument"
+            android:configChanges="orientation"
+            android:windowSoftInputMode="stateHidden"></activity>
+        <activity
+            android:name=".LevelMap"
             android:label="@string/title_activity_select"
             android:screenOrientation="landscape"
-            android:windowSoftInputMode="stateHidden" >
+            android:windowSoftInputMode="stateHidden"></activity>
+        <activity android:name=".AllSitesActivity">
         </activity>
-        <activity android:name=".AllSitesActivity" >
+        <activity android:name=".AllUnitsActivity"></activity>
+        <activity android:name=".AllLevelsActivity"></activity>
+        <activity android:name=".AllArtifactBagsActivity"></activity>
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name=".AllUnitsActivity" >
-        </activity>
-        <activity android:name=".AllLevelsActivity" >
-        </activity>
-        <activity android:name=".AllArtifactBagsActivity" >
-        </activity>
+            </intent-filter></activity>
     </application>
 
 </manifest>
