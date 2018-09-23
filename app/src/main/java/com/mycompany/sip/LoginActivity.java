@@ -41,6 +41,7 @@ public class LoginActivity extends AppCompatActivity {
         {
             //go to sites activity
             Intent in = new Intent(LoginActivity.this, AllSitesActivity.class);
+            startActivity(in);
         }
         else
         {

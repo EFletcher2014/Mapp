@@ -107,7 +107,7 @@ public class AllSitesActivity extends ListActivity {
                     final String sLa = savedInstanceState.getString("Latitude");
 
                     //Reopens dialog to create a site with existing inputs
-                    showDialog(new Site("", sName, sNumb, sDesc, sDate, Double.parseDouble(sLa), Double.parseDouble(sLo)));
+                    showDialog(new Site("", sName, sNumb, sDesc, sDate, Double.parseDouble(sLa), Double.parseDouble(sLo), null));
                 }
             }
             setContentView(R.layout.activity_get_all_sites);
@@ -140,7 +140,7 @@ public class AllSitesActivity extends ListActivity {
 
                             // sending id and site to list units activity
                             in.putExtra(TAG_PID, pid);
-                            in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0))));
+                            in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null))));
 
                             // starting unit activity
                             //TODO: why ForResult?
@@ -334,7 +334,7 @@ public class AllSitesActivity extends ListActivity {
 
                 //Creating site from user's inputted data. CreateNewSite will use this later
                 site = new Site("", inputName.getText().toString(), inputNumb.getText().toString(),
-                        inputDesc.getText().toString(), toDate(y, m, d), Double.parseDouble(inputLa.getText().toString()), Double.parseDouble(inputLo.getText().toString()));
+                        inputDesc.getText().toString(), toDate(y, m, d), Double.parseDouble(inputLa.getText().toString()), Double.parseDouble(inputLo.getText().toString()), null);
 
                 //If all fields are filled out
                 if(!(inputName.getText().toString().equals("")) && !(inputDesc.getText().toString().equals(""))

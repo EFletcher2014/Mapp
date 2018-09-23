@@ -10,6 +10,7 @@ import android.util.Log;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -38,6 +39,9 @@ public class FirebaseHandler {
 
     //instance
     private static FirebaseHandler instance = null;
+
+    //Authorization
+    private FirebaseAuth fbA = FirebaseAuth.getInstance();
 
     //Firebase
     FirebaseFirestore mappDB = FirebaseFirestore.getInstance();
@@ -127,11 +131,12 @@ public class FirebaseHandler {
                             Object tempDate = doc.get("DateDiscovered");
                             Object tempLat = doc.get("Latitude");
                             Object tempLong = doc.get("Longitude");
+                            Object tempRoles = doc.get("Roles");
 
                             Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
                                     (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
                                     (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
-                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())));
+                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, String>) tempRoles);
 
                             sites.add(temp);
                         }
@@ -164,6 +169,8 @@ public class FirebaseHandler {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            Map<String, String> role = new HashMap<>();
+            role.put(fbA.getCurrentUser().getUid(), "director");
 
             temp.put("Description", newSite.getDescription());
             temp.put("Name", newSite.getName());
@@ -171,13 +178,28 @@ public class FirebaseHandler {
             temp.put("DateDiscovered", newSite.getDateOpened());
             temp.put("Latitude", newSite.getDatum().latitude);
             temp.put("Longitude", newSite.getDatum().longitude);
+            temp.put("Roles", role);
         }
 
         /**
          * Creating site
          */
         protected String doInBackground(String... args) {
-            mappDB.collection("sites").add(temp);
+            mappDB.collection("sites").add(temp).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+
+//                    Map<String, Object> role = new HashMap<>();
+//                    role.put("User", fbA.getCurrentUser().getUid());
+//                    role.put("Role", "director");
+//                    documentReference.collection("roles").add(role);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    System.out.println(e);
+                }
+            });
             return null;
         }
 
@@ -213,13 +235,15 @@ public class FirebaseHandler {
                             Object tempEWD = doc.get("EWDim");
                             Object tempReas = doc.get("ReasonForOpening");
                             Object tempD = doc.get("DateOpened");
+                            Object tempRoles = doc.get("Roles");
 
                             Unit temp = new Unit(selectedSite, doc.getId(), (tempNSC == null ? 0 : Integer.parseInt(tempNSC.toString())),
                                     (tempEWC == null ? 0 : Integer.parseInt(tempEWC.toString())),
                                     (tempNSD == null ? 0 : Integer.parseInt(tempNSD.toString())),
                                     (tempEWD == null ? 0 : Integer.parseInt(tempEWD.toString())),
                                     (tempD == null ? "" : tempD.toString()),
-                                    (tempReas == null ? "" : tempReas.toString()));
+                                    (tempReas == null ? "" : tempReas.toString()),
+                                    (HashMap<String, String>) tempRoles);
 
                             units.add(temp);
                         }
@@ -771,6 +795,7 @@ public class FirebaseHandler {
 
             Map<String, Object> temp = new HashMap<>();
             temp.put("LevelID", newABag.getLevel().getID());
+            temp.put("UnitID", newABag.getLevel().getUnit().getID());
             temp.put("AccessionNumber", newABag.getAccessionNumber());
             temp.put("CatalogNumber", newABag.getCatalogNumber());
             temp.put("Contents", newABag.getContents());
@@ -825,6 +850,7 @@ public class FirebaseHandler {
             temp.put("ArtifactBag", mappDB.collection("sites").document(newArt.getSite().getID())
                     .collection("artifactBags").document(newArt.getArtifactBag().getID()));
             temp.put("ArtifactBagID", newArt.getArtifactBag().getID());
+            temp.put("UnitID", newArt.getArtifactBag().getLevel().getUnit().getID());
             temp.put("Name", newArt.getDescription());
 
             if(newArt.getID() == null || newArt.getID() == "") {
@@ -928,6 +954,7 @@ public class FirebaseHandler {
             Map<String, Object> temp = new HashMap<>();
             temp.put("FeatureID", feat.getID());
             temp.put("LevelID", lev.getID());
+            temp.put("UnitID", lev.getUnit().getID());
 
             mappDB.collection("sites").document(lev.getSite().getID()).collection("featureLinks").document().set(temp);
             return null;
@@ -1020,5 +1047,21 @@ public class FirebaseHandler {
         }
         protected void onPostExecute(String file_url) {
         }
+    }
+
+    public boolean userHasWritePermission(Site site)
+    {
+        ArrayList<String> roles = new ArrayList<>();
+        roles.add("director");
+
+        return fbA.getCurrentUser() == null ? false : site.userIsOneOfRoles(fbA.getCurrentUser().getProviderId(), roles);
+    }
+
+    public boolean userHasWritePermission(Unit unit)
+    {
+        ArrayList<String> roles = new ArrayList<>();
+        roles.add("excavator");
+
+        return fbA.getCurrentUser() == null ? false : unit.userIsOneOfRoles(fbA.getCurrentUser().getProviderId(), roles);
     }
 }

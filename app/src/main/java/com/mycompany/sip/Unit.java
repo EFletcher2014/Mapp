@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Emily Fletcher on 8/30/2017.
@@ -21,8 +23,9 @@ public class Unit implements Parcelable {
     private String excavators;
     private String reasonForOpening;
     private String ID;
+    private HashMap<String, String> roles = new HashMap<>();
 
-    public Unit(Site s, String i, int nsc, int ewc, int nsd, int ewd, String date, String r)
+    public Unit(Site s, String i, int nsc, int ewc, int nsd, int ewd, String date, String r, HashMap<String, String> ro)
     {
         this.site = s;
         this.ID = i;
@@ -33,6 +36,7 @@ public class Unit implements Parcelable {
         this.dateOpened = date;
         this.reasonForOpening = r;
         this.datum = toDatum(nsc, ewc);
+        this.roles.putAll(ro);
     }
 
     public Unit(Parcel in)
@@ -104,6 +108,22 @@ public class Unit implements Parcelable {
     public String getReasonForOpening()
     {
         return reasonForOpening;
+    }
+
+    public void addRoles(HashMap<String, String> r)
+    {
+        roles.putAll(r);
+    }
+
+    public boolean userIsOneOfRoles(String userID, ArrayList<String> r)
+    {
+        boolean flag = false;
+
+        for(int i = 0; i<r.size(); i++)
+        {
+            flag = flag || roles.get(userID).equals(r.get(i));
+        }
+        return flag;
     }
 
     @Override

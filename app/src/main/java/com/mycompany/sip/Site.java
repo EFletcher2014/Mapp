@@ -7,6 +7,8 @@ import android.os.Parcelable;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Emily Fletcher on 8/30/2017.
@@ -21,8 +23,9 @@ public class Site implements Parcelable {
     private String description;
     private String id;
     private LatLng datum;
+    private HashMap<String, String> roles = new HashMap<>();
 
-    public Site(String i, String n, String nu, String desc, String date, double latude, double lotude)
+    public Site(String i, String n, String nu, String desc, String date, double latude, double lotude, HashMap<String, String> r)
     {
         name = n;
         id = i;
@@ -30,6 +33,7 @@ public class Site implements Parcelable {
         description = desc;
         dateOpened = date;
         datum = new LatLng(latude, lotude);
+        roles.putAll(r);
     }
 
     public Site(Parcel in) {
@@ -67,6 +71,23 @@ public class Site implements Parcelable {
     }
 
     public LatLng getDatum() { return datum; }
+
+    public void addRoles(HashMap<String, String> r)
+    {
+        roles.putAll(r);
+    }
+
+    public boolean userIsOneOfRoles(String userID, ArrayList<String> r)
+    {
+        boolean flag = false;
+
+        for(int i = 0; i<r.size(); i++)
+        {
+            flag = flag || roles.get(userID).equals(r.get(i));
+        }
+
+        return flag;
+    }
 
 
 
