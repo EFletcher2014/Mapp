@@ -102,7 +102,7 @@ public class AllUnitsActivity extends ListActivity {
                 //TODO: get datum in a different way
                 //TODO: get excavators
                 showDialog(new Unit(site, "", Integer.parseInt(coords.substring(1, 2)),
-                        Integer.parseInt(coords.substring(4, 5)), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas, null));
+                        Integer.parseInt(coords.substring(4, 5)), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
             }
         }
 
@@ -143,7 +143,7 @@ public class AllUnitsActivity extends ListActivity {
                 // sending id, sitename, and unit to next activity
                 in.putExtra(TAG_PID, pid);
                 in.putExtra("siteName", site);
-                in.putExtra(TAG_UNITNAME, allUnits.get(allUnits.indexOf(new Unit(null, pid, 0, 0, 0, 0, "", "", null))));
+                in.putExtra(TAG_UNITNAME, allUnits.get(allUnits.indexOf(new Unit(null, pid, 0, 0, 0, 0, "", ""))));
 
                 // starting new activity and expecting some response back
                 startActivityForResult(in, 100);
@@ -330,7 +330,7 @@ public class AllUnitsActivity extends ListActivity {
                         Integer.parseInt(inputCoords.getText().toString().substring(4)),
                         Integer.parseInt(inputNSDims.getText().toString()),
                         Integer.parseInt(inputEWDims.getText().toString()),
-                        toDate(y, m, d), inputReas.getText().toString(), null);
+                        toDate(y, m, d), inputReas.getText().toString());
 
                 if(!(inputCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
                         && !(inputDate.getText().toString().equals("")) && !(inputNSDims.getText().toString().equals(""))

@@ -23,9 +23,9 @@ public class Site implements Parcelable {
     private String description;
     private String id;
     private LatLng datum;
-    private HashMap<String, String> roles = new HashMap<>();
+    private HashMap<String, ArrayList> roles = new HashMap<>();
 
-    public Site(String i, String n, String nu, String desc, String date, double latude, double lotude, HashMap<String, String> r)
+    public Site(String i, String n, String nu, String desc, String date, double latude, double lotude, HashMap<String, ArrayList> r)
     {
         name = n;
         id = i;
@@ -74,7 +74,7 @@ public class Site implements Parcelable {
 
     public LatLng getDatum() { return datum; }
 
-    public void addRoles(HashMap<String, String> r)
+    public void addRoles(HashMap<String, ArrayList> r)
     {
         roles.putAll(r);
     }
@@ -85,13 +85,18 @@ public class Site implements Parcelable {
 
         for(int i = 0; i<r.size(); i++)
         {
-            flag = flag || roles.get(userID).equals(r.get(i));
+            flag = flag || roles.get(userID).indexOf(r.get(i)) > -1;
         }
 
         return flag;
     }
 
-
+    public boolean userIsUnitExcavator(String userID, String unitID)
+    {
+        boolean flag = false;
+        flag = flag || roles.get(userID).indexOf(unitID) > -1;
+        return flag;
+    }
 
     @Override
     public String toString()

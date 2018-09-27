@@ -144,7 +144,7 @@ public class FirebaseHandler {
                             Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
                                     (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
                                     (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
-                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, String>) tempRoles);
+                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, ArrayList>) tempRoles);
 
                             if (userSites.indexOf(temp) > -1) {
                                 userSites.set(userSites.indexOf(temp), temp);
@@ -183,7 +183,7 @@ public class FirebaseHandler {
                             Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
                                     (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
                                     (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
-                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, String>) tempRoles);
+                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, ArrayList>) tempRoles);
 
                             if (userSites.indexOf(temp) > -1) {
                                 userSites.set(userSites.indexOf(temp), temp);
@@ -273,15 +273,13 @@ public class FirebaseHandler {
                             Object tempEWD = doc.get("EWDim");
                             Object tempReas = doc.get("ReasonForOpening");
                             Object tempD = doc.get("DateOpened");
-                            Object tempRoles = doc.get("Roles");
 
                             Unit temp = new Unit(selectedSite, doc.getId(), (tempNSC == null ? 0 : Integer.parseInt(tempNSC.toString())),
                                     (tempEWC == null ? 0 : Integer.parseInt(tempEWC.toString())),
                                     (tempNSD == null ? 0 : Integer.parseInt(tempNSD.toString())),
                                     (tempEWD == null ? 0 : Integer.parseInt(tempEWD.toString())),
                                     (tempD == null ? "" : tempD.toString()),
-                                    (tempReas == null ? "" : tempReas.toString()),
-                                    (HashMap<String, String>) tempRoles);
+                                    (tempReas == null ? "" : tempReas.toString()));
 
                             units.add(temp);
                         }
@@ -1095,11 +1093,8 @@ public class FirebaseHandler {
         return fbA.getCurrentUser() == null ? false : site.userIsOneOfRoles(fbA.getCurrentUser().getUid(), roles);
     }
 
-    public boolean userHasWritePermission(Unit unit)
+    public boolean userIsExcavator(Unit unit)
     {
-        ArrayList<String> roles = new ArrayList<>();
-        roles.add("excavator");
-
-        return fbA.getCurrentUser() == null ? false : unit.userIsOneOfRoles(fbA.getCurrentUser().getProviderId(), roles);
+        return fbA.getCurrentUser() == null ? false : unit.getSite().userIsUnitExcavator(fbA.getCurrentUser().getProviderId(), unit.getID());
     }
 }
