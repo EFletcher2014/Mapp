@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -15,6 +16,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -29,6 +31,7 @@ import org.w3c.dom.Document;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +48,7 @@ public class FirebaseHandler {
 
     //Firebase
     FirebaseFirestore mappDB = FirebaseFirestore.getInstance();
+    CollectionReference usersRef;
     CollectionReference sitesRef; //todo: will be a docref once users added
     CollectionReference unitsRef;
     CollectionReference levelsRef;
@@ -75,6 +79,9 @@ public class FirebaseHandler {
 
     //Features list
     private static ArrayList<Feature> siteFeatures = new ArrayList<>();
+
+    //Sites list
+    private static ArrayList<Site> userSites = new ArrayList<>();
 
     public static FirebaseHandler getInstance()
     {
@@ -111,20 +118,20 @@ public class FirebaseHandler {
 
     public void getSitesListener() {
         sitesRef = mappDB.collection("sites");
-        sitesRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+
+        sitesRef.whereArrayContains("Roles." + fbA.getCurrentUser().getUid(), "director").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
-                    ArrayList<Site> sites = new ArrayList<Site>();
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
 
-                    if (e != null) {
-                        Log.w(TAG, "Listen failed.", e);
-                        return;
-                    }
+                if(e != null)
+                {
+                    System.out.println(e);
+                }
 
-                    for (QueryDocumentSnapshot doc : snapshot) {
-                        if (doc != null) {
+                if(queryDocumentSnapshots != null) {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive() && doc != null) {
+
                             Object tempName = doc.get("Name");
                             Object tempNum = doc.get("Number");
                             Object tempDesc = doc.get("Description");
@@ -133,16 +140,60 @@ public class FirebaseHandler {
                             Object tempLong = doc.get("Longitude");
                             Object tempRoles = doc.get("Roles");
 
+                            //Site temp = doc.toObject(Site.class);
                             Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
                                     (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
                                     (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
                                     (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, String>) tempRoles);
 
-                            sites.add(temp);
+                            if (userSites.indexOf(temp) > -1) {
+                                userSites.set(userSites.indexOf(temp), temp);
+                            } else {
+                                userSites.add(temp);
+                            }
+
+                            siteActivityRef.get().loadSites(userSites);
                         }
                     }
-                    //new LoadAllSites().execute();
-                    siteActivityRef.get().loadSites(sites);
+                }
+            }
+        });
+
+        sitesRef.whereArrayContains("Roles." + fbA.getCurrentUser().getUid(), "excavator").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+
+                if (e != null)
+                {
+                    System.out.println(e);
+                }
+                if(queryDocumentSnapshots != null) {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive() && doc != null) {
+
+                            Object tempName = doc.get("Name");
+                            Object tempNum = doc.get("Number");
+                            Object tempDesc = doc.get("Description");
+                            Object tempDate = doc.get("DateDiscovered");
+                            Object tempLat = doc.get("Latitude");
+                            Object tempLong = doc.get("Longitude");
+                            Object tempRoles = doc.get("Roles");
+
+                            //Site temp = doc.toObject(Site.class);
+                            Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
+                                    (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
+                                    (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
+                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, String>) tempRoles);
+
+                            if (userSites.indexOf(temp) > -1) {
+                                userSites.set(userSites.indexOf(temp), temp);
+                            } else {
+                                userSites.add(temp);
+                            }
+
+                            siteActivityRef.get().loadSites(userSites);
+                        }
+                    }
                 }
             }
         });
@@ -169,8 +220,6 @@ public class FirebaseHandler {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Map<String, String> role = new HashMap<>();
-            role.put(fbA.getCurrentUser().getUid(), "director");
 
             temp.put("Description", newSite.getDescription());
             temp.put("Name", newSite.getName());
@@ -178,28 +227,18 @@ public class FirebaseHandler {
             temp.put("DateDiscovered", newSite.getDateOpened());
             temp.put("Latitude", newSite.getDatum().latitude);
             temp.put("Longitude", newSite.getDatum().longitude);
-            temp.put("Roles", role);
+            ArrayList<String> role = new ArrayList<>();
+            role.add("director");
+            HashMap<String, ArrayList> roles = new HashMap<>();
+            roles.put(fbA.getCurrentUser().getUid(), role);
+            temp.put("Roles", roles);
         }
 
         /**
          * Creating site
          */
         protected String doInBackground(String... args) {
-            mappDB.collection("sites").add(temp).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                @Override
-                public void onSuccess(DocumentReference documentReference) {
-
-//                    Map<String, Object> role = new HashMap<>();
-//                    role.put("User", fbA.getCurrentUser().getUid());
-//                    role.put("Role", "director");
-//                    documentReference.collection("roles").add(role);
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    System.out.println(e);
-                }
-            });
+            mappDB.collection("sites").add(temp);
             return null;
         }
 
@@ -207,7 +246,6 @@ public class FirebaseHandler {
          * After completing background task Dismiss the progress dialog
          **/
         protected void onPostExecute(String file_url) {
-
         }
 
     }
@@ -1054,7 +1092,7 @@ public class FirebaseHandler {
         ArrayList<String> roles = new ArrayList<>();
         roles.add("director");
 
-        return fbA.getCurrentUser() == null ? false : site.userIsOneOfRoles(fbA.getCurrentUser().getProviderId(), roles);
+        return fbA.getCurrentUser() == null ? false : site.userIsOneOfRoles(fbA.getCurrentUser().getUid(), roles);
     }
 
     public boolean userHasWritePermission(Unit unit)

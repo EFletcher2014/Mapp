@@ -33,7 +33,9 @@ public class Site implements Parcelable {
         description = desc;
         dateOpened = date;
         datum = new LatLng(latude, lotude);
-        roles.putAll(r);
+        if(r!= null) {
+            roles.putAll(r);
+        }
     }
 
     public Site(Parcel in) {

@@ -17,23 +17,24 @@
         <activity
             android:name=".LevelDocument"
             android:configChanges="orientation"
-            android:windowSoftInputMode="stateHidden"></activity>
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".LevelMap"
             android:label="@string/title_activity_select"
             android:screenOrientation="landscape"
-            android:windowSoftInputMode="stateHidden"></activity>
-        <activity android:name=".AllSitesActivity">
-        </activity>
-        <activity android:name=".AllUnitsActivity"></activity>
-        <activity android:name=".AllLevelsActivity"></activity>
-        <activity android:name=".AllArtifactBagsActivity"></activity>
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".AllSitesActivity"></activity>
+        <activity android:name=".AllUnitsActivity" />
+        <activity android:name=".AllLevelsActivity" />
+        <activity android:name=".AllArtifactBagsActivity" />
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter></activity>
+            </intent-filter>
+        </activity>
+        <activity android:name=".SiteActivity"></activity>
     </application>
 
 </manifest>

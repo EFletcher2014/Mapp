@@ -32,7 +32,7 @@ import static com.mycompany.sip.Global.*;
 
 public class AllSitesActivity extends ListActivity {
 
-    public static boolean isActive;
+    public static boolean isActive = true;
 
     FirebaseHandler fbh = FirebaseHandler.getInstance();
 
@@ -125,27 +125,33 @@ public class AllSitesActivity extends ListActivity {
             // launching Edit site Screen
             lv.setOnItemClickListener(new OnItemClickListener() {
 
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view,
-                                            int position, long id) {
-                            // getting values from selected ListItem
-                        //TODO: also get site#--add another invisible TextView (like/replacePID)
-                            String name = ((TextView) view.findViewById(R.id.name)).getText().toString();
-                            String pid = ((TextView) view.findViewById(R.id.pid)).getText()
-                                    .toString();//Gets id
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view,
+                                        int position, long id) {
+                    // getting values from selected ListItem
+                    String name = ((TextView) view.findViewById(R.id.name)).getText().toString();
+                    String pid = ((TextView) view.findViewById(R.id.pid)).getText()
+                            .toString();//Gets id
 
-                            // Starting new intent
-                            Intent in = new Intent(view.getContext(),
-                                    AllUnitsActivity.class);
-
-                            // sending id and site to list units activity
-                            in.putExtra(TAG_PID, pid);
-                            in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null))));
-
-                            // starting unit activity
-                            //TODO: why ForResult?
-                            startActivityForResult(in, 100);
+                    Intent in;
+                    if(fbh.userHasWritePermission(allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null)))))
+                    {
+                        in = new Intent(view.getContext(), SiteActivity.class);
                     }
+                    else
+                    {
+                        // Starting new intent
+                        in = new Intent(view.getContext(), AllUnitsActivity.class);
+                    }
+
+                    // sending id and site to list units activity
+                    in.putExtra(TAG_PID, pid);
+                    in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null))));
+
+                    // starting unit activity
+                    //TODO: why ForResult?
+                    startActivityForResult(in, 100);
+                }
             });
 
             //on clicking new site button

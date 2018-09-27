@@ -36,7 +36,9 @@ public class Unit implements Parcelable {
         this.dateOpened = date;
         this.reasonForOpening = r;
         this.datum = toDatum(nsc, ewc);
-        this.roles.putAll(ro);
+        if(ro != null) {
+            this.roles.putAll(ro);
+        }
     }
 
     public Unit(Parcel in)
