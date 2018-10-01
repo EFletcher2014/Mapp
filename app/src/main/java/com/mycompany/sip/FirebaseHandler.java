@@ -12,6 +12,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -19,6 +20,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FileDownloadTask;
@@ -48,8 +50,8 @@ public class FirebaseHandler {
 
     //Firebase
     FirebaseFirestore mappDB = FirebaseFirestore.getInstance();
-    CollectionReference usersRef;
-    CollectionReference sitesRef; //todo: will be a docref once users added
+    CollectionReference sitesRef;
+    DocumentReference siteRef;
     CollectionReference unitsRef;
     CollectionReference levelsRef;
     CollectionReference artifactBagsRef;
@@ -61,6 +63,9 @@ public class FirebaseHandler {
 
     //Sites
     private static WeakReference<AllSitesActivity> siteActivityRef;
+
+    //Crew
+    private static WeakReference<CrewActivity> crewActivityRef;
 
     //Units
     private static WeakReference<AllUnitsActivity> unitActivityRef;
@@ -76,6 +81,9 @@ public class FirebaseHandler {
 
     //Artifact Bags
     private static WeakReference<AllArtifactBagsActivity> artifactBagsActivityRef;
+
+    //Features
+    private static WeakReference<AllFeaturesActivity> featureActivityRef;
 
     //Features list
     private static ArrayList<Feature> siteFeatures = new ArrayList<>();
@@ -100,6 +108,10 @@ public class FirebaseHandler {
         unitActivityRef = new WeakReference<AllUnitsActivity>(activity);
     }
 
+    public static void updateCrewActivity(CrewActivity activity) {
+        crewActivityRef = new WeakReference<CrewActivity>(activity);
+    }
+
     public static void updateLevelActivity(AllLevelsActivity activity) {
         levelActivityRef = new WeakReference<AllLevelsActivity>(activity);
     }
@@ -114,6 +126,10 @@ public class FirebaseHandler {
 
     public static void updateArtifactBagActivity(AllArtifactBagsActivity activity) {
         artifactBagsActivityRef = new WeakReference<AllArtifactBagsActivity>(activity);
+    }
+
+    public static void updateFeatureActivity(AllFeaturesActivity activity) {
+        featureActivityRef = new WeakReference<AllFeaturesActivity>(activity);
     }
 
     public void getSitesListener() {
@@ -252,6 +268,31 @@ public class FirebaseHandler {
 
     public void siteSelected(final Site selectedSite)
     {
+        siteRef = mappDB.collection("sites").document(selectedSite.getID());
+        siteRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot doc, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                if (crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive() && doc != null) {
+
+                    Object tempName = doc.get("Name");
+                    Object tempNum = doc.get("Number");
+                    Object tempDesc = doc.get("Description");
+                    Object tempDate = doc.get("DateDiscovered");
+                    Object tempLat = doc.get("Latitude");
+                    Object tempLong = doc.get("Longitude");
+                    Object tempRoles = doc.get("Roles");
+
+                    //Site temp = doc.toObject(Site.class);
+                    Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
+                            (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
+                            (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
+                            (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, ArrayList>) tempRoles);
+
+                    //crewActivityRef.get().loadCrew((HashMap<String, ArrayList>) tempRoles);
+                }
+            }
+        });
+
         unitsRef = mappDB.collection("sites").document(selectedSite.getID()).collection("units");
         unitsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -469,6 +510,11 @@ public class FirebaseHandler {
                     if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
                         levelMapActivityRef.get().loadAllSiteFeatures(siteFeatures);
                     }
+                    else {
+                        if (featureActivityRef != null && featureActivityRef.get() != null && featureActivityRef.get().isActive()) {
+                            featureActivityRef.get().loadFeatures(siteFeatures);
+                        }
+                    }
                 }
             }
         });
@@ -648,6 +694,13 @@ public class FirebaseHandler {
                         && levelMapActivityRef.get().isActive()) {
                     levelMapActivityRef.get().loadAllSiteFeatures(features);
                 }
+                else
+                {
+                    if(featureActivityRef != null && featureActivityRef.get() != null
+                            && featureActivityRef.get().isActive()) {
+                        featureActivityRef.get().loadFeatures(features);
+                    }
+                }
             }
         });
     }
@@ -785,7 +838,15 @@ public class FirebaseHandler {
 
             if(newLevel.getID() == null)
             {
-                mappDB.collection("sites").document(newLevel.getSite().getID()).collection("levels").document().set(temp);
+                mappDB.collection("sites").document(newLevel.getSite().getID()).collection("levels").add(temp).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if(e != null)
+                        {
+                            System.out.println(e);
+                        }
+                    }
+                });
             }
             else {
                 mappDB.collection("sites").document(newLevel.getSite().getID()).collection("levels").document(newLevel.getID()).set(temp);
@@ -837,7 +898,7 @@ public class FirebaseHandler {
             temp.put("Contents", newABag.getContents());
 
             if(newABag.getID() == null || newABag.getID() == "") {
-                mappDB.collection("sites").document(newABag.getSite().getID()).collection("artifactBags").document().set(temp);
+                mappDB.collection("sites").document(newABag.getSite().getID()).collection("artifactBags").add(temp);
             }
             else
             {
@@ -890,7 +951,7 @@ public class FirebaseHandler {
             temp.put("Name", newArt.getDescription());
 
             if(newArt.getID() == null || newArt.getID() == "") {
-                mappDB.collection("sites").document(newArt.getSite().getID()).collection("artifacts").document().set(temp);
+                mappDB.collection("sites").document(newArt.getSite().getID()).collection("artifacts").add(temp);
             }
             else
             {
@@ -940,7 +1001,15 @@ public class FirebaseHandler {
             temp.put("Number", siteFeatures.size());
 
             if(newFeat.getID() == null || newFeat.getID() == "") {
-                mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").document().set(temp);
+                mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").add(temp).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if(e != null)
+                        {
+                            System.out.println(e);
+                        }
+                    }
+                });
             }
             else
             {
@@ -992,7 +1061,7 @@ public class FirebaseHandler {
             temp.put("LevelID", lev.getID());
             temp.put("UnitID", lev.getUnit().getID());
 
-            mappDB.collection("sites").document(lev.getSite().getID()).collection("featureLinks").document().set(temp);
+            mappDB.collection("sites").document(lev.getSite().getID()).collection("featureLinks").add(temp);
             return null;
         }
 
@@ -1095,6 +1164,11 @@ public class FirebaseHandler {
 
     public boolean userIsExcavator(Unit unit)
     {
-        return fbA.getCurrentUser() == null ? false : unit.getSite().userIsUnitExcavator(fbA.getCurrentUser().getProviderId(), unit.getID());
+        return fbA.getCurrentUser() == null ? false : unit.getSite().userIsUnitExcavator(fbA.getCurrentUser().getUid(), unit.getID());
+    }
+
+    public void addRole(String uid, String site, HashMap<String, String> role)
+    {
+        //sitesRef.document(site).set()
     }
 }

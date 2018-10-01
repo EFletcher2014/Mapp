@@ -142,7 +142,7 @@ public class LevelMap extends AppCompatActivity {
 
                 LayoutInflater inflater = getLayoutInflater();
                 saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null); //the alert to save a new artifact
-                saveFeature = inflater.inflate(R.layout.new_feature_dialog, null); //the alert to save a new feature
+                saveFeature = inflater.inflate(R.layout.link_feature_dialog, null); //the alert to save a new feature
 
                 aBagChoose = (Spinner) saveArtifact.findViewById(R.id.artifactBagSelect); //in the saveArtifact alert, this allows the user to link their artifact to an artifact bag
                 aBagChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {

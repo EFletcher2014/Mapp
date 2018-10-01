@@ -29,12 +29,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:text="Units"/>
+            android:text="Units"
+            android:onClick="goToUnits"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="Features"/>
+            android:text="Features"
+            android:onClick="goToFeatures"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
@@ -42,15 +44,16 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:orientation="horizontal">
-        <Button
+        <!--<Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:text="Notes"/>
+            android:text="Notes"/>-->
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="Crew"/>
+            android:text="Crew"
+            android:onClick="goToCrew"/>
     </LinearLayout>
 </LinearLayout>
