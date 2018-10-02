@@ -94,7 +94,6 @@ public class LevelDocument extends AppCompatActivity {
         notes = (EditText) findViewById(R.id.level_notes);
         unitImage = (ImageView) findViewById(R.id.unitImgView);
 
-
         if(savedInstanceState!=null)
         {
             selectedImageUri=savedInstanceState.getParcelable("URI");
@@ -157,33 +156,48 @@ public class LevelDocument extends AppCompatActivity {
         TextView levelNumberText = (TextView) findViewById(R.id.levelNumber);
         levelNumberText.setText("Level " + levelNumber);
 
-        switcher.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                if(selectedImageUri == null) {
-                    showChooserDialog();
+        if(fbh.userIsExcavator(unit)) {
+            switcher.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    if (selectedImageUri == null) {
+                        showChooserDialog();
+                    }
                 }
-            }
-        });
+            });
+        }
+        else
+        {
+            TextView noImage = findViewById(R.id.selectImage);
+            noImage.setText("No image selected");
+            begDepth.setEnabled(false);
+            endDepth.setEnabled(false);
+            excMeth.setEnabled(false);
+            notes.setEnabled(false);
+        }
 
         final FloatingActionButton rotate = (FloatingActionButton) findViewById(R.id.rotateFab);
 
-        if(selectedImageUri != null)
+        if(selectedImageUri != null || !fbh.userIsExcavator(unit))
         {
-            rotate.hide();
+            rotate.setVisibility(View.INVISIBLE);
         }
-        rotate.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view){
-                Bitmap bm=((BitmapDrawable)unitImage.getDrawable()).getBitmap();
-                Bitmap bmRotated = rotateBitmap(bm, 90);
-                unitImage.setImageBitmap(bmRotated);
-                rotation+=90;
-                rotation%=360;
-            }
-        });
+        else {
+            rotate.setVisibility(View.VISIBLE);
+
+            rotate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Bitmap bm = ((BitmapDrawable) unitImage.getDrawable()).getBitmap();
+                    Bitmap bmRotated = rotateBitmap(bm, 90);
+                    unitImage.setImageBitmap(bmRotated);
+                    rotation += 90;
+                    rotation %= 360;
+                }
+            });
+        }
 
         final Button toAddArtifactActivity = (Button) findViewById(R.id.toAddArtifactsActivity);
         toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
@@ -241,45 +255,63 @@ public class LevelDocument extends AppCompatActivity {
 
         //Button to save the level
         final Button saveButton = (Button) findViewById(R.id.mainsave);
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view){
 
-                Double bd = Double.parseDouble(begDepth.getText().toString());
-                Double ed = Double.parseDouble(endDepth.getText().toString());
+        if(!fbh.userIsExcavator(unit))
+        {
+            saveButton.setVisibility(View.INVISIBLE);
+        }
+        else {
+            saveButton.setVisibility(View.VISIBLE);
 
-                //TODO: add date started input or remove
-                //String date = dateTime.getText().toString();
-                String em = excMeth.getText().toString();
-                String n = notes.getText().toString();
 
-                level.setBegDepth(bd);
-                level.setEndDepth(ed);
-                level.setExcavationMethod(em);
-                level.setNotes(n);
+            saveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
 
-                fbh.createLevel(level);
+                    Double bd = Double.parseDouble(begDepth.getText().toString());
+                    Double ed = Double.parseDouble(endDepth.getText().toString());
 
-                if(selectedImageUri != null)
-                {
-                    fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
+                    //TODO: add date started input or remove
+                    //String date = dateTime.getText().toString();
+                    String em = excMeth.getText().toString();
+                    String n = notes.getText().toString();
+
+                    level.setBegDepth(bd);
+                    level.setEndDepth(ed);
+                    level.setExcavationMethod(em);
+                    level.setNotes(n);
+
+                    fbh.createLevel(level);
+
+                    if (selectedImageUri != null) {
+                        fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
+                    }
+
+                    //TODO: should probably check that level was saved
+                    setResult(Activity.RESULT_OK);
+                    finish();
                 }
-
-                //TODO: should probably check that level was saved
-                setResult(Activity.RESULT_OK);
-                finish();
-            }
-        });
+            });
+        }
 
         //Button to cancel all work
         final Button cancelButton = (Button) findViewById(R.id.maincancel);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Throws dialog asking if user wants to cancel without saving
-                showCancelDialog();
-            }
-        });
+
+        if(!fbh.userIsExcavator(unit))
+        {
+            cancelButton.setVisibility(View.INVISIBLE);
+        }
+        else {
+            cancelButton.setVisibility(View.VISIBLE);
+
+            cancelButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Throws dialog asking if user wants to cancel without saving
+                    showCancelDialog();
+                }
+            });
+        }
 
     }
 
@@ -299,7 +331,13 @@ public class LevelDocument extends AppCompatActivity {
     @Override
     public void onBackPressed()
     {
-        showCancelDialog();
+        if(!fbh.userIsExcavator(unit)) {
+            super.onBackPressed();
+        }
+        else
+        {
+            showCancelDialog();
+        }
     }
 
     /**

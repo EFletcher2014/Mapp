@@ -150,14 +150,24 @@ public class AllUnitsActivity extends ListActivity {
         //on clicking new unit button
         //launching new unit dialog
         Button newUnit = (Button) findViewById(R.id.newUnitBtn);
-        newUnit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-            showDialog(null);
-            }
+        if(!fbh.userHasWritePermission(site))
+        {
+            newUnit.setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            newUnit.setVisibility(View.VISIBLE);
 
-        });
+            newUnit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    showDialog(null);
+                }
+
+            });
+        }
     }
 
     //method called by FirebaseHandler to populate listview

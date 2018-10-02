@@ -106,26 +106,47 @@ public class AllLevelsActivity extends ListActivity {
 
                 level = allLevels.get(allLevels.indexOf(new Level(site, unit, pid, 0, 0.0, 0.0, "", "", null)));
 
-                showDialog(level);
+                if(!fbh.userIsExcavator(unit))
+                {
+                    Intent in = new Intent(AllLevelsActivity.this,
+                            LevelDocument.class);
+                    in.putExtra("depth", level);
+
+                    // starting new activity and expecting some response back
+                    startActivityForResult(in, 100);
+                }
+                else {
+                    showDialog(level);
+                }
             }
         });
 
         //on clicking new Level button
         //launching new level activity
         Button newLevel = (Button) findViewById(R.id.newLevelBtn);
-        newLevel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Launch Add New product Activity
-                Intent i = new Intent(view.getContext(),
-                        LevelDocument.class);
-                i.putExtra("depth", new Level(site, unit, null, allLevels.size()+1, 0.0, 0.0, "", "", null));
 
-                // Closing all previous activities
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivityForResult(i, 333);
-            }
-        });
+        if(!fbh.userIsExcavator(unit))
+        {
+            newLevel.setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            newLevel.setVisibility(View.VISIBLE);
+
+            newLevel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Launch Add New product Activity
+                    Intent i = new Intent(view.getContext(),
+                            LevelDocument.class);
+                    i.putExtra("depth", new Level(site, unit, null, allLevels.size()+1, 0.0, 0.0, "", "", null));
+
+                    // Closing all previous activities
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(i, 333);
+                }
+            });
+        }
 
     }
 

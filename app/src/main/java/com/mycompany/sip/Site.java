@@ -1,6 +1,7 @@
 package com.mycompany.sip;
 
 import android.graphics.Point;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -23,7 +24,7 @@ public class Site implements Parcelable {
     private String description;
     private String id;
     private LatLng datum;
-    private HashMap<String, ArrayList> roles = new HashMap<>();
+    private Bundle roles = new Bundle();
 
     public Site(String i, String n, String nu, String desc, String date, double latude, double lotude, HashMap<String, ArrayList> r)
     {
@@ -34,7 +35,7 @@ public class Site implements Parcelable {
         dateOpened = date;
         datum = new LatLng(latude, lotude);
         if(r!= null) {
-            roles.putAll(r);
+            addRoles(r);
         }
     }
 
@@ -45,6 +46,7 @@ public class Site implements Parcelable {
         this.dateOpened = in.readString();
         this.description = in.readString();
         this.datum = new LatLng(in.readDouble(), in.readDouble());
+        this.roles = in.readBundle();
     }
 
     public String getName()
@@ -76,7 +78,11 @@ public class Site implements Parcelable {
 
     public void addRoles(HashMap<String, ArrayList> r)
     {
-        roles.putAll(r);
+        Object[] keys = r.keySet().toArray();
+        for(int i=0; i<r.size(); i++)
+        {
+            roles.putStringArrayList(keys[i].toString(), r.get(keys[i]));
+        }
     }
 
     public boolean userIsOneOfRoles(String userID, ArrayList<String> r)
@@ -85,7 +91,7 @@ public class Site implements Parcelable {
 
         for(int i = 0; i<r.size(); i++)
         {
-            flag = flag || roles.get(userID).indexOf(r.get(i)) > -1;
+            flag = flag || roles.getStringArrayList(userID).indexOf(r.get(i)) > -1;
         }
 
         return flag;
@@ -94,7 +100,7 @@ public class Site implements Parcelable {
     public boolean userIsUnitExcavator(String userID, String unitID)
     {
         boolean flag = false;
-        flag = flag || roles.get(userID).indexOf(unitID) > -1;
+        flag = flag || roles.getStringArrayList(userID).indexOf(unitID) > -1;
         return flag;
     }
 
@@ -139,6 +145,7 @@ public class Site implements Parcelable {
         dest.writeString(description);
         dest.writeDouble(datum.latitude);
         dest.writeDouble(datum.longitude);
+        dest.writeBundle(roles);
     }
 
     @Override

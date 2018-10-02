@@ -2,11 +2,18 @@ package com.mycompany.sip;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 import com.google.android.gms.appinvite.AppInviteInvitation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.appinvite.FirebaseAppInvite;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
+import com.google.firebase.dynamiclinks.PendingDynamicLinkData;
 
 import java.util.HashMap;
 
@@ -60,5 +67,30 @@ public class SiteActivity extends AppCompatActivity {
         Intent in = new Intent(view.getContext(), AllFeaturesActivity.class);
         in.putExtra(TAG_SITENAME, site);
         startActivity(in);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 123) {
+            if (resultCode == RESULT_OK) {
+                FirebaseDynamicLinks.getInstance().getDynamicLink(data).addOnCompleteListener(new OnCompleteListener<PendingDynamicLinkData>() {
+                    @Override
+                    public void onComplete(@NonNull Task<PendingDynamicLinkData> task) {
+                        //FirebaseAppInvite.getInvitation(task.getResult()).;
+                        //FirebaseAuth.getInstance()
+
+                    }
+                });
+                String[] ids = AppInviteInvitation.getInvitationIds(
+                        resultCode, data);
+                for (String id : ids) {
+                    System.out.println(id);
+                }
+            } else {
+                // Failed to send invitations
+            }
+        }
     }
 }

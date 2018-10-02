@@ -947,7 +947,7 @@ public class FirebaseHandler {
             temp.put("ArtifactBag", mappDB.collection("sites").document(newArt.getSite().getID())
                     .collection("artifactBags").document(newArt.getArtifactBag().getID()));
             temp.put("ArtifactBagID", newArt.getArtifactBag().getID());
-            temp.put("UnitID", newArt.getArtifactBag().getLevel().getUnit().getID());
+            temp.put("UnitID", newArt.getUnit().getID());
             temp.put("Name", newArt.getDescription());
 
             if(newArt.getID() == null || newArt.getID() == "") {
