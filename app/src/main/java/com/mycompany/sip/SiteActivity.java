@@ -44,15 +44,9 @@ public class SiteActivity extends AppCompatActivity {
     {
         HashMap<String, String> role = new HashMap<>();
         role.put(site.getID(), "excavator");
-        Intent intent = new AppInviteInvitation.IntentBuilder("You were invited to use Mapp to document an excavation")
-                .setMessage("Click the link below to join this project")
-                .setDeepLink(Uri.parse("https://mappdocumentation.page.link/join-as-excavator"))
-                .setCallToActionText("Join Project")
-                .setAdditionalReferralParameters(role)
-                .build();
-        startActivityForResult(intent, 123);
-//        Intent crewIntent = new Intent(view.getContext(), CrewActivity.class);
-//        startActivityForResult(crewIntent, 0);
+        Intent crewIntent = new Intent(view.getContext(), CrewActivity.class);
+        crewIntent.putExtra(TAG_SITENAME, site);
+        startActivityForResult(crewIntent, 0);
     }
 
     public void goToUnits(View view)

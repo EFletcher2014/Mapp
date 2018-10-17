@@ -25,6 +25,7 @@ public class Site implements Parcelable {
     private String id;
     private LatLng datum;
     private Bundle roles = new Bundle();
+    private Bundle crew = new Bundle();
 
     public Site(String i, String n, String nu, String desc, String date, double latude, double lotude, HashMap<String, ArrayList> r)
     {
@@ -47,6 +48,7 @@ public class Site implements Parcelable {
         this.description = in.readString();
         this.datum = new LatLng(in.readDouble(), in.readDouble());
         this.roles = in.readBundle();
+        this.crew = in.readBundle();
     }
 
     public String getName()
@@ -76,6 +78,8 @@ public class Site implements Parcelable {
 
     public LatLng getDatum() { return datum; }
 
+    public Bundle getRoles() { return roles; }
+
     public void addRoles(HashMap<String, ArrayList> r)
     {
         Object[] keys = r.keySet().toArray();
@@ -83,6 +87,17 @@ public class Site implements Parcelable {
         {
             roles.putStringArrayList(keys[i].toString(), r.get(keys[i]));
         }
+    }
+
+    public void addCrewMember(String id, String name, String email)
+    {
+        crew.putString(id + "NAME", name);
+        crew.putString(id + "EMAIL", email);
+    }
+
+    public Bundle getCrew()
+    {
+        return crew;
     }
 
     public boolean userIsOneOfRoles(String userID, ArrayList<String> r)
@@ -146,6 +161,7 @@ public class Site implements Parcelable {
         dest.writeDouble(datum.latitude);
         dest.writeDouble(datum.longitude);
         dest.writeBundle(roles);
+        dest.writeBundle(crew);
     }
 
     @Override

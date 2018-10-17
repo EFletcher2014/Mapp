@@ -58,7 +58,8 @@
         <activity android:name=".SiteActivity" />
         <activity android:name=".CrewActivity" />
         <activity android:name=".AllFeaturesActivity" />
-        <activity android:name=".SiteNotesActivity"></activity>
+        <activity android:name=".SiteNotesActivity" />
+        <activity android:name=".CrewRequestActivity"></activity>
     </application>
 
 </manifest>

@@ -67,6 +67,7 @@ public class AllSitesActivity extends ListActivity {
 
     //create alert to create a new site
     AlertDialog.Builder alert;
+    AlertDialog.Builder requestAlert;
 
     @Override
     public void onStart()
@@ -134,6 +135,7 @@ public class AllSitesActivity extends ListActivity {
                             .toString();//Gets id
 
                     Intent in;
+                    fbh.siteSelected(allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null))));
                     if(fbh.userHasWritePermission(allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null)))))
                     {
                         in = new Intent(view.getContext(), SiteActivity.class);
@@ -416,5 +418,38 @@ public class AllSitesActivity extends ListActivity {
         }
 
         return ymd;
+    }
+
+    public void showRequestDialog(View view)
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View requestLayout = inflater.inflate(R.layout.request_site_dialog, null);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            requestAlert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            requestAlert = new AlertDialog.Builder(AllSitesActivity.this);
+        }
+
+        final EditText siteID = requestLayout.findViewById(R.id.siteCode);
+
+        requestAlert.setTitle("Request access to a site");
+        requestAlert.setPositiveButton("Send Request", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                fbh.createRequest(siteID.getText().toString());
+            }
+        });
+        requestAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Go back
+                requestAlert=null;
+            }
+        });
+        // this is set the view from XML inside AlertDialog
+        requestAlert.setView(requestLayout);
+        AlertDialog dialog = requestAlert.create();
+        dialog.show();
     }
 }
