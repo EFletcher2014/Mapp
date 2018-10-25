@@ -3,6 +3,7 @@ package com.mycompany.sip;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -310,7 +311,7 @@ public class FirebaseHandler {
                     System.out.println(e);
                 }
 
-                if(crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive()) {
+                if(queryDocumentSnapshots != null && crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive()) {
                     ArrayList<String[]> crew = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
 
@@ -1428,6 +1429,19 @@ public class FirebaseHandler {
         }
         protected void onPostExecute(String file_url) {
         }
+    }
+
+    public void updateRoles(String deletedUid, Bundle newRoles)
+    {
+        HashMap<String, ArrayList> rolesMap = new HashMap<>();
+        Object[] rolesKeys = newRoles.keySet().toArray();
+        for(int i = 0; i<newRoles.size(); i++)
+        {
+            rolesMap.put(rolesKeys[i].toString(), (ArrayList) newRoles.get(rolesKeys[i].toString()));
+        }
+
+        siteRef.update("Roles", rolesMap);
+        siteRef.collection("crew").document(deletedUid).delete();
     }
 
     public boolean userHasWritePermission(Site site)

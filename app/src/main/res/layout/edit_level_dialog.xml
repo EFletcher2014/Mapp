@@ -4,6 +4,7 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/alertMessage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Are you sure you wish to edit this level? You may overwrite its current information."

@@ -44,4 +44,12 @@
         android:layout_gravity="end"
         android:gravity="end"/>
 
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Delete"
+        android:onClick="deleteCrewMember"/>
+
 </LinearLayout>

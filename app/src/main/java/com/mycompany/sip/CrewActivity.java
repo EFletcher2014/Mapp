@@ -1,11 +1,17 @@
 package com.mycompany.sip;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -30,6 +36,8 @@ public class CrewActivity extends AppCompatActivity {
 
     ListView excavatorsLV;
     ListView directorsLV;
+
+    private AlertDialog.Builder alert;
 
     private Site site;
 
@@ -83,6 +91,7 @@ public class CrewActivity extends AppCompatActivity {
             HashMap<String, String> map = new HashMap<>();
 
             map.put("role", siteCrew.get(users[i].toString()+"NAME").toString());
+            map.put(TAG_PID, users[i].toString());
             if(((ArrayList<String>) siteRoles.get(users[i].toString())).contains("excavator")) {
                 String unitID = ((ArrayList<String>) siteRoles.get(users[i].toString())).get(1);
                 Unit temp = new Unit(site, unitID, -1, -1, -1, -1, "", "");
@@ -109,7 +118,7 @@ public class CrewActivity extends AppCompatActivity {
 
         ListAdapter directorAdapter = new SimpleAdapter(
                 CrewActivity.this, directorsList,
-                R.layout.list_item, new String[] { TAG_PID,
+                R.layout.list_item_with_delete, new String[] { TAG_PID,
                 "role"},
                 new int[] { R.id.pid, R.id.name }); //listview entries will contain unit's id and name
 
@@ -180,5 +189,43 @@ public class CrewActivity extends AppCompatActivity {
                 fbh.getCrew(site);
             }
         }
+    }
+
+    public void deleteCrewMember(View view)
+    {
+        //TODO: add button and display confirmation dialog
+        final String uidToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.pid)).getText().toString();
+
+        LayoutInflater inflater = getLayoutInflater();
+        final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            alert = new AlertDialog.Builder(CrewActivity.this);
+        }
+        TextView message = editLevelLayout.findViewById(R.id.alertMessage);
+        message.setText("Are you sure you want to delete this user?");
+
+        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                Bundle roles = site.getRoles();
+                roles.remove(uidToDelete);
+
+                fbh.updateRoles(uidToDelete, roles);
+                listCrew();
+            }});
+
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                alert=null;
+                //Go back
+            }
+        });
+        alert.setView(editLevelLayout);
+        AlertDialog dialog = alert.create();
+        dialog.show();
     }
 }
