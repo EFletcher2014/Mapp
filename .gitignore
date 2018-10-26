@@ -5,3 +5,8 @@
 .DS_Store
 /build
 /captures
+/functions/
+/node_modules/
+/firebase.json
+/mysql-connector-java-5.0.8-bin/
+/package-lock.json

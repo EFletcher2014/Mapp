@@ -123,13 +123,23 @@ public class AllArtifactBagsActivity extends ListActivity {
         //on clicking new ArtifactBag button
         //launching new artifact bag dialog
        Button newArtifactBag = (Button) findViewById(R.id.newArtifactBtn);
-        newArtifactBag.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                artifactBag = new ArtifactBag(site, unit, level, "", "", -1, "");
-                showDialog(artifactBag);
-            }
-        });
+
+       if(!fbh.userIsExcavator(unit))
+       {
+           newArtifactBag.setVisibility(View.INVISIBLE);
+       }
+       else
+       {
+           newArtifactBag.setVisibility(View.VISIBLE);
+
+           newArtifactBag.setOnClickListener(new View.OnClickListener() {
+               @Override
+               public void onClick(View view) {
+                   artifactBag = new ArtifactBag(site, unit, level, "", "", -1, "");
+                   showDialog(artifactBag);
+               }
+           });
+       }
 
     }
 

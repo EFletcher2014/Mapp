@@ -3,19 +3,25 @@ package com.mycompany.sip;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.dynamiclinks.FirebaseDynamicLinks;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FileDownloadTask;
@@ -28,6 +34,7 @@ import org.w3c.dom.Document;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,10 +46,16 @@ public class FirebaseHandler {
     //instance
     private static FirebaseHandler instance = null;
 
+    //Authorization
+    private FirebaseAuth fbA = FirebaseAuth.getInstance();
+
     //Firebase
     FirebaseFirestore mappDB = FirebaseFirestore.getInstance();
-    CollectionReference sitesRef; //todo: will be a docref once users added
+    CollectionReference sitesRef;
+    DocumentReference siteRef;
     CollectionReference unitsRef;
+    CollectionReference crewRef;
+    Query requestsRef;
     CollectionReference levelsRef;
     CollectionReference artifactBagsRef;
     CollectionReference artifactsRef;
@@ -50,11 +63,13 @@ public class FirebaseHandler {
     CollectionReference featuresLinkRef;
     FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReference();
-    Task<QuerySnapshot> task;
-    //File localFile;
 
     //Sites
     private static WeakReference<AllSitesActivity> siteActivityRef;
+
+    //Crew
+    private static WeakReference<CrewActivity> crewActivityRef;
+    private static WeakReference<CrewRequestActivity> crewRequestActivityRef;
 
     //Units
     private static WeakReference<AllUnitsActivity> unitActivityRef;
@@ -71,8 +86,14 @@ public class FirebaseHandler {
     //Artifact Bags
     private static WeakReference<AllArtifactBagsActivity> artifactBagsActivityRef;
 
+    //Features
+    private static WeakReference<AllFeaturesActivity> featureActivityRef;
+
     //Features list
     private static ArrayList<Feature> siteFeatures = new ArrayList<>();
+
+    //Sites list
+    private static ArrayList<Site> userSites = new ArrayList<>();
 
     public static FirebaseHandler getInstance()
     {
@@ -91,6 +112,14 @@ public class FirebaseHandler {
         unitActivityRef = new WeakReference<AllUnitsActivity>(activity);
     }
 
+    public static void updateCrewActivity(CrewActivity activity) {
+        crewActivityRef = new WeakReference<CrewActivity>(activity);
+    }
+
+    public static void updateCrewRequestActivity(CrewRequestActivity activity) {
+        crewRequestActivityRef = new WeakReference<CrewRequestActivity>(activity);
+    }
+
     public static void updateLevelActivity(AllLevelsActivity activity) {
         levelActivityRef = new WeakReference<AllLevelsActivity>(activity);
     }
@@ -107,39 +136,88 @@ public class FirebaseHandler {
         artifactBagsActivityRef = new WeakReference<AllArtifactBagsActivity>(activity);
     }
 
+    public static void updateFeatureActivity(AllFeaturesActivity activity) {
+        featureActivityRef = new WeakReference<AllFeaturesActivity>(activity);
+    }
+
     public void getSitesListener() {
         sitesRef = mappDB.collection("sites");
-        sitesRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+
+        sitesRef.whereArrayContains("Roles." + fbA.getCurrentUser().getUid(), "director").addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
-                    ArrayList<Site> sites = new ArrayList<Site>();
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
 
-                    if (e != null) {
-                        Log.w(TAG, "Listen failed.", e);
-                        return;
-                    }
+                if(e != null)
+                {
+                    System.out.println(e);
+                }
 
-                    for (QueryDocumentSnapshot doc : snapshot) {
-                        if (doc != null) {
+                if(queryDocumentSnapshots != null) {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive() && doc != null) {
+
                             Object tempName = doc.get("Name");
                             Object tempNum = doc.get("Number");
                             Object tempDesc = doc.get("Description");
                             Object tempDate = doc.get("DateDiscovered");
                             Object tempLat = doc.get("Latitude");
                             Object tempLong = doc.get("Longitude");
+                            Object tempRoles = doc.get("Roles");
 
+                            //Site temp = doc.toObject(Site.class);
                             Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
                                     (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
                                     (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
-                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())));
+                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, ArrayList>) tempRoles);
 
-                            sites.add(temp);
+                            if (userSites.indexOf(temp) > -1) {
+                                userSites.set(userSites.indexOf(temp), temp);
+                            } else {
+                                userSites.add(temp);
+                            }
+
+                            siteActivityRef.get().loadSites(userSites);
                         }
                     }
-                    //new LoadAllSites().execute();
-                    siteActivityRef.get().loadSites(sites);
+                }
+            }
+        });
+
+        sitesRef.whereArrayContains("Roles." + fbA.getCurrentUser().getUid(), "excavator").addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+
+                if (e != null)
+                {
+                    System.out.println(e);
+                }
+                if(queryDocumentSnapshots != null) {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive() && doc != null) {
+
+                            Object tempName = doc.get("Name");
+                            Object tempNum = doc.get("Number");
+                            Object tempDesc = doc.get("Description");
+                            Object tempDate = doc.get("DateDiscovered");
+                            Object tempLat = doc.get("Latitude");
+                            Object tempLong = doc.get("Longitude");
+                            Object tempRoles = doc.get("Roles");
+
+                            //Site temp = doc.toObject(Site.class);
+                            Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
+                                    (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
+                                    (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
+                                    (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, ArrayList>) tempRoles);
+
+                            if (userSites.indexOf(temp) > -1) {
+                                userSites.set(userSites.indexOf(temp), temp);
+                            } else {
+                                userSites.add(temp);
+                            }
+
+                            siteActivityRef.get().loadSites(userSites);
+                        }
+                    }
                 }
             }
         });
@@ -173,6 +251,11 @@ public class FirebaseHandler {
             temp.put("DateDiscovered", newSite.getDateOpened());
             temp.put("Latitude", newSite.getDatum().latitude);
             temp.put("Longitude", newSite.getDatum().longitude);
+            ArrayList<String> role = new ArrayList<>();
+            role.add("director");
+            HashMap<String, ArrayList> roles = new HashMap<>();
+            roles.put(fbA.getCurrentUser().getUid(), role);
+            temp.put("Roles", roles);
         }
 
         /**
@@ -187,19 +270,100 @@ public class FirebaseHandler {
          * After completing background task Dismiss the progress dialog
          **/
         protected void onPostExecute(String file_url) {
-
         }
 
     }
 
     public void siteSelected(final Site selectedSite)
     {
+        siteRef = mappDB.collection("sites").document(selectedSite.getID());
+        siteRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable DocumentSnapshot doc, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                if (crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive() && doc != null) {
+
+                    Object tempName = doc.get("Name");
+                    Object tempNum = doc.get("Number");
+                    Object tempDesc = doc.get("Description");
+                    Object tempDate = doc.get("DateDiscovered");
+                    Object tempLat = doc.get("Latitude");
+                    Object tempLong = doc.get("Longitude");
+                    Object tempRoles = doc.get("Roles");
+
+                    //Site temp = doc.toObject(Site.class);
+                    Site temp = new Site(doc.getId(), (tempName == null ? "" : tempName.toString()),
+                            (tempNum == null ? "" : tempNum.toString()), (tempDesc == null ? "" : tempDesc.toString()),
+                            (tempDate == null ? "" : tempDate.toString()), (tempLat == null ? 0.0 : Double.parseDouble(tempLat.toString())),
+                            (tempLong == null ? 0.0 : Double.parseDouble(tempLong.toString())), (HashMap<String, ArrayList>) tempRoles);
+
+                    //crewActivityRef.get().loadCrew((HashMap<String, ArrayList>) tempRoles);
+                }
+            }
+        });
+
+        crewRef = mappDB.collection("sites").document(selectedSite.getID()).collection("crew");
+        crewRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+
+                if(e != null)
+                {
+                    System.out.println(e);
+                }
+
+                if(queryDocumentSnapshots != null && crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive()) {
+                    ArrayList<String[]> crew = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+
+                        if (doc != null) {
+                            Object id = doc.getId();
+                            Object name = doc.get("Name");
+                            Object email = doc.get("Email");
+
+                            String[] temp = new String[3];
+                            temp[0] = id.toString();
+                            temp[1] = name.toString();
+                            temp[2] = email.toString();
+
+                            crew.add(temp);
+                        }
+                    }
+                    crewActivityRef.get().addCrewMembers(crew);
+                }
+            }
+        });
+
+        requestsRef = mappDB.collection("requests").whereEqualTo("Site", selectedSite.getID());
+        requestsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@javax.annotation.Nullable QuerySnapshot queryDocumentSnapshots, @javax.annotation.Nullable FirebaseFirestoreException e) {
+                if(crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
+                {
+                    ArrayList<HashMap<String, String>> requests = new ArrayList<HashMap<String, String>>();
+                    for(DocumentSnapshot doc : queryDocumentSnapshots)
+                    {
+                        HashMap<String, String> temp = new HashMap<>();
+                        temp.put("Name", doc.get("Name").toString());
+                        temp.put("Email", doc.get("Email").toString());
+                        temp.put("Site", doc.get("Site").toString());
+                        temp.put("Uid", doc.get("UserID").toString());
+
+                        requests.add(temp);
+                    }
+
+                    crewRequestActivityRef.get().loadRequests(requests);
+                }
+            }
+        });
+
         unitsRef = mappDB.collection("sites").document(selectedSite.getID()).collection("units");
         unitsRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-                if (unitActivityRef != null && unitActivityRef.get() != null && unitActivityRef.get().isActive()) {
+                if ((unitActivityRef != null && unitActivityRef.get() != null && unitActivityRef.get().isActive())
+                        || (crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
+                        || (crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())) {
                     ArrayList<Unit> units = new ArrayList<Unit>();
 
                     if (e != null) {
@@ -226,7 +390,17 @@ public class FirebaseHandler {
                             units.add(temp);
                         }
                     }
-                    unitActivityRef.get().loadUnits(units);
+                    if(unitActivityRef != null && unitActivityRef.get() != null && unitActivityRef.get().isActive()) {
+                        unitActivityRef.get().loadUnits(units);
+                    }
+                    else if(crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())
+                    {
+                        crewActivityRef.get().loadUnits(units);
+                    }
+                    else
+                    {
+                        crewRequestActivityRef.get().loadUnits(units);
+                    }
                 }
             }
         });
@@ -411,6 +585,11 @@ public class FirebaseHandler {
                     if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
                         levelMapActivityRef.get().loadAllSiteFeatures(siteFeatures);
                     }
+                    else {
+                        if (featureActivityRef != null && featureActivityRef.get() != null && featureActivityRef.get().isActive()) {
+                            featureActivityRef.get().loadFeatures(siteFeatures);
+                        }
+                    }
                 }
             }
         });
@@ -443,6 +622,133 @@ public class FirebaseHandler {
                             levelMapActivityRef.get().linkFeature(siteFeatures.get(siteFeatures.indexOf(tempF)), temp);
                         }
                     }
+                }
+            }
+        });
+    }
+
+    public void getSiteRoles()
+    {
+        siteRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if(crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())
+                {
+                    Object roles = documentSnapshot.get("Roles");
+
+                    crewActivityRef.get().updateRoles((HashMap<String, ArrayList>) roles);
+                }
+            }
+        });
+    }
+
+    public void getRequests(final Site selectedSite)
+    {
+        mappDB.collection("requests").whereEqualTo("Site", selectedSite.getID()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if(crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
+                {
+                    ArrayList<HashMap<String, String>> requests = new ArrayList<HashMap<String, String>>();
+                    for(DocumentSnapshot doc : queryDocumentSnapshots)
+                    {
+                        HashMap<String, String> temp = new HashMap<>();
+                        temp.put("Name", doc.get("Name").toString());
+                        temp.put("Email", doc.get("Email").toString());
+                        temp.put("Site", doc.get("Site").toString());
+                        temp.put("Uid", doc.get("UserID").toString());
+
+                        requests.add(temp);
+                    }
+
+                    crewRequestActivityRef.get().loadRequests(requests);
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if(e != null)
+                {
+                    System.out.println(e);
+                }
+            }
+        });
+    }
+
+    public void getCrew(final Site selectedSite)
+    {
+        crewRef.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                if(crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive()) {
+                    ArrayList<String[]> crew = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        if (doc != null) {
+                            Object id = doc.getId();
+                            Object name = doc.get("Name");
+                            Object email = doc.get("Email");
+
+                            String[] temp = new String[3];
+                            temp[0] = id.toString();
+                            temp[1] = name.toString();
+                            temp[2] = email.toString();
+
+                            crew.add(temp);
+                        }
+                    }
+                    crewActivityRef.get().addCrewMembers(crew);
+                }
+            }
+        });
+    }
+
+    public void getUnitsFromSite(final Site site)
+    {
+        unitsRef.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                if ((crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
+                        || (crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())) {
+                    ArrayList<Unit> units = new ArrayList<Unit>();
+
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        if (doc != null) {
+                            Object tempNSC = doc.get("NSCoor");
+                            Object tempEWC = doc.get("EWCoor");
+                            Object tempNSD = doc.get("NSDim");
+                            Object tempEWD = doc.get("EWDim");
+                            Object tempReas = doc.get("ReasonForOpening");
+                            Object tempD = doc.get("DateOpened");
+
+                            Unit temp = new Unit(site, doc.getId(), (tempNSC == null ? 0 : Integer.parseInt(tempNSC.toString())),
+                                    (tempEWC == null ? 0 : Integer.parseInt(tempEWC.toString())),
+                                    (tempNSD == null ? 0 : Integer.parseInt(tempNSD.toString())),
+                                    (tempEWD == null ? 0 : Integer.parseInt(tempEWD.toString())),
+                                    (tempD == null ? "" : tempD.toString()),
+                                    (tempReas == null ? "" : tempReas.toString()));
+
+                            if (doc.get("Excavators") == null) {
+                                units.add(temp);
+                            }
+                        }
+                    }
+                    if(crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive()) {
+                        crewRequestActivityRef.get().loadUnits(units);
+                    }
+
+                    if(crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())
+                    {
+                        crewActivityRef.get().loadUnits(units);
+                    }
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                if (e != null)
+                {
+                    System.out.println(e);
                 }
             }
         });
@@ -590,6 +896,13 @@ public class FirebaseHandler {
                         && levelMapActivityRef.get().isActive()) {
                     levelMapActivityRef.get().loadAllSiteFeatures(features);
                 }
+                else
+                {
+                    if(featureActivityRef != null && featureActivityRef.get() != null
+                            && featureActivityRef.get().isActive()) {
+                        featureActivityRef.get().loadFeatures(features);
+                    }
+                }
             }
         });
     }
@@ -633,6 +946,81 @@ public class FirebaseHandler {
                             }
                         });
                     }
+                }
+            }
+        });
+    }
+
+    public void createRequest(String siteID) { new CreateNewRequest(fbA.getUid(), fbA.getCurrentUser().getDisplayName(), fbA.getCurrentUser().getEmail(), siteID).execute(); }
+
+    class CreateNewRequest extends AsyncTask<String, String, String> {
+        String uid;
+        String name;
+        String email;
+        String siteID;
+        Map<String, String> temp = new HashMap<>();
+
+        CreateNewRequest(String u, String n, String e, String s) { uid = u; name = n; email = e; siteID = s; }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            temp.put("Name", name);
+            temp.put("UserID", uid);
+            temp.put("Email", email);
+            temp.put("Site", siteID);
+        }
+
+        protected String doInBackground(String ... Args)
+        {
+            mappDB.collection("requests").add(temp);
+            return "";
+        }
+    }
+
+    public void addPermission(final String uid, String unit, String name, String email){
+        ArrayList<String> permissions = new ArrayList<>();
+        final Map<String, Object> userDetails = new HashMap<>();
+
+        if(unit.equals(""))
+        {
+            permissions.add("director");
+        }
+        else
+        {
+            permissions.add("excavator");
+            permissions.add(unit);
+            unitsRef.document(unit).update("Excavator", uid);
+        }
+
+        userDetails.put("Name", name);
+        userDetails.put("Email", email);
+
+        siteRef.update("Roles." + uid, permissions).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+            siteRef.collection("crew").document(uid).set(userDetails).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    if (e != null)
+                    {
+                        System.out.println(e);
+                    }
+                }
+            });
+            }
+        });
+    }
+
+    public void deleteRequest(String uid)
+    {
+        requestsRef.whereEqualTo("UserID", uid).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                for(DocumentSnapshot doc : queryDocumentSnapshots)
+                {
+                    mappDB.collection("requests").document(doc.getId().toString()).delete();
                 }
             }
         });
@@ -727,7 +1115,15 @@ public class FirebaseHandler {
 
             if(newLevel.getID() == null)
             {
-                mappDB.collection("sites").document(newLevel.getSite().getID()).collection("levels").document().set(temp);
+                mappDB.collection("sites").document(newLevel.getSite().getID()).collection("levels").add(temp).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if(e != null)
+                        {
+                            System.out.println(e);
+                        }
+                    }
+                });
             }
             else {
                 mappDB.collection("sites").document(newLevel.getSite().getID()).collection("levels").document(newLevel.getID()).set(temp);
@@ -773,12 +1169,13 @@ public class FirebaseHandler {
 
             Map<String, Object> temp = new HashMap<>();
             temp.put("LevelID", newABag.getLevel().getID());
+            temp.put("UnitID", newABag.getLevel().getUnit().getID());
             temp.put("AccessionNumber", newABag.getAccessionNumber());
             temp.put("CatalogNumber", newABag.getCatalogNumber());
             temp.put("Contents", newABag.getContents());
 
             if(newABag.getID() == null || newABag.getID() == "") {
-                mappDB.collection("sites").document(newABag.getSite().getID()).collection("artifactBags").document().set(temp);
+                mappDB.collection("sites").document(newABag.getSite().getID()).collection("artifactBags").add(temp);
             }
             else
             {
@@ -827,10 +1224,11 @@ public class FirebaseHandler {
             temp.put("ArtifactBag", mappDB.collection("sites").document(newArt.getSite().getID())
                     .collection("artifactBags").document(newArt.getArtifactBag().getID()));
             temp.put("ArtifactBagID", newArt.getArtifactBag().getID());
+            temp.put("UnitID", newArt.getUnit().getID());
             temp.put("Name", newArt.getDescription());
 
             if(newArt.getID() == null || newArt.getID() == "") {
-                mappDB.collection("sites").document(newArt.getSite().getID()).collection("artifacts").document().set(temp);
+                mappDB.collection("sites").document(newArt.getSite().getID()).collection("artifacts").add(temp);
             }
             else
             {
@@ -880,7 +1278,15 @@ public class FirebaseHandler {
             temp.put("Number", siteFeatures.size());
 
             if(newFeat.getID() == null || newFeat.getID() == "") {
-                mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").document().set(temp);
+                mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").add(temp).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        if(e != null)
+                        {
+                            System.out.println(e);
+                        }
+                    }
+                });
             }
             else
             {
@@ -930,8 +1336,9 @@ public class FirebaseHandler {
             Map<String, Object> temp = new HashMap<>();
             temp.put("FeatureID", feat.getID());
             temp.put("LevelID", lev.getID());
+            temp.put("UnitID", lev.getUnit().getID());
 
-            mappDB.collection("sites").document(lev.getSite().getID()).collection("featureLinks").document().set(temp);
+            mappDB.collection("sites").document(lev.getSite().getID()).collection("featureLinks").add(temp);
             return null;
         }
 
@@ -1022,5 +1429,36 @@ public class FirebaseHandler {
         }
         protected void onPostExecute(String file_url) {
         }
+    }
+
+    public void updateRoles(String deletedUid, Bundle newRoles)
+    {
+        HashMap<String, ArrayList> rolesMap = new HashMap<>();
+        Object[] rolesKeys = newRoles.keySet().toArray();
+        for(int i = 0; i<newRoles.size(); i++)
+        {
+            rolesMap.put(rolesKeys[i].toString(), (ArrayList) newRoles.get(rolesKeys[i].toString()));
+        }
+
+        siteRef.update("Roles", rolesMap);
+        siteRef.collection("crew").document(deletedUid).delete();
+    }
+
+    public boolean userHasWritePermission(Site site)
+    {
+        ArrayList<String> roles = new ArrayList<>();
+        roles.add("director");
+
+        return fbA.getCurrentUser() == null ? false : site.userIsOneOfRoles(fbA.getCurrentUser().getUid(), roles);
+    }
+
+    public boolean userIsExcavator(Unit unit)
+    {
+        return fbA.getCurrentUser() == null ? false : unit.getSite().userIsUnitExcavator(fbA.getCurrentUser().getUid(), unit.getID());
+    }
+
+    public void addRole(String uid, String site, HashMap<String, String> role)
+    {
+        //sitesRef.document(site).set()
     }
 }

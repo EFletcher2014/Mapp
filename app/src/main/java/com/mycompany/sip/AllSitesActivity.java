@@ -32,7 +32,7 @@ import static com.mycompany.sip.Global.*;
 
 public class AllSitesActivity extends ListActivity {
 
-    public static boolean isActive;
+    public static boolean isActive = true;
 
     FirebaseHandler fbh = FirebaseHandler.getInstance();
 
@@ -67,6 +67,7 @@ public class AllSitesActivity extends ListActivity {
 
     //create alert to create a new site
     AlertDialog.Builder alert;
+    AlertDialog.Builder requestAlert;
 
     @Override
     public void onStart()
@@ -107,7 +108,7 @@ public class AllSitesActivity extends ListActivity {
                     final String sLa = savedInstanceState.getString("Latitude");
 
                     //Reopens dialog to create a site with existing inputs
-                    showDialog(new Site("", sName, sNumb, sDesc, sDate, Double.parseDouble(sLa), Double.parseDouble(sLo)));
+                    showDialog(new Site("", sName, sNumb, sDesc, sDate, Double.parseDouble(sLa), Double.parseDouble(sLo), null));
                 }
             }
             setContentView(R.layout.activity_get_all_sites);
@@ -125,27 +126,34 @@ public class AllSitesActivity extends ListActivity {
             // launching Edit site Screen
             lv.setOnItemClickListener(new OnItemClickListener() {
 
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view,
-                                            int position, long id) {
-                            // getting values from selected ListItem
-                        //TODO: also get site#--add another invisible TextView (like/replacePID)
-                            String name = ((TextView) view.findViewById(R.id.name)).getText().toString();
-                            String pid = ((TextView) view.findViewById(R.id.pid)).getText()
-                                    .toString();//Gets id
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view,
+                                        int position, long id) {
+                    // getting values from selected ListItem
+                    String name = ((TextView) view.findViewById(R.id.name)).getText().toString();
+                    String pid = ((TextView) view.findViewById(R.id.pid)).getText()
+                            .toString();//Gets id
 
-                            // Starting new intent
-                            Intent in = new Intent(view.getContext(),
-                                    AllUnitsActivity.class);
-
-                            // sending id and site to list units activity
-                            in.putExtra(TAG_PID, pid);
-                            in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0))));
-
-                            // starting unit activity
-                            //TODO: why ForResult?
-                            startActivityForResult(in, 100);
+                    Intent in;
+                    fbh.siteSelected(allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null))));
+                    if(fbh.userHasWritePermission(allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null)))))
+                    {
+                        in = new Intent(view.getContext(), SiteActivity.class);
                     }
+                    else
+                    {
+                        // Starting new intent
+                        in = new Intent(view.getContext(), AllUnitsActivity.class);
+                    }
+
+                    // sending id and site to list units activity
+                    in.putExtra(TAG_PID, pid);
+                    in.putExtra(TAG_SITENAME, allSites.get(allSites.indexOf(new Site(pid, "", "", "", "", 0.0, 0.0, null))));
+
+                    // starting unit activity
+                    //TODO: why ForResult?
+                    startActivityForResult(in, 100);
+                }
             });
 
             //on clicking new site button
@@ -334,7 +342,7 @@ public class AllSitesActivity extends ListActivity {
 
                 //Creating site from user's inputted data. CreateNewSite will use this later
                 site = new Site("", inputName.getText().toString(), inputNumb.getText().toString(),
-                        inputDesc.getText().toString(), toDate(y, m, d), Double.parseDouble(inputLa.getText().toString()), Double.parseDouble(inputLo.getText().toString()));
+                        inputDesc.getText().toString(), toDate(y, m, d), Double.parseDouble(inputLa.getText().toString()), Double.parseDouble(inputLo.getText().toString()), null);
 
                 //If all fields are filled out
                 if(!(inputName.getText().toString().equals("")) && !(inputDesc.getText().toString().equals(""))
@@ -410,5 +418,38 @@ public class AllSitesActivity extends ListActivity {
         }
 
         return ymd;
+    }
+
+    public void showRequestDialog(View view)
+    {
+        LayoutInflater inflater = getLayoutInflater();
+        final View requestLayout = inflater.inflate(R.layout.request_site_dialog, null);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+        {
+            requestAlert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+        }
+        else
+        {
+            requestAlert = new AlertDialog.Builder(AllSitesActivity.this);
+        }
+
+        final EditText siteID = requestLayout.findViewById(R.id.siteCode);
+
+        requestAlert.setTitle("Request access to a site");
+        requestAlert.setPositiveButton("Send Request", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                fbh.createRequest(siteID.getText().toString());
+            }
+        });
+        requestAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                //Go back
+                requestAlert=null;
+            }
+        });
+        // this is set the view from XML inside AlertDialog
+        requestAlert.setView(requestLayout);
+        AlertDialog dialog = requestAlert.create();
+        dialog.show();
     }
 }

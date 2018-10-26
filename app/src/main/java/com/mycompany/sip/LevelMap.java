@@ -142,7 +142,7 @@ public class LevelMap extends AppCompatActivity {
 
                 LayoutInflater inflater = getLayoutInflater();
                 saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null); //the alert to save a new artifact
-                saveFeature = inflater.inflate(R.layout.new_feature_dialog, null); //the alert to save a new feature
+                saveFeature = inflater.inflate(R.layout.link_feature_dialog, null); //the alert to save a new feature
 
                 aBagChoose = (Spinner) saveArtifact.findViewById(R.id.artifactBagSelect); //in the saveArtifact alert, this allows the user to link their artifact to an artifact bag
                 aBagChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -251,70 +251,88 @@ public class LevelMap extends AppCompatActivity {
         //the button to add a new artifact to the list
         final Button addArtifact = (Button) findViewById(R.id.addArtifactButton);
 
-        //if button to add an artifact is clicked, display dialog to create a new artifact
-        addArtifact.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-            if(selectedImageUri != null) //if an image is displayed, allow user to create an artifact
-            {
-                if(!allArtifactBags.isEmpty()) {
+        if(!fbh.userIsExcavator(unit))
+        {
+            addArtifact.setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            addArtifact.setVisibility(View.VISIBLE);
 
-                    if (!displayedImage.equals("")) {
-                        try {
-                            //display the level map
-                            Bitmap bm = MediaStore.Images.Media.getBitmap(addArtifact.getContext().getContentResolver(), selectedImageUri);
-                            bitmap = rotateBitmap(bm, rotation);
-                            imageDraw.setCanvasBitmap(bitmap);
-                            displayedImage = "";
-                        } catch (IOException e) {
-                            System.out.println(e);
+            //if button to add an artifact is clicked, display dialog to create a new artifact
+            addArtifact.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(selectedImageUri != null) //if an image is displayed, allow user to create an artifact
+                    {
+                        if(!allArtifactBags.isEmpty()) {
+
+                            if (!displayedImage.equals("")) {
+                                try {
+                                    //display the level map
+                                    Bitmap bm = MediaStore.Images.Media.getBitmap(addArtifact.getContext().getContentResolver(), selectedImageUri);
+                                    bitmap = rotateBitmap(bm, rotation);
+                                    imageDraw.setCanvasBitmap(bitmap);
+                                    displayedImage = "";
+                                } catch (IOException e) {
+                                    System.out.println(e);
+                                }
+                                switcher.showNext();
+                                switcher.showNext();
+                            }
+                            createArtifact();
                         }
-                        switcher.showNext();
-                        switcher.showNext();
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(), "Cannot create an artifact without an artifact bag. Please return to the previous page and create one.", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                    createArtifact();
                 }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Cannot create an artifact without an artifact bag. Please return to the previous page and create one.", Toast.LENGTH_SHORT).show();
-                }
-            }
-            }
-        });
+            });
+        }
 
         //the button to add a new feature to the list
         final Button addFeature = (Button) findViewById(R.id.addFeatureButton);
 
-        //if button to add a feature is clicked, display dialog to create a new feature
-        addFeature.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        if(!fbh.userIsExcavator(unit))
+        {
+            addFeature.setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            addFeature.setVisibility(View.VISIBLE);
 
-                if(selectedImageUri != null) //if an image is displayed, allow user to create a feature
-                {
-                    if(!allSiteFeatures.isEmpty()) {
-                        if (!displayedImage.equals("")) {
-                            try {
-                                //display the level map
-                                Bitmap bm = MediaStore.Images.Media.getBitmap(addFeature.getContext().getContentResolver(), selectedImageUri);
-                                bitmap = rotateBitmap(bm, rotation);
-                                imageDraw.setCanvasBitmap(bitmap);
-                                displayedImage = "";
-                            } catch (IOException e) {
-                                System.out.println(e);
-                            }
-                            switcher.showNext();
-                            switcher.showNext();
-                        }
-                        createFeature(); //displays an alert
-                    }
-                    else
+            //if button to add a feature is clicked, display dialog to create a new feature
+            addFeature.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    if(selectedImageUri != null) //if an image is displayed, allow user to create a feature
                     {
-                        Toast.makeText(getApplicationContext(), "This site has no features, so you cannot link one to this level. Please contact your site director to add a feature.", Toast.LENGTH_SHORT).show();
+                        if(!allSiteFeatures.isEmpty()) {
+                            if (!displayedImage.equals("")) {
+                                try {
+                                    //display the level map
+                                    Bitmap bm = MediaStore.Images.Media.getBitmap(addFeature.getContext().getContentResolver(), selectedImageUri);
+                                    bitmap = rotateBitmap(bm, rotation);
+                                    imageDraw.setCanvasBitmap(bitmap);
+                                    displayedImage = "";
+                                } catch (IOException e) {
+                                    System.out.println(e);
+                                }
+                                switcher.showNext();
+                                switcher.showNext();
+                            }
+                            createFeature(); //displays an alert
+                        }
+                        else
+                        {
+                            Toast.makeText(getApplicationContext(), "This site has no features, so you cannot link one to this level. Please contact your site director to add a feature.", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     //called by fbh to load the artifact bags associated with this level so that they can populate the aBagChoose

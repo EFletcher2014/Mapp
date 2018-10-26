@@ -1,12 +1,15 @@
 package com.mycompany.sip;
 
 import android.graphics.Point;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Emily Fletcher on 8/30/2017.
@@ -21,8 +24,10 @@ public class Site implements Parcelable {
     private String description;
     private String id;
     private LatLng datum;
+    private Bundle roles = new Bundle();
+    private Bundle crew = new Bundle();
 
-    public Site(String i, String n, String nu, String desc, String date, double latude, double lotude)
+    public Site(String i, String n, String nu, String desc, String date, double latude, double lotude, HashMap<String, ArrayList> r)
     {
         name = n;
         id = i;
@@ -30,6 +35,9 @@ public class Site implements Parcelable {
         description = desc;
         dateOpened = date;
         datum = new LatLng(latude, lotude);
+        if(r!= null) {
+            addRoles(r);
+        }
     }
 
     public Site(Parcel in) {
@@ -39,6 +47,8 @@ public class Site implements Parcelable {
         this.dateOpened = in.readString();
         this.description = in.readString();
         this.datum = new LatLng(in.readDouble(), in.readDouble());
+        this.roles = in.readBundle();
+        this.crew = in.readBundle();
     }
 
     public String getName()
@@ -68,7 +78,46 @@ public class Site implements Parcelable {
 
     public LatLng getDatum() { return datum; }
 
+    public Bundle getRoles() { return roles; }
 
+    public void addRoles(HashMap<String, ArrayList> r)
+    {
+        Object[] keys = r.keySet().toArray();
+        for(int i=0; i<r.size(); i++)
+        {
+            roles.putStringArrayList(keys[i].toString(), r.get(keys[i]));
+        }
+    }
+
+    public void addCrewMember(String id, String name, String email)
+    {
+        crew.putString(id + "NAME", name);
+        crew.putString(id + "EMAIL", email);
+    }
+
+    public Bundle getCrew()
+    {
+        return crew;
+    }
+
+    public boolean userIsOneOfRoles(String userID, ArrayList<String> r)
+    {
+        boolean flag = false;
+
+        for(int i = 0; i<r.size(); i++)
+        {
+            flag = flag || roles.getStringArrayList(userID).indexOf(r.get(i)) > -1;
+        }
+
+        return flag;
+    }
+
+    public boolean userIsUnitExcavator(String userID, String unitID)
+    {
+        boolean flag = false;
+        flag = flag || roles.getStringArrayList(userID).indexOf(unitID) > -1;
+        return flag;
+    }
 
     @Override
     public String toString()
@@ -111,6 +160,8 @@ public class Site implements Parcelable {
         dest.writeString(description);
         dest.writeDouble(datum.latitude);
         dest.writeDouble(datum.longitude);
+        dest.writeBundle(roles);
+        dest.writeBundle(crew);
     }
 
     @Override

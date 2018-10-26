@@ -88,22 +88,19 @@ public class AllUnitsActivity extends ListActivity {
         fbh.updateUnitActivity(this);
         setContentView(R.layout.activity_get_all_units);
 
-        if(savedInstanceState!=null)
+        if(savedInstanceState!=null && savedInstanceState.getBoolean("alert"))
         {
-            if(savedInstanceState.getBoolean("alert"))
-            {
-                final String coords = savedInstanceState.getString("Datum Coordinate");
-                final String excs = savedInstanceState.getString("Excavators");
-                final String date = savedInstanceState.getString("Date Opened");
-                final String reas = savedInstanceState.getString("Reason");
-                final String  nsd = savedInstanceState.getString("NSDim");
-                final String ewd = savedInstanceState.getString("EWDim");
+            final String coords = savedInstanceState.getString("Datum Coordinate");
+            final String excs = savedInstanceState.getString("Excavators");
+            final String date = savedInstanceState.getString("Date Opened");
+            final String reas = savedInstanceState.getString("Reason");
+            final String  nsd = savedInstanceState.getString("NSDim");
+            final String ewd = savedInstanceState.getString("EWDim");
 
-                //TODO: get datum in a different way
-                //TODO: get excavators
-                showDialog(new Unit(site, "", Integer.parseInt(coords.substring(1, 2)),
-                        Integer.parseInt(coords.substring(4, 5)), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
-            }
+            //TODO: get datum in a different way
+            //TODO: get excavators
+            showDialog(new Unit(site, "", Integer.parseInt(coords.substring(1, 2)),
+                    Integer.parseInt(coords.substring(4, 5)), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
         }
 
         //added by Emily Fletcher 8/27/17
@@ -151,17 +148,26 @@ public class AllUnitsActivity extends ListActivity {
         });
 
         //on clicking new unit button
-        //launching new unit activity
+        //launching new unit dialog
         Button newUnit = (Button) findViewById(R.id.newUnitBtn);
-        newUnit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                //TODO: make sure these new units are loading on list
-                showDialog(null);
-            }
+        if(!fbh.userHasWritePermission(site))
+        {
+            newUnit.setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            newUnit.setVisibility(View.VISIBLE);
 
-        });
+            newUnit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    showDialog(null);
+                }
+
+            });
+        }
     }
 
     //method called by FirebaseHandler to populate listview

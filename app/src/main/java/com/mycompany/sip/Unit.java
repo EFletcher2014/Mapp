@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Emily Fletcher on 8/30/2017.
