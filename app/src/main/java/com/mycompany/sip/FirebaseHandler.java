@@ -530,13 +530,14 @@ public class FirebaseHandler {
                     if (doc != null) {
                         final Object tempID = doc.getId();
                         final Object tempDesc = doc.get("Name");
+
+                        getImage(selectedSite.getID() + "/",
+                                tempID.toString(), siteActivityRef.get().getCacheDir(), "a");
                         doc.getDocumentReference("ArtifactBag").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                             @Override
                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                final Object tempLevelID = documentSnapshot.get("LevelID");
 
-                                getImage(selectedSite.getID() + "/",
-                                        tempID.toString(), siteActivityRef.get().getCacheDir(), "a");
                                if(tempLevelID != null && tempLevelID.toString().equals(levelMapActivityRef.get().getLevel().getID()))
                                {
                                    final Object tempABagID = documentSnapshot.getId();
@@ -1414,7 +1415,7 @@ public class FirebaseHandler {
                 Uri tempPath = Uri.fromFile(localFile);
 
                 localImageUri = tempPath;
-                if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive())
+                if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive() && (levelDocActivityRef.get().getLevelInfo() + "map").equals(name))
                 {
                     levelDocActivityRef.get().setURI(localImageUri);
                 }
