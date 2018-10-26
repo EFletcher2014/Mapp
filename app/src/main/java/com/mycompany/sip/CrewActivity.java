@@ -193,8 +193,9 @@ public class CrewActivity extends AppCompatActivity {
 
     public void deleteCrewMember(View view)
     {
-        //TODO: add button and display confirmation dialog
         final String uidToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.pid)).getText().toString();
+
+        String nameToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.name)).getText().toString();
 
         LayoutInflater inflater = getLayoutInflater();
         final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
@@ -207,7 +208,8 @@ public class CrewActivity extends AppCompatActivity {
             alert = new AlertDialog.Builder(CrewActivity.this);
         }
         TextView message = editLevelLayout.findViewById(R.id.alertMessage);
-        message.setText("Are you sure you want to delete this user?");
+        message.setTextSize(24);
+        message.setText("Are you sure you want to remove " + nameToDelete + " from the site?");
 
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
