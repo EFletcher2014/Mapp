@@ -326,6 +326,11 @@ public class LevelDocument extends AppCompatActivity {
         }
     }
 
+    public String getLevelInfo()
+    {
+        return level != null ? level.getID() : "";
+    }
+
     /**Displays cancel dialog ("Are you sure you want to go back? You will lose your progress")
      *when the user clicks the back button*/
     @Override

@@ -677,7 +677,7 @@ public class FirebaseHandler {
 
     public void getCrew(final Site selectedSite)
     {
-        crewRef.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        mappDB.collection("sites").document(selectedSite.getID()).collection("crew").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
@@ -1365,7 +1365,7 @@ public class FirebaseHandler {
         imageExists = localFile.exists();
 
         if(!imageExists) {
-            downloadImage dl = new downloadImage(path, name, f, method);
+            DownloadImage dl = new DownloadImage(path, name, f, method);
             dl.execute();
         }
         else
@@ -1373,14 +1373,14 @@ public class FirebaseHandler {
             Uri tempPath = Uri.fromFile(localFile);
 
             Uri localImageUri = tempPath;
-            if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive())
+            if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive() && (levelDocActivityRef.get().getLevelInfo() + "map").equals(name))
             {
                 levelDocActivityRef.get().setURI(localImageUri);
             }
         }
     }
 
-    class downloadImage extends AsyncTask<String, String, String> {
+    class DownloadImage extends AsyncTask<String, String, String> {
         String remLocation;
         String locLocation;
         String name;
@@ -1388,7 +1388,7 @@ public class FirebaseHandler {
         Uri localImageUri;
         File dir;
 
-        public downloadImage(String lLoc, String n, File f, String t) {
+        public DownloadImage(String lLoc, String n, File f, String t) {
             name = n;
             type = t;
             remLocation = lLoc + n + ".jpg";
