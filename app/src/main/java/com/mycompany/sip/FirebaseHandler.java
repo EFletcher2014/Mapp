@@ -1000,15 +1000,15 @@ public class FirebaseHandler {
         siteRef.update("Roles." + uid, permissions).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                siteRef.collection("crew").document(uid).set(userDetails).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        if (e != null)
-                        {
-                            System.out.println(e);
-                        }
+            siteRef.collection("crew").document(uid).set(userDetails).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    if (e != null)
+                    {
+                        System.out.println(e);
                     }
-                });
+                }
+            });
             }
         });
     }
