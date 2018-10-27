@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/requestSiteBtn"
             android:text="Request Site Access"
-            android:onClick="showRequestDialog"/>
+            android:onClick="generateRequestDialog"/>
     </LinearLayout>
 
     </LinearLayout>

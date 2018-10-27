@@ -62,12 +62,15 @@ public class AllSitesActivity extends ListActivity {
     private EditText inputLa;
 
 
+
     // sites JSONArray
     JSONArray sites = null;
 
     //create alert to create a new site
     AlertDialog.Builder alert;
     AlertDialog.Builder requestAlert;
+
+    private EditText siteCode;
 
     @Override
     public void onStart()
@@ -109,6 +112,11 @@ public class AllSitesActivity extends ListActivity {
 
                     //Reopens dialog to create a site with existing inputs
                     showDialog(new Site("", sName, sNumb, sDesc, sDate, Double.parseDouble(sLa), Double.parseDouble(sLo), null));
+                }
+
+                if(savedInstanceState.getBoolean("requestAlert"))
+                {
+                    showRequestDialog(savedInstanceState.getString("siteCode"));
                 }
             }
             setContentView(R.layout.activity_get_all_sites);
@@ -260,8 +268,15 @@ public class AllSitesActivity extends ListActivity {
         }
         else
         {
-            //tells the new activity that there isn't a dialog active. Might not be necessary
-            outState.putBoolean("alert", false);
+            if(requestAlert != null)
+            {
+                outState.putBoolean("requestAlert", true);
+                outState.putString("siteCode", siteCode.getText().toString());
+            }
+            else {
+                //tells the new activity that there isn't a dialog active. Might not be necessary
+                outState.putBoolean("alert", false);
+            }
         }
     }
 
@@ -420,10 +435,19 @@ public class AllSitesActivity extends ListActivity {
         return ymd;
     }
 
-    public void showRequestDialog(View view)
+    public void generateRequestDialog(View view)
+    {
+        showRequestDialog("");
+    }
+
+    public void showRequestDialog(String code)
     {
         LayoutInflater inflater = getLayoutInflater();
         final View requestLayout = inflater.inflate(R.layout.request_site_dialog, null);
+
+        siteCode = requestLayout.findViewById(R.id.siteCode);
+        siteCode.setText(code);
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
         {
             requestAlert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
@@ -433,12 +457,10 @@ public class AllSitesActivity extends ListActivity {
             requestAlert = new AlertDialog.Builder(AllSitesActivity.this);
         }
 
-        final EditText siteID = requestLayout.findViewById(R.id.siteCode);
-
         requestAlert.setTitle("Request access to a site");
         requestAlert.setPositiveButton("Send Request", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                fbh.createRequest(siteID.getText().toString());
+                fbh.createRequest(siteCode.getText().toString());
             }
         });
         requestAlert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
