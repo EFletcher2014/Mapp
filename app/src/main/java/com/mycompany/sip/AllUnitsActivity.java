@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.firebase.firestore.FirebaseFirestore;
 import static com.mycompany.sip.Global.TAG_PID;
+import static com.mycompany.sip.Global.TAG_SITENAME;
 import static com.mycompany.sip.Global.TAG_UNITNAME;
 
 public class AllUnitsActivity extends ListActivity {
@@ -107,8 +108,8 @@ public class AllUnitsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        siteID = openIntent.getStringExtra("PrimaryKey");
-        site = openIntent.getParcelableExtra("siteName");
+        siteID = openIntent.getStringExtra(TAG_PID);
+        site = openIntent.getParcelableExtra(TAG_SITENAME);
 
         //notify firebase that a site has been selected so it can save all the data for it
         fbh.siteSelected(site);
@@ -141,7 +142,7 @@ public class AllUnitsActivity extends ListActivity {
 
                 // sending id, sitename, and unit to next activity
                 in.putExtra(TAG_PID, pid);
-                in.putExtra("siteName", site);
+                in.putExtra(TAG_SITENAME, site);
                 in.putExtra(TAG_UNITNAME, allUnits.get(allUnits.indexOf(new Unit(null, pid, 0, 0, 0, 0, "", ""))));
 
                 // starting new activity and expecting some response back
