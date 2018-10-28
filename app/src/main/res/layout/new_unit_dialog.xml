@@ -22,12 +22,29 @@
             android:textSize="17dip"/>
 
         <!-- Input Coordinates -->
-        <EditText android:id="@+id/inputCoords"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:orientation="horizontal">
+            <EditText android:id="@+id/inputVertCoord"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:singleLine="true"
+                android:hint="Vertical"
+                android:inputType="number"
+                android:digits="1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -"/>
+            <EditText android:id="@+id/inputHorCoords"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:singleLine="true"
+                android:hint="Horizontal"
+                android:inputType="number"
+                android:digits="1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -"/>
+        </LinearLayout>
 
         <!-- Excavators Label -->
         <!--<TextView android:layout_width="fill_parent"

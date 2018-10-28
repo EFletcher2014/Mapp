@@ -47,7 +47,8 @@ public class AllUnitsActivity extends ListActivity {
     private static Unit unit;
 
     private AlertDialog.Builder alert;
-    private EditText inputCoords;
+    private EditText inputVerticalCoords;
+    private EditText inputHorizontalCoords;
     //private EditText inputExcs;
     private EditText inputYear;
     private EditText inputMonth;
@@ -90,7 +91,8 @@ public class AllUnitsActivity extends ListActivity {
 
         if(savedInstanceState!=null && savedInstanceState.getBoolean("alert"))
         {
-            final String coords = savedInstanceState.getString("Datum Coordinate");
+            final String vertCoords = savedInstanceState.getString("Vertical Coordinate");
+            final String horCoords = savedInstanceState.getString("Horizontal Coordinate");
             //final String excs = savedInstanceState.getString("Excavators");
             final String date = savedInstanceState.getString("Date Opened");
             final String reas = savedInstanceState.getString("Reason");
@@ -99,8 +101,8 @@ public class AllUnitsActivity extends ListActivity {
 
             //TODO: get datum in a different way
             //TODO: get excavators
-            showDialog(new Unit(site, "", Integer.parseInt(coords.substring(1, 2)),
-                    Integer.parseInt(coords.substring(4, 5)), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
+            showDialog(new Unit(site, "", Integer.parseInt(vertCoords),
+                    Integer.parseInt(horCoords), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
         }
 
         //added by Emily Fletcher 8/27/17
@@ -245,7 +247,8 @@ public class AllUnitsActivity extends ListActivity {
         {
             //TODO: replace these with unit parcelable?
             outState.putBoolean("alert", true);
-            outState.putString("Datum Coordinate", inputCoords.getText().toString());
+            outState.putString("Vertical Coordinate", inputVerticalCoords.getText().toString());
+            outState.putString("Horizontal Coordinate", inputHorizontalCoords.getText().toString());
             //outState.putString("Excavators", inputExcs.getText().toString());
             outState.putString("Date Opened", toDate(Integer.parseInt(inputYear.getText().toString()), Integer.parseInt(inputMonth.getText().toString()), Integer.parseInt(inputDate.getText().toString())));
             outState.putString("Reason", inputReas.getText().toString());
@@ -272,7 +275,8 @@ public class AllUnitsActivity extends ListActivity {
         {
             alert = new AlertDialog.Builder(AllUnitsActivity.this);
         }
-        inputCoords = (EditText) unitLayout.findViewById(R.id.inputCoords);
+        inputVerticalCoords = (EditText) unitLayout.findViewById(R.id.inputVertCoord);
+        inputHorizontalCoords = (EditText) unitLayout.findViewById(R.id.inputHorCoords);
         //inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
         inputYear = (EditText) unitLayout.findViewById(R.id.inputYear);
         inputMonth = (EditText) unitLayout.findViewById(R.id.inputMonth);
@@ -283,8 +287,8 @@ public class AllUnitsActivity extends ListActivity {
 
         if(un!=null)
         {
-            //TODO: get coordinates in a better way
-            inputCoords.setText(un.getDatum());
+            inputVerticalCoords.setText(un.getNSCoor());
+            inputHorizontalCoords.setText(un.getEWCoor());
             //inputExcs.setText(un.getExcavators());
 
             //TODO: figure out if I want to change so that user can enter a partial date
@@ -332,13 +336,14 @@ public class AllUnitsActivity extends ListActivity {
                 }
 
                 //TODO: add excavators
-                unit = new Unit(site, "", Integer.parseInt(inputCoords.getText().toString().substring(1, 3)),
-                        Integer.parseInt(inputCoords.getText().toString().substring(4)),
+                //TODO: deal with coordinates better
+                unit = new Unit(site, "", Integer.parseInt(inputVerticalCoords.getText().toString()),
+                        Integer.parseInt(inputHorizontalCoords.getText().toString()),
                         Integer.parseInt(inputNSDims.getText().toString()),
                         Integer.parseInt(inputEWDims.getText().toString()),
                         toDate(y, m, d), inputReas.getText().toString());
 
-                if(!(inputCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
+                if((!inputVerticalCoords.getText().toString().equals("")) &&  !(inputHorizontalCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
                         && !(inputDate.getText().toString().equals("")) && !(inputNSDims.getText().toString().equals(""))
                         && !(inputEWDims.getText().toString().equals("")) /*&& !(inputExcs.getText().toString().equals(""))*/ && !(inputReas.getText().toString().equals(""))) {
 
