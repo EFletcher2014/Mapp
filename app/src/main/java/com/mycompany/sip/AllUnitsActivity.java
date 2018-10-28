@@ -48,7 +48,7 @@ public class AllUnitsActivity extends ListActivity {
 
     private AlertDialog.Builder alert;
     private EditText inputCoords;
-    private EditText inputExcs;
+    //private EditText inputExcs;
     private EditText inputYear;
     private EditText inputMonth;
     private EditText inputDate;
@@ -91,7 +91,7 @@ public class AllUnitsActivity extends ListActivity {
         if(savedInstanceState!=null && savedInstanceState.getBoolean("alert"))
         {
             final String coords = savedInstanceState.getString("Datum Coordinate");
-            final String excs = savedInstanceState.getString("Excavators");
+            //final String excs = savedInstanceState.getString("Excavators");
             final String date = savedInstanceState.getString("Date Opened");
             final String reas = savedInstanceState.getString("Reason");
             final String  nsd = savedInstanceState.getString("NSDim");
@@ -246,7 +246,7 @@ public class AllUnitsActivity extends ListActivity {
             //TODO: replace these with unit parcelable?
             outState.putBoolean("alert", true);
             outState.putString("Datum Coordinate", inputCoords.getText().toString());
-            outState.putString("Excavators", inputExcs.getText().toString());
+            //outState.putString("Excavators", inputExcs.getText().toString());
             outState.putString("Date Opened", toDate(Integer.parseInt(inputYear.getText().toString()), Integer.parseInt(inputMonth.getText().toString()), Integer.parseInt(inputDate.getText().toString())));
             outState.putString("Reason", inputReas.getText().toString());
             outState.putString("NSDim", inputNSDims.getText().toString());
@@ -273,7 +273,7 @@ public class AllUnitsActivity extends ListActivity {
             alert = new AlertDialog.Builder(AllUnitsActivity.this);
         }
         inputCoords = (EditText) unitLayout.findViewById(R.id.inputCoords);
-        inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
+        //inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
         inputYear = (EditText) unitLayout.findViewById(R.id.inputYear);
         inputMonth = (EditText) unitLayout.findViewById(R.id.inputMonth);
         inputDate = (EditText) unitLayout.findViewById(R.id.inputDate);
@@ -285,7 +285,7 @@ public class AllUnitsActivity extends ListActivity {
         {
             //TODO: get coordinates in a better way
             inputCoords.setText(un.getDatum());
-            inputExcs.setText(un.getExcavators());
+            //inputExcs.setText(un.getExcavators());
 
             //TODO: figure out if I want to change so that user can enter a partial date
             int[] date = fromDate(un.getDateOpened());
@@ -297,8 +297,8 @@ public class AllUnitsActivity extends ListActivity {
             if(date[2]!=0)
                 inputDate.setText(d);
             inputReas.setText(un.getReasonForOpening());
-            inputNSDims.setText(un.getNsDimension());
-            inputEWDims.setText(un.getEwDimension());
+            inputNSDims.setText(un.getNsDimension() + "");
+            inputEWDims.setText(un.getEwDimension() + "");
 
             //TODO: get excavators once users are added
         }

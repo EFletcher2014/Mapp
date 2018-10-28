@@ -105,13 +105,17 @@ public class AllSitesActivity extends ListActivity {
                 {
                     final String sName = savedInstanceState.getString("Site Name");
                     final String sDesc = savedInstanceState.getString("Description");
-                    final String sDate = savedInstanceState.getString("Date Discovered");
+                    final String sDay = savedInstanceState.getString("Day");
+                    final String sMonth = savedInstanceState.getString("Month");
+                    final String sYear = savedInstanceState.getString("Year");
                     final String sNumb = savedInstanceState.getString("Site Number");
                     final String sLo = savedInstanceState.getString("Longitude");
                     final String sLa = savedInstanceState.getString("Latitude");
 
+
+
                     //Reopens dialog to create a site with existing inputs
-                    showDialog(new Site("", sName, sNumb, sDesc, sDate, Double.parseDouble(sLa), Double.parseDouble(sLo), null));
+                    showDialog(new Site("", sName, sNumb, sDesc, toDate(Integer.parseInt(sYear), Integer.parseInt(sMonth), Integer.parseInt(sDay)), Double.parseDouble(sLa), Double.parseDouble(sLo), null));
                 }
 
                 if(savedInstanceState.getBoolean("requestAlert"))
@@ -312,14 +316,16 @@ public class AllSitesActivity extends ListActivity {
 
             //TODO: figure out if I want to change so that user can enter a partial date
             //Parsing the date from the saved format to the displayed format
-            int[] date = fromDate(st.getDateOpened());
-            String y=date[0]+"", m=date[1]+"", d=date[2]+"";
-            if(date[0]!=0)
-                inputYear.setText(y);
-            if(date[1]!=0)
-                inputMonth.setText(m);
-            if(date[2]!=0)
-                inputDate.setText(d);
+            if(st.getDateOpened() != null) {
+                int[] date = fromDate(st.getDateOpened());
+                String y = date[0] + "", m = date[1] + "", d = date[2] + "";
+                if (date[0] != 0)
+                    inputYear.setText(y);
+                if (date[1] != 0)
+                    inputMonth.setText(m);
+                if (date[2] != 0)
+                    inputDate.setText(d);
+            }
 
             inputNumb.setText(st.getNumber());
             inputLa.setText(st.getDatum().latitude + "");
@@ -328,55 +334,55 @@ public class AllSitesActivity extends ListActivity {
         alert.setTitle("Create A New Site");
         alert.setPositiveButton("Create Site", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                //When user saves site, must parse displayed date into correct format
-                int y, m, d;
-                try
-                {
-                    y=Integer.parseInt(inputYear.getText().toString());
-                }
-                catch(NumberFormatException e)
-                {
-                    y=0;
-                }
-                try
-                {
-                    m=Integer.parseInt(inputMonth.getText().toString());
-                }
-                catch(NumberFormatException e)
-                {
-                    m=0;
-                }
-                try
-                {
-                    d=Integer.parseInt(inputDate.getText().toString());
-                }
-                catch(NumberFormatException e)
-                {
-                    d=0;
-                }
+            //When user saves site, must parse displayed date into correct format
+            int y, m, d;
+            try
+            {
+                y=Integer.parseInt(inputYear.getText().toString());
+            }
+            catch(NumberFormatException e)
+            {
+                y=0;
+            }
+            try
+            {
+                m=Integer.parseInt(inputMonth.getText().toString());
+            }
+            catch(NumberFormatException e)
+            {
+                m=0;
+            }
+            try
+            {
+                d=Integer.parseInt(inputDate.getText().toString());
+            }
+            catch(NumberFormatException e)
+            {
+                d=0;
+            }
 
-                //Creating site from user's inputted data. CreateNewSite will use this later
-                site = new Site("", inputName.getText().toString(), inputNumb.getText().toString(),
-                        inputDesc.getText().toString(), toDate(y, m, d), Double.parseDouble(inputLa.getText().toString()), Double.parseDouble(inputLo.getText().toString()), null);
+            //Creating site from user's inputted data. CreateNewSite will use this later
+            site = new Site("", inputName.getText().toString(), inputNumb.getText().toString(),
+                    inputDesc.getText().toString(), toDate(y, m, d), Double.parseDouble(inputLa.getText().toString()), Double.parseDouble(inputLo.getText().toString()), null);
 
-                //If all fields are filled out
-                if(!(inputName.getText().toString().equals("")) && !(inputDesc.getText().toString().equals(""))
-                        && !(inputNumb.getText().toString().equals("")) && !(inputLa.getText().toString().equals(""))
-                        && !(inputLo.getText().toString().equals("")) && !(inputDate.getText().toString().equals(""))
-                        && !(inputDate.getText().toString().equals("")) && !(inputDate.getText().toString().equals(""))
-                        && !(inputDesc.getText().toString().equals("")))
-                {
-                    //save to Firebase
-                    fbh.createSite(site);
+            //If all fields are filled out
+            if(!(inputName.getText().toString().equals("")) && !(inputDesc.getText().toString().equals(""))
+                    && !(inputNumb.getText().toString().equals("")) && !(inputLa.getText().toString().equals(""))
+                    && !(inputLo.getText().toString().equals("")) && !(inputDate.getText().toString().equals(""))
+                    && !(inputDate.getText().toString().equals("")) && !(inputDate.getText().toString().equals(""))
+                    && !(inputDesc.getText().toString().equals("")))
+            {
+                //save to Firebase
+                fbh.createSite(site);
 
-                    //no longer need alert, getting rid of
-                    alert = null;
-                }
-                else //If user didn't fill out all fields, tell them they have to
-                {
-                    Toast.makeText(siteLayout.getContext(), "You must fill out every field before saving", Toast.LENGTH_SHORT).show();
-                    showDialog(site); //bring up dialog again
-                }
+                //no longer need alert, getting rid of
+                alert = null;
+            }
+            else //If user didn't fill out all fields, tell them they have to
+            {
+                Toast.makeText(siteLayout.getContext(), "You must fill out every field before saving", Toast.LENGTH_SHORT).show();
+                showDialog(site); //bring up dialog again
+            }
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -419,19 +425,17 @@ public class AllSitesActivity extends ListActivity {
     {
         int[] ymd = new int[3];
         date.replace(" 00:00:00", ""); //get rid of this part, don't need it
-        int i=0;
+        int i = 0;
         try {
             while (i < 3) {
                 ymd[i] = Integer.parseInt(date.split("-")[i]); //split the date by the dashes to get year month and date
                 i++;
             }
-        }catch(NumberFormatException e)
-        {
-            ymd[0]=0;
-            ymd[1]=0;
-            ymd[2]=0;
+        } catch (NumberFormatException e) {
+            ymd[0] = 0;
+            ymd[1] = 0;
+            ymd[2] = 0;
         }
-
         return ymd;
     }
 
