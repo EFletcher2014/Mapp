@@ -6,7 +6,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Are you sure you wish to delete this request?"
+        android:text="@string/deny_request_confirmation"
         android:layout_gravity="center_horizontal"
         android:paddingEnd="32dp"
         android:paddingStart="32dp"/>

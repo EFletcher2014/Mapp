@@ -39,7 +39,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/negativeButton"
-        android:text="Deny"
+        android:text="@string/deny"
         android:layout_gravity="end"
         android:layout_weight="1"
         android:onClick="denyRequest"/>
@@ -47,7 +47,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/positiveButton"
-        android:text="Accept"
+        android:text="@string/accept"
         android:layout_gravity="end"
         android:layout_weight="1"
         android:onClick="showDialog"/>

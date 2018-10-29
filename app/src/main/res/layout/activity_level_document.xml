@@ -7,7 +7,7 @@
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
         android:orientation="vertical">
-        <TextView android:text="Project Name"
+        <TextView android:text="@string/site_name"
             android:id="@+id/SiteNameLevel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -64,7 +64,7 @@
                     android:gravity="center"
                     android:layout_gravity="start"
                     android:layout_weight="1"
-                    android:text="Depth: "/>
+                    android:text="@string/level_depth_heading"/>
 
                     <EditText
                         android:id="@+id/enterBegDepth"
@@ -73,7 +73,7 @@
                         android:gravity="center"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:hint="#"
+                        android:hint="@string/number_sign"
                         android:inputType="number"
                         android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ."/>
 
@@ -83,7 +83,7 @@
                         android:gravity="center"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:text="cmbd - "/>
+                        android:text="@string/cmbd_dash"/>
 
                     <EditText
                         android:id="@+id/enterEndDepth"
@@ -92,7 +92,7 @@
                         android:gravity="center"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:hint="#"
+                        android:hint="@string/number_sign"
                         android:inputType="number"
                         android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, ."/>
 
@@ -102,7 +102,7 @@
                         android:gravity="center"
                         android:layout_gravity="end"
                         android:layout_weight="1"
-                        android:text="cmbd"/>
+                        android:text="@string/cmbd"/>
             </LinearLayout>
 
             <!--an imageView which will show the selected image of the unit.-->
@@ -116,20 +116,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:id="@+id/selectImage"
-                    android:text="Click here to add an image of the unit"
+                    android:text="@string/add_level_image"
                     android:lines="5"
                     android:layout_weight="1"
                     android:textSize="24sp"
                     android:gravity="center"
                     android:textColor="@color/colorAccent"
-                    android:background="@color/colorText"
-                    />
+                    android:background="@color/colorText" />
                 <android.support.design.widget.CoordinatorLayout
                     android:layout_height="wrap_content"
                     android:layout_width="wrap_content"
                     android:id="@+id/pictures"
-                    android:layout_gravity="center_horizontal|center_vertical"
-                    >
+                    android:layout_gravity="center_horizontal|center_vertical">
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -151,7 +149,7 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:id="@+id/toAddArtifactsActivity"
-                android:text="Click here to see artifacts found in this level"
+                android:text="@string/level_artifacts"
                 android:layout_gravity="center_horizontal"
                 android:color="@color/colorText"/>
 
@@ -160,10 +158,10 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:id="@+id/select_on_image_button"
-                android:text="@string/button_hint"
+                android:text="@string/map_button_hint"
                 android:layout_gravity="center_horizontal"/>
 
-            <TextView android:text="Excavation Techniques Used:" android:layout_width="wrap_content"
+            <TextView android:text="@string/excavation_techniques_heading" android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
             <!--an edittext where the user will input the techniques used ***CHANGE STYLE***-->
@@ -171,12 +169,12 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:inputType="textMultiLine"
-                android:hint="List all excavation techniques used"
+                android:hint="@string/excavation_techniques_hint"
                 android:gravity="center"
                 android:layout_weight="1"/>
 
             <!--a title textbox saying "unit description"-->
-            <TextView android:text="Level Notes:" android:layout_width="wrap_content"
+            <TextView android:text="@string/level_notes_heading" android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
             <!--an edittext where the user will input the level's notes ***CHANGE STYLE***-->
@@ -184,7 +182,7 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:inputType="textMultiLine"
-                android:hint="Describe your unit here. Include a description of soil texture and color, depth, and features and artifacts."
+                android:hint="@string/level_notes_hint"
                 android:gravity="center"
                 android:layout_weight="1"/>
 
@@ -195,14 +193,14 @@
             <Button android:id="@+id/maincancel"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:text="Cancel"
+                android:text="@string/cancel"
                 android:clickable="true"
                 android:layout_gravity="start"
                 android:layout_weight="1"/>
             <Button android:id="@+id/mainsave"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-                android:text="Save"
+                android:text="@string/save"
                 android:clickable="true"
                 android:layout_gravity="end"
                 android:layout_weight="1"/>

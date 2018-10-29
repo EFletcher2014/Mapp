@@ -15,7 +15,7 @@
         <!-- Coordinates Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Datum Coordinate"
+            android:text="@string/datum_coordinate_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
@@ -32,7 +32,7 @@
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
                 android:singleLine="true"
-                android:hint="Vertical"
+                android:hint="@string/vertical"
                 android:inputType="number"
                 android:digits="1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -"/>
             <EditText android:id="@+id/inputHorCoords"
@@ -41,7 +41,7 @@
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
                 android:singleLine="true"
-                android:hint="Horizontal"
+                android:hint="@string/horizontal"
                 android:inputType="number"
                 android:digits="1, 2, 3, 4, 5, 6, 7, 8, 9, 0, -"/>
         </LinearLayout>
@@ -64,12 +64,10 @@
             android:lines="4"
             android:gravity="top"/>-->
 
-
-
         <!-- DateOpened Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Date opened"
+            android:text="@string/date_discovered_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
@@ -85,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="YYYY"
+                android:hint="@string/year_hint"
                 android:inputType="number"
                 android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
             <EditText android:id="@+id/inputMonth"
@@ -93,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="MM"
+                android:hint="@string/month_hint"
                 android:inputType="number"
                 android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
             <EditText android:id="@+id/inputDate"
@@ -101,7 +99,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="DD"
+                android:hint="@string/day_hint"
                 android:inputType="number"
                 android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
         </LinearLayout>
@@ -111,7 +109,7 @@
         <!-- Reasoning Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Reason for opening"
+            android:text="@string/reason_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
@@ -128,13 +126,11 @@
         <!-- NS Dimension Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="North/South Dimension:"
+            android:text="@string/ns_dim_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"
-            android:inputType="number"
-            android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+            android:textSize="17dip"/>
 
         <!-- Input NSDimensions -->
         <EditText android:id="@+id/inputNSDims"
@@ -148,7 +144,7 @@
         <!-- EW Dimension Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="East/West Dimension:"
+            android:text="@string/ew_dim_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"

@@ -16,7 +16,7 @@
         <!-- Name Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Site Name"
+            android:text="@string/site_name"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
@@ -33,7 +33,7 @@
         <!-- Description Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Description"
+            android:text="@string/description_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
@@ -48,24 +48,14 @@
             android:lines="4"
             android:gravity="top"/>
 
-
-
         <!-- DateFound Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Date discovered"
+            android:text="@string/date_discovered_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
             android:textSize="17dip"/>
-
-        <!-- Input DateFound -->
-        <!--<EditText android:id="@+id/inputDate"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_marginBottom="15dip"
-            android:singleLine="true"/>-->
 
         <!--TODO: figure out what to do for earlier APIs-->
         <!--
@@ -75,7 +65,6 @@
             android:id="@+id/inputDate"
             android:datePickerMode="spinner"
             android:calendarViewShown="false"/>
-
             -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -86,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="YYYY"
+                android:hint="@string/year_hint"
                 android:inputType="number"
                 android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
             <EditText android:id="@+id/inputMonth"
@@ -94,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="MM"
+                android:hint="@string/month_hint"
                 android:inputType="number"
                 android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
             <EditText android:id="@+id/inputDate"
@@ -102,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="DD"
+                android:hint="@string/day_hint"
                 android:inputType="number"
                 android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
         </LinearLayout>

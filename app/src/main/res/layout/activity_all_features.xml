@@ -25,6 +25,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/newFeatureBtn"
-        android:text="Create New Feature"/>
+        android:text="@string/create_new_feature"/>
 
 </LinearLayout>
