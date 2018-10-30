@@ -77,7 +77,8 @@
                 android:layout_marginBottom="15dip"
                 android:hint="@string/year_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="4"/>
             <EditText android:id="@+id/inputMonth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -85,7 +86,8 @@
                 android:layout_marginBottom="15dip"
                 android:hint="@string/month_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="2"/>
             <EditText android:id="@+id/inputDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -93,7 +95,8 @@
                 android:layout_marginBottom="15dip"
                 android:hint="@string/day_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="2"/>
         </LinearLayout>
 
 
