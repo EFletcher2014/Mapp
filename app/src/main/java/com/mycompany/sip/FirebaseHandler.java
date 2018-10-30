@@ -262,7 +262,17 @@ public class FirebaseHandler {
          * Creating site
          */
         protected String doInBackground(String... args) {
-            mappDB.collection("sites").add(temp);
+            mappDB.collection("sites").add(temp).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                @Override
+                public void onSuccess(DocumentReference documentReference) {
+                    Map<String, Object> tempCrewMember = new HashMap<>();
+
+                    tempCrewMember.put("Name", fbA.getCurrentUser().getDisplayName());
+                    tempCrewMember.put("Email", fbA.getCurrentUser().getEmail());
+
+                    mappDB.collection("sites").document(documentReference.getId()).collection("crew").document(fbA.getCurrentUser().getUid()).set(tempCrewMember);
+                }
+            });
             return null;
         }
 
