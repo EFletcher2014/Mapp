@@ -19,7 +19,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input Coordinates -->
         <LinearLayout
@@ -71,7 +71,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input DateOpened -->
         <LinearLayout
@@ -113,7 +113,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input Reason -->
         <EditText android:id="@+id/inputReas"
@@ -130,7 +130,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input NSDimensions -->
         <EditText android:id="@+id/inputNSDims"
@@ -148,7 +148,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input EWDimensions -->
         <EditText android:id="@+id/inputEWDims"

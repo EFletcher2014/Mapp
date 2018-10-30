@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/errorTextDraw"
             android:text="@string/no_draw_hint"
-            android:textSize="32dp"
+            android:textSize="@dimen/titleSize"
             android:textColor="@color/colorPrimaryText"
             android:gravity="center"
             android:layout_gravity="center_vertical|center_horizontal"/>
@@ -56,7 +56,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/artifacts_heading"
                     android:layout_gravity="left"
-                    android:textSize="16dp"/>
+                    android:textSize="@dimen/headingSize"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/features_heading"
                     android:layout_gravity="left"
-                    android:textSize="16dp"/>
+                    android:textSize="@dimen/headingSize"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -113,7 +113,7 @@
                 android:layout_height="match_parent"
                 android:text="@string/highlight_prompt"
                 android:layout_gravity="center|center_vertical"
-                android:textSize="30dp"
+                android:textSize="@dimen/titleSize"
                 android:layout_weight="4"
                 android:layout_margin="8dp"/>
             <LinearLayout

@@ -20,7 +20,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input Name -->
         <EditText android:id="@+id/inputName"
@@ -37,7 +37,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input description -->
         <EditText android:id="@+id/inputDesc"
@@ -55,7 +55,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!--TODO: figure out what to do for earlier APIs-->
         <!--
@@ -104,7 +104,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input Site Number -->
         <EditText android:id="@+id/inputNumb"
@@ -121,7 +121,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <LinearLayout
             android:layout_width="match_parent"
