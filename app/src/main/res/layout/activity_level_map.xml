@@ -113,7 +113,7 @@
                 android:layout_height="match_parent"
                 android:text="@string/highlight_prompt"
                 android:layout_gravity="center|center_vertical"
-                android:textSize="@dimen/titleSize"
+                android:textSize="@dimen/textSize"
                 android:layout_weight="4"
                 android:layout_margin="8dp"/>
             <LinearLayout

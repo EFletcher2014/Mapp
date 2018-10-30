@@ -17,6 +17,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/code"
         android:textSize="@dimen/titleSize"
+        android:textIsSelectable="true"
         android:gravity="center"/>
 
     <Button
