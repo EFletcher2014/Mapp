@@ -5,33 +5,39 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/accession_number_heading"/>
+        android:text="@string/accession_number_heading"
+        android:textSize="@dimen/headingSize"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/accNum"
         android:hint="@string/accession_number_hint"
+        android:textSize="@dimen/textSize"
         android:digits="0123456789-"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/catalog_number_heading"/>
+        android:text="@string/catalog_number_heading"
+        android:textSize="@dimen/headingSize"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/catNum"
         android:hint="@string/number_sign"
+        android:textSize="@dimen/textSize"
         android:inputType="number"
         android:digits="0123456789"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/contents_heading"/>
+        android:text="@string/contents_heading"
+        android:textSize="@dimen/headingSize"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
         android:hint="@string/artifact_description_hint"
+        android:textSize="@dimen/textSize"
         android:id="@+id/contents"/>
     <!--should add something to add a picture of the artifact too and maybe save coordinates-->
 </LinearLayout>

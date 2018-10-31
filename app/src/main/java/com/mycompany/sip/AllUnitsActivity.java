@@ -92,15 +92,14 @@ public class AllUnitsActivity extends ListActivity {
 
         if(savedInstanceState!=null && savedInstanceState.getBoolean("alert"))
         {
-            final String vertCoords = savedInstanceState.getString("Vertical Coordinate");
-            final String horCoords = savedInstanceState.getString("Horizontal Coordinate");
+            final String vertCoords = (!savedInstanceState.getString("Vertical Coordinate").equals("") ? savedInstanceState.getString("Vertical Coordinate") : "0");
+            final String horCoords = (!savedInstanceState.getString("Horizontal Coordinate").equals("") ? savedInstanceState.getString("Horizontal Coordinate") : "0");
             //final String excs = savedInstanceState.getString("Excavators");
             final String date = savedInstanceState.getString("Date Opened");
             final String reas = savedInstanceState.getString("Reason");
-            final String  nsd = savedInstanceState.getString("NSDim");
-            final String ewd = savedInstanceState.getString("EWDim");
+            final String  nsd = (!savedInstanceState.getString("NSDim").equals("") ? savedInstanceState.getString("NSDim") : "0");
+            final String ewd = (!savedInstanceState.getString("EWDim").equals("") ? savedInstanceState.getString("EWDim") : "0");
 
-            //TODO: get datum in a different way
             //TODO: get excavators
             showDialog(new Unit(site, "", Integer.parseInt(vertCoords),
                     Integer.parseInt(horCoords), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
@@ -247,11 +246,15 @@ public class AllUnitsActivity extends ListActivity {
         if(alert!=null)
         {
             //TODO: replace these with unit parcelable?
+
+            String tempYear = (!inputYear.getText().toString().equals("") ? inputYear.getText().toString() : "0");
+            String tempMonth = (!inputMonth.getText().toString().equals("") ? inputMonth.getText().toString() : "0");
+            String tempDay =  (!inputDate.getText().toString().equals("") ? inputDate.getText().toString() : "0");
             outState.putBoolean("alert", true);
             outState.putString("Vertical Coordinate", inputVerticalCoords.getText().toString());
             outState.putString("Horizontal Coordinate", inputHorizontalCoords.getText().toString());
             //outState.putString("Excavators", inputExcs.getText().toString());
-            outState.putString("Date Opened", toDate(Integer.parseInt(inputYear.getText().toString()), Integer.parseInt(inputMonth.getText().toString()), Integer.parseInt(inputDate.getText().toString())));
+            outState.putString("Date Opened", toDate(Integer.parseInt(tempYear), Integer.parseInt(tempMonth), Integer.parseInt(tempDay)));
             outState.putString("Reason", inputReas.getText().toString());
             outState.putString("NSDim", inputNSDims.getText().toString());
             outState.putString("EWDim", inputEWDims.getText().toString());
@@ -288,8 +291,8 @@ public class AllUnitsActivity extends ListActivity {
 
         if(un!=null)
         {
-            inputVerticalCoords.setText(un.getNSCoor());
-            inputHorizontalCoords.setText(un.getEWCoor());
+            inputVerticalCoords.setText(un.getNSCoor() + "");
+            inputHorizontalCoords.setText(un.getEWCoor() + "");
             //inputExcs.setText(un.getExcavators());
 
             //TODO: figure out if I want to change so that user can enter a partial date

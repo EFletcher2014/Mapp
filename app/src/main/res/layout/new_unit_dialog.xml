@@ -19,7 +19,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="@dimen/textSize"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input Coordinates -->
         <LinearLayout
@@ -34,7 +34,8 @@
                 android:singleLine="true"
                 android:hint="@string/vertical"
                 android:inputType="number"
-                android:digits="1234567890-"/>
+                android:digits="1234567890-"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputHorCoords"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
@@ -43,7 +44,8 @@
                 android:singleLine="true"
                 android:hint="@string/horizontal"
                 android:inputType="number"
-                android:digits="1234567890-"/>
+                android:digits="1234567890-"
+                android:textSize="@dimen/textSize"/>
         </LinearLayout>
 
         <!-- Excavators Label -->
@@ -71,7 +73,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="@dimen/textSize"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input DateOpened -->
         <LinearLayout
@@ -86,7 +88,8 @@
                 android:hint="@string/year_hint"
                 android:inputType="number"
                 android:digits="0123456789"
-                android:maxLength="4"/>
+                android:maxLength="4"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputMonth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -95,7 +98,8 @@
                 android:hint="@string/month_hint"
                 android:inputType="number"
                 android:digits="0123456789"
-                android:maxLength="2"/>
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -104,7 +108,8 @@
                 android:hint="@string/day_hint"
                 android:inputType="number"
                 android:digits="0123456789"
-                android:maxLength="2"/>
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
         </LinearLayout>
 
 

@@ -16,6 +16,9 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -31,6 +34,7 @@ public class CrewActivity extends AppCompatActivity {
     public static boolean isActive = true;
 
     FirebaseHandler fbh = FirebaseHandler.getInstance();
+    FirebaseAuth fbA = FirebaseAuth.getInstance();
 
     ArrayList<Unit> units = new ArrayList<>();
 
@@ -195,39 +199,50 @@ public class CrewActivity extends AppCompatActivity {
     {
         final String uidToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.pid)).getText().toString();
 
-        String nameToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.name)).getText().toString();
+        if(!uidToDelete.equals(fbA.getCurrentUser().getUid()) && directorsLV.getAdapter().getCount() > 1) {
+            String nameToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.name)).getText().toString();
 
-        LayoutInflater inflater = getLayoutInflater();
-        final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-        {
-            alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+            LayoutInflater inflater = getLayoutInflater();
+            final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                alert = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.AlertDialogTheme));
+            } else {
+                alert = new AlertDialog.Builder(CrewActivity.this);
+            }
+            TextView message = editLevelLayout.findViewById(R.id.alertMessage);
+            message.setTextSize(24);
+            message.setText("Are you sure you want to remove " + nameToDelete + " from the site?");
+
+            alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    Bundle roles = site.getRoles();
+                    roles.remove(uidToDelete);
+
+                    fbh.updateRoles(uidToDelete, roles);
+                    listCrew();
+                }
+            });
+
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    alert = null;
+                    //Go back
+                }
+            });
+            alert.setView(editLevelLayout);
+            AlertDialog dialog = alert.create();
+            dialog.show();
         }
         else
         {
-            alert = new AlertDialog.Builder(CrewActivity.this);
-        }
-        TextView message = editLevelLayout.findViewById(R.id.alertMessage);
-        message.setTextSize(24);
-        message.setText("Are you sure you want to remove " + nameToDelete + " from the site?");
-
-        alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                Bundle roles = site.getRoles();
-                roles.remove(uidToDelete);
-
-                fbh.updateRoles(uidToDelete, roles);
-                listCrew();
-            }});
-
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                alert=null;
-                //Go back
+            if(directorsLV.getAdapter().getCount() < 2)
+            {
+                Toast.makeText(getApplicationContext(), "You cannot delete the only director on this site.", Toast.LENGTH_SHORT).show();
             }
-        });
-        alert.setView(editLevelLayout);
-        AlertDialog dialog = alert.create();
-        dialog.show();
+            else
+            {
+                Toast.makeText(getApplicationContext(), "You cannot delete yourself from this site", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="@dimen/textSize"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input Name -->
         <EditText android:id="@+id/inputName"
@@ -28,7 +28,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:singleLine="true"
+            android:textSize="@dimen/textSize"/>
 
         <!-- Description Label -->
         <TextView android:layout_width="fill_parent"
@@ -37,7 +38,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="@dimen/textSize"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input description -->
         <EditText android:id="@+id/inputDesc"
@@ -46,7 +47,8 @@
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
             android:lines="4"
-            android:gravity="top"/>
+            android:gravity="top"
+            android:textSize="@dimen/textSize"/>
 
         <!-- DateFound Label -->
         <TextView android:layout_width="fill_parent"
@@ -55,7 +57,7 @@
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="@dimen/textSize"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!--TODO: figure out what to do for earlier APIs-->
         <!--
@@ -78,7 +80,8 @@
                 android:hint="@string/year_hint"
                 android:inputType="number"
                 android:digits="0123456789"
-                android:maxLength="4"/>
+                android:maxLength="4"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputMonth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -87,7 +90,8 @@
                 android:hint="@string/month_hint"
                 android:inputType="number"
                 android:digits="0123456789"
-                android:maxLength="2"/>
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -96,18 +100,19 @@
                 android:hint="@string/day_hint"
                 android:inputType="number"
                 android:digits="0123456789"
-                android:maxLength="2"/>
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
         </LinearLayout>
 
 
         <!-- SiteNumber Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Site Number"
+            android:text="@string/site_number_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="@dimen/textSize"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input Site Number -->
         <EditText android:id="@+id/inputNumb"
@@ -120,11 +125,11 @@
         <!-- Location Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Location"
+            android:text="@string/location"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="@dimen/textSize"/>
+            android:textSize="@dimen/headingSize"/>
 
         <LinearLayout
             android:layout_width="match_parent"

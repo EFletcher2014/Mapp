@@ -8,6 +8,7 @@
         android:layout_height="wrap_content"
         android:text="@string/cancel_level_no_save"
         android:layout_gravity="center_horizontal"
+        android:textSize="@dimen/headingSize"
         android:paddingEnd="32dp"
         android:paddingStart="32dp"/>
 </LinearLayout>

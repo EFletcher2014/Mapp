@@ -8,6 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/edit_level_confirmation"
+        android:textSize="@dimen/headingSize"
         android:layout_gravity="center_horizontal"
         android:paddingEnd="32dp"
         android:paddingStart="32dp"/>

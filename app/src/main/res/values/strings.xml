@@ -16,10 +16,12 @@
     <!-- Site Strings -->
     <string name="sites">Sites</string>
     <string name="site_number">Site#</string>
+    <string name="site_number_heading">Site Number:</string>
     <string name="site_name">Site Name:</string>
     <string name="description_heading">Description:</string>
     <string name="create_new_site">Create New Site</string>
     <string name="crew">Crew</string>
+    <string name="location">Location:</string>
     <string name="request_site_perm">Request Site Access</string>
     <string name="see_requests">See Requests</string>
     <string name="deny_request_confirmation">Are you sure you wish to delete this request?</string>

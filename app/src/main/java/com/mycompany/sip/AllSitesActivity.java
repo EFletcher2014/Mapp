@@ -105,12 +105,12 @@ public class AllSitesActivity extends ListActivity {
                 {
                     final String sName = savedInstanceState.getString("Site Name");
                     final String sDesc = savedInstanceState.getString("Description");
-                    final String sDay = savedInstanceState.getString("Day");
-                    final String sMonth = savedInstanceState.getString("Month");
-                    final String sYear = savedInstanceState.getString("Year");
+                    final String sDay = (!savedInstanceState.getString("Day").equals("") ? savedInstanceState.getString("Day") : "0");
+                    final String sMonth = (!savedInstanceState.getString("Month").equals("") ? savedInstanceState.getString("Month") : "0");
+                    final String sYear = (!savedInstanceState.getString("Year").equals("") ? savedInstanceState.getString("Year") : "0");
                     final String sNumb = savedInstanceState.getString("Site Number");
-                    final String sLo = savedInstanceState.getString("Longitude");
-                    final String sLa = savedInstanceState.getString("Latitude");
+                    final String sLo = (!savedInstanceState.getString("Longitude").equals("") ? savedInstanceState.getString("Longitude") : "0");
+                    final String sLa = (!savedInstanceState.getString("Latitude").equals("") ? savedInstanceState.getString("Latitude") : "0");
 
 
 
