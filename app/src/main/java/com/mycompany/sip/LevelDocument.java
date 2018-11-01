@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
@@ -27,6 +28,8 @@ import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 //TODO: allow this to save a new level and also edit an old one
 
@@ -57,6 +60,7 @@ public class LevelDocument extends AppCompatActivity {
     private ViewSwitcher switcher;
     private static final int CAMERA_REQUEST = 1888;
     private int rotation = 0;
+    private File localFile;
 
     @Override
     public void onStart()
@@ -96,6 +100,7 @@ public class LevelDocument extends AppCompatActivity {
 
         if(savedInstanceState!=null)
         {
+            System.out.println("SIS*** ");
             selectedImageUri=savedInstanceState.getParcelable("URI");
             if(selectedImageUri!=null)
             {
@@ -355,7 +360,15 @@ public class LevelDocument extends AppCompatActivity {
              if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
                  switcher.showNext();
              }
-             selectedImageUri = data.getData();
+
+             if(data != null) {
+                 selectedImageUri = data.getData();
+             }
+             else
+             {
+                 selectedImageUri = Uri.fromFile(localFile);
+                 System.out.println(localFile + " " + selectedImageUri);
+             }
              unitImage.setImageURI(selectedImageUri);
              rotation = 0;
          }
@@ -435,10 +448,18 @@ public class LevelDocument extends AppCompatActivity {
         ImageButton takePic = (ImageButton) chooserLayout.findViewById(R.id.takeNewPicture);
         takePic.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                //Take picture from camera
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                cameraIntent.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
+
+                try {
+                    localFile = File.createTempFile(level.getID(), ".jpg");
+                    //Take picture from camera
+                    Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(LevelDocument.this, "com.mycompany.sip.fileprovider", localFile));
+                    startActivityForResult(cameraIntent, CAMERA_REQUEST);
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+
+
                 alert1=null;
                 dialog.cancel();
             }

@@ -33,12 +33,42 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="mappdocumentation.page.link"
+                    android:pathPattern="/join-as-excavator"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="mappdocumentation.page.link"
+                    android:scheme="https\" />
+            </intent-filter>
         </activity>
         <activity android:name=".SiteActivity" />
         <activity android:name=".CrewActivity" />
         <activity android:name=".AllFeaturesActivity" />
         <activity android:name=".SiteNotesActivity" />
         <activity android:name=".CrewRequestActivity"></activity>
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.mycompany.sip.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
     </application>
 
 </manifest>
