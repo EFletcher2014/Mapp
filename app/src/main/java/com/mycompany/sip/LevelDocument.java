@@ -291,6 +291,7 @@ public class LevelDocument extends AppCompatActivity {
                     if (selectedImageUri != null) {
                         fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
                     }
+                    Toast.makeText(getApplicationContext(), "Level saved", Toast.LENGTH_SHORT).show();
 
                     //TODO: should probably check that level was saved
                     setResult(Activity.RESULT_OK);
@@ -367,7 +368,6 @@ public class LevelDocument extends AppCompatActivity {
              else
              {
                  selectedImageUri = Uri.fromFile(localFile);
-                 System.out.println(localFile + " " + selectedImageUri);
              }
              unitImage.setImageURI(selectedImageUri);
              rotation = 0;

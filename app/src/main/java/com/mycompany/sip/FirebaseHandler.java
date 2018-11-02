@@ -1286,7 +1286,7 @@ public class FirebaseHandler {
 
             Map<String, Object> temp = new HashMap<>();
             temp.put("Description", newFeat.getDescription());
-            temp.put("Number", siteFeatures.size());
+            temp.put("Number", siteFeatures.size() + 1);
 
             if(newFeat.getID() == null || newFeat.getID() == "") {
                 mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").add(temp).addOnFailureListener(new OnFailureListener() {

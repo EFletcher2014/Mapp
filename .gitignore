@@ -10,3 +10,7 @@
 /firebase.json
 /mysql-connector-java-5.0.8-bin/
 /package-lock.json
+/key.properties
+/keystore.jks
+/app/release/app-release.apk
+/app/release/output.json

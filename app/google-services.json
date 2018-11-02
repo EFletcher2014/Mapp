@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:350381787834:android:927386b4e3bd9552",
         "android_client_info": {
-          "package_name": "com.company.SIP"
+          "package_name": "com.mycompany.sip"
         }
       },
       "oauth_client": [
