@@ -1014,31 +1014,47 @@ public class FirebaseHandler {
         userDetails.put("Name", name);
         userDetails.put("Email", email);
 
-        siteRef.update("Roles." + uid, permissions).addOnCompleteListener(new OnCompleteListener<Void>() {
+        siteRef.update("Roles." + uid, permissions).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
+            public void onSuccess(Void aVoid) {
             siteRef.collection("crew").document(uid).set(userDetails).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                if (e != null)
-                {
-                    System.out.println(e);
+                    if (e != null)
+                    {
+                        System.out.println(e);
+                    }
                 }
+            }).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    if(crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
+                    {
+                        deleteRequest(uid);
+                    }
                 }
             });
             }
         });
     }
 
-    public void deleteRequest(String uid)
+    public void deleteRequest(final String uid)
     {
         requestsRef.whereEqualTo("UserID", uid).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-            for(DocumentSnapshot doc : queryDocumentSnapshots)
-            {
-                mappDB.collection("requests").document(doc.getId().toString()).delete();
-            }
+                for(DocumentSnapshot doc : queryDocumentSnapshots)
+                {
+                    mappDB.collection("requests").document(doc.getId().toString()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            if(crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
+                            {
+                                crewRequestActivityRef.get().deleteRequest(uid);
+                            }
+                        }
+                    });
+                }
             }
         });
     }

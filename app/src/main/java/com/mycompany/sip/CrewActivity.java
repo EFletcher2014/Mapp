@@ -199,7 +199,10 @@ public class CrewActivity extends AppCompatActivity {
     {
         final String uidToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.pid)).getText().toString();
 
-        if(!uidToDelete.equals(fbA.getCurrentUser().getUid()) && directorsLV.getAdapter().getCount() > 1) {
+        ArrayList<String> director = new ArrayList<>();
+        director.add("director");
+
+        if(!uidToDelete.equals(fbA.getCurrentUser().getUid())) {
             String nameToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.name)).getText().toString();
 
             LayoutInflater inflater = getLayoutInflater();
@@ -215,11 +218,11 @@ public class CrewActivity extends AppCompatActivity {
 
             alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                    Bundle roles = site.getRoles();
-                    roles.remove(uidToDelete);
+                Bundle roles = site.getRoles();
+                roles.remove(uidToDelete);
 
-                    fbh.updateRoles(uidToDelete, roles);
-                    listCrew();
+                fbh.updateRoles(uidToDelete, roles);
+                listCrew();
                 }
             });
 
@@ -235,14 +238,7 @@ public class CrewActivity extends AppCompatActivity {
         }
         else
         {
-            if(directorsLV.getAdapter().getCount() < 2)
-            {
-                Toast.makeText(getApplicationContext(), "You cannot delete the only director on this site.", Toast.LENGTH_SHORT).show();
-            }
-            else
-            {
-                Toast.makeText(getApplicationContext(), "You cannot delete yourself from this site", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(getApplicationContext(), "You cannot delete yourself from this site", Toast.LENGTH_SHORT).show();
         }
     }
 }
