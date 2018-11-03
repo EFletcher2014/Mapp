@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="6dip"
         android:paddingLeft="6dip"
-        android:textSize="17dip"
+        android:textSize="@dimen/textSize"
         android:layout_weight="1"
         android:layout_gravity="start"
         android:textStyle="bold" />
@@ -37,7 +37,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="end"
-        android:text="Delete"
+        android:text="@string/delete"
         android:onClick="deleteCrewMember"/>
 
 </LinearLayout>

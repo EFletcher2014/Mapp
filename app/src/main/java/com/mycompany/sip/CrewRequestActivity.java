@@ -118,9 +118,9 @@ public class CrewRequestActivity extends ListActivity {
 
     public void showDialog(View view)
     {
-        TextView name = findViewById(R.id.name);
-        TextView uid = findViewById(R.id.su);
-        TextView email = findViewById(R.id.email);
+        TextView name = ((View) view.getParent()).findViewById(R.id.name);
+        TextView uid = ((View) view.getParent()).findViewById(R.id.su);
+        TextView email = ((View) view.getParent()).findViewById(R.id.email);
 
         final String requestName = name.getText().toString();
         final String requestEmail = email.getText().toString();
@@ -177,7 +177,6 @@ public class CrewRequestActivity extends ListActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 fbh.addPermission(requestUid, availableUnits.getVisibility() == View.VISIBLE && availableUnits.getSelectedItem() != null ? ((HashMap<String, String>) availableUnits.getSelectedItem()).get("UnitID") : "", requestName, requestEmail);
-                deleteRequest(requestUid);
             }
         });
 
@@ -230,10 +229,15 @@ public class CrewRequestActivity extends ListActivity {
 
     public void deleteRequest(String requestUid)
     {
-        fbh.deleteRequest(requestUid);
-        for(HashMap<String, String> oldReq : requests) {
+        int i = 0;
+        while(i<requests.size()) {
+            HashMap<String, String> oldReq = requests.get(i);
             if(oldReq.get("Uid").equals(requestUid)) {
                 requests.remove(requests.indexOf(oldReq));
+            }
+            else
+            {
+                i++;
             }
         }
         ListAdapter adapter = new SimpleAdapter(

@@ -81,9 +81,8 @@ public class AllLevelsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        int foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
-        site = openIntent.getParcelableExtra("siteName");
-        unit = openIntent.getParcelableExtra("datum");
+        site = openIntent.getParcelableExtra(TAG_SITENAME);
+        unit = openIntent.getParcelableExtra(TAG_UNITNAME);
         TextView titleText = (TextView) findViewById(R.id.siteNameUnitNumber);
         String title = site.getName() + " " + unit.getDatum() + " Levels";
         titleText.setText(title);

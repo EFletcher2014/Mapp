@@ -2,7 +2,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:theme="@style/AppTheme"
     android:orientation="horizontal"
@@ -18,7 +17,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/errorTextDraw"
             android:text="@string/no_draw_hint"
-            android:textSize="32dp"
+            android:textSize="@dimen/titleSize"
             android:textColor="@color/colorPrimaryText"
             android:gravity="center"
             android:layout_gravity="center_vertical|center_horizontal"/>
@@ -44,7 +43,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Map"
+                android:text="@string/key"
                 android:gravity="center"
                 android:theme="@style/titleTheme"/>
             <LinearLayout
@@ -55,13 +54,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Artifacts"
+                    android:text="@string/artifacts_heading"
                     android:layout_gravity="left"
-                    android:textSize="16dp"/>
+                    android:textSize="@dimen/headingSize"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add"
+                    android:text="@string/add"
                     android:layout_gravity="right"
                     android:id="@+id/addArtifactButton"
                     android:color="@color/colorText"
@@ -80,13 +79,13 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Features"
+                    android:text="@string/features_heading"
                     android:layout_gravity="left"
-                    android:textSize="16dp"/>
+                    android:textSize="@dimen/headingSize"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Add"
+                    android:text="@string/add"
                     android:layout_gravity="right"
                     android:id="@+id/addFeatureButton"
                     android:color="@color/colorText"
@@ -112,9 +111,9 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="Highlight your artifact on the image, then click done"
+                android:text="@string/highlight_prompt"
                 android:layout_gravity="center|center_vertical"
-                android:textSize="30dp"
+                android:textSize="@dimen/textSize"
                 android:layout_weight="4"
                 android:layout_margin="8dp"/>
             <LinearLayout
@@ -125,14 +124,14 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Done"
+                    android:text="@string/done"
                     android:id="@+id/DrawAlertSave"
                     android:layout_gravity="end"
                     android:onClick="saveImage"/>
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Clear"
+                    android:text="@string/clear"
                     android:id="@+id/DrawAlertClear"
                     android:layout_gravity="start"
                     android:onClick="clearImage"/>

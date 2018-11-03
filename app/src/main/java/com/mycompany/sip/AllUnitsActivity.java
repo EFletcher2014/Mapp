@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.google.firebase.firestore.FirebaseFirestore;
 import static com.mycompany.sip.Global.TAG_PID;
+import static com.mycompany.sip.Global.TAG_SITENAME;
 import static com.mycompany.sip.Global.TAG_UNITNAME;
 
 public class AllUnitsActivity extends ListActivity {
@@ -47,8 +48,9 @@ public class AllUnitsActivity extends ListActivity {
     private static Unit unit;
 
     private AlertDialog.Builder alert;
-    private EditText inputCoords;
-    private EditText inputExcs;
+    private EditText inputVerticalCoords;
+    private EditText inputHorizontalCoords;
+    //private EditText inputExcs;
     private EditText inputYear;
     private EditText inputMonth;
     private EditText inputDate;
@@ -90,23 +92,23 @@ public class AllUnitsActivity extends ListActivity {
 
         if(savedInstanceState!=null && savedInstanceState.getBoolean("alert"))
         {
-            final String coords = savedInstanceState.getString("Datum Coordinate");
-            final String excs = savedInstanceState.getString("Excavators");
+            final String vertCoords = (!savedInstanceState.getString("Vertical Coordinate").equals("") ? savedInstanceState.getString("Vertical Coordinate") : "0");
+            final String horCoords = (!savedInstanceState.getString("Horizontal Coordinate").equals("") ? savedInstanceState.getString("Horizontal Coordinate") : "0");
+            //final String excs = savedInstanceState.getString("Excavators");
             final String date = savedInstanceState.getString("Date Opened");
             final String reas = savedInstanceState.getString("Reason");
-            final String  nsd = savedInstanceState.getString("NSDim");
-            final String ewd = savedInstanceState.getString("EWDim");
+            final String  nsd = (!savedInstanceState.getString("NSDim").equals("") ? savedInstanceState.getString("NSDim") : "0");
+            final String ewd = (!savedInstanceState.getString("EWDim").equals("") ? savedInstanceState.getString("EWDim") : "0");
 
-            //TODO: get datum in a different way
             //TODO: get excavators
-            showDialog(new Unit(site, "", Integer.parseInt(coords.substring(1, 2)),
-                    Integer.parseInt(coords.substring(4, 5)), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
+            showDialog(new Unit(site, "", Integer.parseInt(vertCoords),
+                    Integer.parseInt(horCoords), Integer.parseInt(nsd), Integer.parseInt(ewd), date, reas));
         }
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        siteID = openIntent.getStringExtra("PrimaryKey");
-        site = openIntent.getParcelableExtra("siteName");
+        siteID = openIntent.getStringExtra(TAG_PID);
+        site = openIntent.getParcelableExtra(TAG_SITENAME);
 
         //notify firebase that a site has been selected so it can save all the data for it
         fbh.siteSelected(site);
@@ -139,7 +141,7 @@ public class AllUnitsActivity extends ListActivity {
 
                 // sending id, sitename, and unit to next activity
                 in.putExtra(TAG_PID, pid);
-                in.putExtra("siteName", site);
+                in.putExtra(TAG_SITENAME, site);
                 in.putExtra(TAG_UNITNAME, allUnits.get(allUnits.indexOf(new Unit(null, pid, 0, 0, 0, 0, "", ""))));
 
                 // starting new activity and expecting some response back
@@ -244,10 +246,15 @@ public class AllUnitsActivity extends ListActivity {
         if(alert!=null)
         {
             //TODO: replace these with unit parcelable?
+
+            String tempYear = (!inputYear.getText().toString().equals("") ? inputYear.getText().toString() : "0");
+            String tempMonth = (!inputMonth.getText().toString().equals("") ? inputMonth.getText().toString() : "0");
+            String tempDay =  (!inputDate.getText().toString().equals("") ? inputDate.getText().toString() : "0");
             outState.putBoolean("alert", true);
-            outState.putString("Datum Coordinate", inputCoords.getText().toString());
-            outState.putString("Excavators", inputExcs.getText().toString());
-            outState.putString("Date Opened", toDate(Integer.parseInt(inputYear.getText().toString()), Integer.parseInt(inputMonth.getText().toString()), Integer.parseInt(inputDate.getText().toString())));
+            outState.putString("Vertical Coordinate", inputVerticalCoords.getText().toString());
+            outState.putString("Horizontal Coordinate", inputHorizontalCoords.getText().toString());
+            //outState.putString("Excavators", inputExcs.getText().toString());
+            outState.putString("Date Opened", toDate(Integer.parseInt(tempYear), Integer.parseInt(tempMonth), Integer.parseInt(tempDay)));
             outState.putString("Reason", inputReas.getText().toString());
             outState.putString("NSDim", inputNSDims.getText().toString());
             outState.putString("EWDim", inputEWDims.getText().toString());
@@ -272,8 +279,9 @@ public class AllUnitsActivity extends ListActivity {
         {
             alert = new AlertDialog.Builder(AllUnitsActivity.this);
         }
-        inputCoords = (EditText) unitLayout.findViewById(R.id.inputCoords);
-        inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
+        inputVerticalCoords = (EditText) unitLayout.findViewById(R.id.inputVertCoord);
+        inputHorizontalCoords = (EditText) unitLayout.findViewById(R.id.inputHorCoords);
+        //inputExcs = (EditText) unitLayout.findViewById(R.id.inputExcs);
         inputYear = (EditText) unitLayout.findViewById(R.id.inputYear);
         inputMonth = (EditText) unitLayout.findViewById(R.id.inputMonth);
         inputDate = (EditText) unitLayout.findViewById(R.id.inputDate);
@@ -283,9 +291,9 @@ public class AllUnitsActivity extends ListActivity {
 
         if(un!=null)
         {
-            //TODO: get coordinates in a better way
-            inputCoords.setText(un.getDatum());
-            inputExcs.setText(un.getExcavators());
+            inputVerticalCoords.setText(un.getNSCoor() + "");
+            inputHorizontalCoords.setText(un.getEWCoor() + "");
+            //inputExcs.setText(un.getExcavators());
 
             //TODO: figure out if I want to change so that user can enter a partial date
             int[] date = fromDate(un.getDateOpened());
@@ -297,8 +305,8 @@ public class AllUnitsActivity extends ListActivity {
             if(date[2]!=0)
                 inputDate.setText(d);
             inputReas.setText(un.getReasonForOpening());
-            inputNSDims.setText(un.getNsDimension());
-            inputEWDims.setText(un.getEwDimension());
+            inputNSDims.setText(un.getNsDimension() + "");
+            inputEWDims.setText(un.getEwDimension() + "");
 
             //TODO: get excavators once users are added
         }
@@ -332,13 +340,14 @@ public class AllUnitsActivity extends ListActivity {
                 }
 
                 //TODO: add excavators
-                unit = new Unit(site, "", Integer.parseInt(inputCoords.getText().toString().substring(1, 3)),
-                        Integer.parseInt(inputCoords.getText().toString().substring(4)),
+                //TODO: deal with coordinates better
+                unit = new Unit(site, "", Integer.parseInt(inputVerticalCoords.getText().toString()),
+                        Integer.parseInt(inputHorizontalCoords.getText().toString()),
                         Integer.parseInt(inputNSDims.getText().toString()),
                         Integer.parseInt(inputEWDims.getText().toString()),
                         toDate(y, m, d), inputReas.getText().toString());
 
-                if(!(inputCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
+                if((!inputVerticalCoords.getText().toString().equals("")) &&  !(inputHorizontalCoords.getText().toString().equals("")) && !(inputYear.getText().toString().equals("")) && !(inputMonth.getText().toString().equals(""))
                         && !(inputDate.getText().toString().equals("")) && !(inputNSDims.getText().toString().equals(""))
                         && !(inputEWDims.getText().toString().equals("")) /*&& !(inputExcs.getText().toString().equals(""))*/ && !(inputReas.getText().toString().equals(""))) {
 

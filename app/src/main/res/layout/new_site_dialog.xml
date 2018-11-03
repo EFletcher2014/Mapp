@@ -16,11 +16,11 @@
         <!-- Name Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Site Name"
+            android:text="@string/site_name"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input Name -->
         <EditText android:id="@+id/inputName"
@@ -28,16 +28,17 @@
             android:layout_height="wrap_content"
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:singleLine="true"
+            android:textSize="@dimen/textSize"/>
 
         <!-- Description Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Description"
+            android:text="@string/description_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input description -->
         <EditText android:id="@+id/inputDesc"
@@ -46,26 +47,17 @@
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
             android:lines="4"
-            android:gravity="top"/>
-
-
+            android:gravity="top"
+            android:textSize="@dimen/textSize"/>
 
         <!-- DateFound Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Date discovered"
+            android:text="@string/date_discovered_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
-
-        <!-- Input DateFound -->
-        <!--<EditText android:id="@+id/inputDate"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_marginBottom="15dip"
-            android:singleLine="true"/>-->
+            android:textSize="@dimen/headingSize"/>
 
         <!--TODO: figure out what to do for earlier APIs-->
         <!--
@@ -75,7 +67,6 @@
             android:id="@+id/inputDate"
             android:datePickerMode="spinner"
             android:calendarViewShown="false"/>
-
             -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -86,36 +77,42 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="YYYY"
+                android:hint="@string/year_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="4"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputMonth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="MM"
+                android:hint="@string/month_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="DD"
+                android:hint="@string/day_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
         </LinearLayout>
 
 
         <!-- SiteNumber Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Site Number"
+            android:text="@string/site_number_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input Site Number -->
         <EditText android:id="@+id/inputNumb"
@@ -128,11 +125,11 @@
         <!-- Location Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Location"
+            android:text="@string/location"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/headingSize"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -146,6 +143,7 @@
                 android:layout_marginBottom="15dip"
                 android:singleLine="true"
                 android:inputType="numberDecimal"
+                android:digits="1234567890-."
                 android:hint="latitude"
                 android:layout_weight="1"/>
             <!-- Input Longitude -->
@@ -156,6 +154,7 @@
                 android:layout_marginBottom="15dip"
                 android:singleLine="true"
                 android:inputType="numberDecimal"
+                android:digits="1234567890-."
                 android:hint="longitude"
                 android:layout_weight="1"/>
         </LinearLayout>

@@ -16,7 +16,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/code"
-        android:textSize="32dp"
+        android:textSize="@dimen/titleSize"
+        android:textIsSelectable="true"
         android:gravity="center"/>
 
     <Button
@@ -24,14 +25,15 @@
         android:layout_height="wrap_content"
         android:id="@+id/requestButton"
         android:gravity="center"
-        android:text="See Requests"
+        android:text="@string/see_requests"
         android:onClick="goToRequests"
         android:layout_gravity="center"/>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Directors:"
+        android:text="@string/site_directors_heading"
+        android:textSize="@dimen/textSize"
         android:gravity="left"/>
 
     <ListView
@@ -43,7 +45,8 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Excavators:"
+        android:text="@string/site_excavators_heading"
+        android:textSize="@dimen/textSize"
         android:gravity="left"/>
     <!-- Main ListView
          Always give id value as list(@android:id/list)

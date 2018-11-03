@@ -177,15 +177,14 @@ public class LevelMap extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                //get the file associated with this artifact
-                File selectedFile = new File(artifacts.getContext().getCacheDir(), artifactsImages.get((int) id));
-                if(!displayedImage.equals(artifactsImages.get((int) id))){ //if that file isn't displayed currently:
+                if(!displayedImage.equals(artifactsImages.get((int) id)) && !artifactsImages.get((int) id).equals(selectedImageUri.toString())){ //if that file isn't displayed currently:
+                    //get the file associated with this artifact
+                    File selectedFile = new File(artifacts.getContext().getCacheDir(), artifactsImages.get((int) id));
                     try {
                         //display that file
                         imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = artifactsImages.get((int) id);
                     } catch (IOException e) {
-                        System.out.println(e);
                     }
                 }
                 else //if the file is displayed currently
@@ -198,7 +197,6 @@ public class LevelMap extends AppCompatActivity {
                         displayedImage = "";
                     } catch(IOException e)
                     {
-                        System.out.println(e);
                     }
                 }
                 //refresh the image
@@ -211,15 +209,14 @@ public class LevelMap extends AppCompatActivity {
         featuresLV.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //get the file associated with this feature
-                File selectedFile = new File(featuresLV.getContext().getCacheDir(), featuresImages.get((int) id));
-                if(!displayedImage.equals(featuresImages.get((int) id))) { //if that file isn't displayed right now:
+                if(!displayedImage.equals(featuresImages.get((int) id)) && !featuresImages.get((int) id).equals(selectedImageUri.toString())) { //if that file isn't displayed right now:
+                    //get the file associated with this feature
+                    File selectedFile = new File(featuresLV.getContext().getCacheDir(), featuresImages.get((int) id));
                     try {
                         //display it
                         imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(featuresLV.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = featuresImages.get((int) id);
                     } catch (IOException e) {
-                        System.out.println(e);
                     }
                 }
                 else // if that file is displayed right now
@@ -232,7 +229,6 @@ public class LevelMap extends AppCompatActivity {
                         displayedImage = "";
                     } catch(IOException e)
                     {
-                        System.out.println(e);
                     }
                 }
                 //refresh image
@@ -246,7 +242,7 @@ public class LevelMap extends AppCompatActivity {
         fbh.getArtifactsFromLevel(level);
         fbh.getArtifactBagsFromLevel(level);
         fbh.getFeaturesFromLevel(level);
-        fbh.getFeaturesFromSite();
+        fbh.getFeaturesFromSite(level.getSite());
 
         //the button to add a new artifact to the list
         final Button addArtifact = (Button) findViewById(R.id.addArtifactButton);
@@ -275,7 +271,6 @@ public class LevelMap extends AppCompatActivity {
                                     imageDraw.setCanvasBitmap(bitmap);
                                     displayedImage = "";
                                 } catch (IOException e) {
-                                    System.out.println(e);
                                 }
                                 switcher.showNext();
                                 switcher.showNext();
@@ -318,7 +313,6 @@ public class LevelMap extends AppCompatActivity {
                                     imageDraw.setCanvasBitmap(bitmap);
                                     displayedImage = "";
                                 } catch (IOException e) {
-                                    System.out.println(e);
                                 }
                                 switcher.showNext();
                                 switcher.showNext();
@@ -416,31 +410,50 @@ public class LevelMap extends AppCompatActivity {
                 allArtifacts.set(index, temp);
             }
 
-            //loads images
-            if(!artifactsImages.contains(newArtifacts.get(0).getImagePath()))//adds image paths to a list
-            {
-                artifactsImages.add(newArtifacts.get(0).getImagePath());
-            }
-
             //gets image from that path
             File artifactImage = new File(this.getCacheDir(), newArtifacts.get(0).getImagePath());
 
             if(!artifactImage.exists()) //if that file doesn't exist, it needs to. Make it.
             {
-                //Make user highlight this artifact on the canvas
-                imageDraw.highlight();
-                drawType = "artifact";
+                if(fbh.userIsExcavator(level.getUnit())) {
+                    //Make user highlight this artifact on the canvas
+                    imageDraw.highlight();
+                    drawType = "artifact";
 
-                TextView title = findViewById(R.id.drawAlertTitle);
-                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert)) //display alert that user must highlight
-                {
-                    title.setText("Artifact " + newArtifacts.get(0).toString()); //show artifact's name so user knows which one they're highlighting
-                    keySwitcher.showNext();
+                    TextView title = findViewById(R.id.drawAlertTitle);
+                    if (keySwitcher.getNextView() == findViewById(R.id.DrawAlert)) //display alert that user must highlight
+                    {
+                        title.setText("Artifact " + newArtifacts.get(0).toString()); //show artifact's name so user knows which one they're highlighting
+                        keySwitcher.showNext();
+                    }
+                    break; //break while loop so user can highlight this artifact before others load
                 }
-                break; //break while loop so user can highlight this artifact before others load
+                else
+                {
+                    if(index < 0 || artifactsImages.size() <= index) {
+                        artifactsImages.add(selectedImageUri.toString());
+                    }
+                    else
+                    {
+                        artifactsImages.set(index, selectedImageUri.toString());
+                    }
+                    newArtifacts.remove(0); //remove from list since this user can't do anything
+                }
             }
             else //if the image does exist, this artifact is all set and is officially loaded
             {
+                //loads images
+                if(!artifactsImages.contains(newArtifacts.get(0).getImagePath()))//adds image paths to a list
+                {
+                    if(index < 0 || artifactsImages.size() <= index) {
+                        artifactsImages.add(newArtifacts.get(0).getImagePath());
+                    }
+                    else
+                    {
+                        artifactsImages.set(index, newArtifacts.get(0).getImagePath());
+                    }
+                }
+
                 newArtifacts.remove(0); //remove it from the list which needs to be loaded
             }
         }
@@ -510,30 +523,48 @@ public class LevelMap extends AppCompatActivity {
                 features.set(index, temp); //else, overwrite it
             }
 
-            //load image associated with feature
-            if(!featuresImages.contains(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg")) //if feature image path isn't already loaded, add it
-            {
-                featuresImages.add(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
-            }
-
             //get file from that path
             File featureImage = new File(this.getCacheDir(), level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
 
             if(!featureImage.exists()) //if that image doesn't exist, it needs to. Make it
             {
-                //make user highlight this feature
-                imageDraw.highlight();
-                drawType = "feature";
+                if(fbh.userIsExcavator(level.getUnit())) {
+                    //make user highlight this feature
+                    imageDraw.highlight();
+                    drawType = "feature";
 
-                TextView title = findViewById(R.id.drawAlertTitle);
-                if(keySwitcher.getNextView() == findViewById(R.id.DrawAlert))
-                {
-                    title.setText(newFeatures.get(0).toString());
-                    keySwitcher.showNext(); //display draw alert for this feature
+                    TextView title = findViewById(R.id.drawAlertTitle);
+                    if (keySwitcher.getNextView() == findViewById(R.id.DrawAlert)) {
+                        title.setText(newFeatures.get(0).toString());
+                        keySwitcher.showNext(); //display draw alert for this feature
+                    }
+                    break; //break while loop so other features don't load while this one is being highlighted
                 }
-                break; //break while loop so other features don't load while this one is being highlighted
+                else
+                {
+                    if(index < 0 || featuresImages.size() <= index) {
+                        featuresImages.add(selectedImageUri.toString());
+                    }
+                    else
+                    {
+                        featuresImages.set(index, selectedImageUri.toString());
+                    }
+                    newFeatures.remove(0); //remove the feature since this user can't add image anyway
+                }
             }
             else { //if the feature's image exists, it's all set!
+                //load image associated with feature
+                if(!featuresImages.contains(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg")) //if feature image path isn't already loaded, add it
+                {
+                    if(index < 0 || featuresImages.size() <= index) {
+                        featuresImages.add(level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
+                    }
+                    else
+                    {
+                        featuresImages.set(index, level.getSite().getID() + "/" + level.getID() + "-" + newFeatures.get(0).getID() + ".jpg");
+                    }
+                }
+
                 newFeatures.remove(0); //remove it from list to load
             }
         }
@@ -669,7 +700,6 @@ public class LevelMap extends AppCompatActivity {
                 fOut.flush(); // Not really required
                 fOut.close(); // do not forget to close the stream
             } catch (IOException e) {
-                System.out.println(e);
             }
 
             fbh.setImage(level.getSite().getID() + "/", newArtifacts.get(0).getID(), ".jpg", Uri.fromFile(localFile)); //uploads image to firebase
@@ -694,7 +724,6 @@ public class LevelMap extends AppCompatActivity {
                     fOut.flush(); // Not really required
                     fOut.close(); // do not forget to close the stream
                 } catch (IOException e) {
-                    System.out.println(e);
                 }
 
                 fbh.setImage(level.getSite().getID() + "/", level.getID() + "-" + newFeatures.get(0).getID(), ".jpg", Uri.fromFile(localFile)); //uploads file to Firebase
@@ -841,7 +870,6 @@ public class LevelMap extends AppCompatActivity {
         matrix.setRotate(orientation);
 
         try {
-            System.out.println("rotating!");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             //bitmap.recycle();
             return bmRotated;
@@ -863,7 +891,6 @@ public class LevelMap extends AppCompatActivity {
                 imageDraw.setCanvasBitmap(bitmap);
                 displayedImage = "";
             } catch (IOException e) {
-                System.out.println(e);
             }
             switcher.showNext();
             switcher.showNext();

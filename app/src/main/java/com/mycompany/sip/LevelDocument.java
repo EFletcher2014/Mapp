@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
@@ -27,12 +28,11 @@ import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import java.io.File;
-
-//TODO: allow this to save a new level and also edit an old one
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class LevelDocument extends AppCompatActivity {
 
-    //TODO: is this needed
     public static boolean isActive;
 
     //Firebase
@@ -57,6 +57,7 @@ public class LevelDocument extends AppCompatActivity {
     private ViewSwitcher switcher;
     private static final int CAMERA_REQUEST = 1888;
     private int rotation = 0;
+    private File localFile;
 
     @Override
     public void onStart()
@@ -79,9 +80,6 @@ public class LevelDocument extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
-        //tried to make a new titlebar, didn't work, said I couldn't have two
-        //requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-        //getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.mytitle);
         super.onCreate(savedInstanceState);
         this.isActive = true;
         fbh.updateLevelDocActivity(this);
@@ -142,11 +140,6 @@ public class LevelDocument extends AppCompatActivity {
 
             fbh.getImage(site.getID() + "/" , level.getID() + "map", this.getCacheDir(), "");
         }
-        else
-        {
-            //TODO: these vvvvvvv
-            //Query server for new level number
-        }
         TextView siteNameText = (TextView) findViewById(R.id.SiteNameLevel);
         siteNameText.setText("Site: " + siteName);
         TextView siteNumberText = (TextView) findViewById(R.id.siteNumLevel);
@@ -162,9 +155,9 @@ public class LevelDocument extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
 
-                    if (selectedImageUri == null) {
-                        showChooserDialog();
-                    }
+                if (selectedImageUri == null) {
+                    showChooserDialog();
+                }
                 }
             });
         }
@@ -190,11 +183,11 @@ public class LevelDocument extends AppCompatActivity {
             rotate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Bitmap bm = ((BitmapDrawable) unitImage.getDrawable()).getBitmap();
-                    Bitmap bmRotated = rotateBitmap(bm, 90);
-                    unitImage.setImageBitmap(bmRotated);
-                    rotation += 90;
-                    rotation %= 360;
+                Bitmap bm = ((BitmapDrawable) unitImage.getDrawable()).getBitmap();
+                Bitmap bmRotated = rotateBitmap(bm, 90);
+                unitImage.setImageBitmap(bmRotated);
+                rotation += 90;
+                rotation %= 360;
                 }
             });
         }
@@ -203,19 +196,19 @@ public class LevelDocument extends AppCompatActivity {
         toAddArtifactActivity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(level!=null) { //TODO: this isn't working
-                    //Move to select on image activity
-                    Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactBagsActivity.class);
-                    artifactActivityIntent.putExtra("name", site);
-                    artifactActivityIntent.putExtra("datum", unit);
-                    artifactActivityIntent.putExtra("depth", level);
-                    artifactActivityIntent.putExtra("PrimaryKey", pk);
-                    startActivity(artifactActivityIntent);
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "You must save your level before creating artifacts", Toast.LENGTH_SHORT).show();
-                }
+            if(level!=null) { //TODO: this isn't working
+                //Move to select on image activity
+                Intent artifactActivityIntent = new Intent(view.getContext(), AllArtifactBagsActivity.class);
+                artifactActivityIntent.putExtra("name", site);
+                artifactActivityIntent.putExtra("datum", unit);
+                artifactActivityIntent.putExtra("depth", level);
+                artifactActivityIntent.putExtra("PrimaryKey", pk);
+                startActivity(artifactActivityIntent);
+            }
+            else
+            {
+                Toast.makeText(getApplicationContext(), "You must save your level before creating artifacts", Toast.LENGTH_SHORT).show();
+            }
             }
         });
 
@@ -223,33 +216,33 @@ public class LevelDocument extends AppCompatActivity {
         toSelectOnImageActivity.setOnClickListener(new View.OnClickListener() {
               @Override
               public void onClick(View view) {
-                    if(level!=null) {
-                        if(selectedImageUri!=null) {
+            if(level!=null) {
+                if(selectedImageUri!=null) {
 
-                            //check if image has been saved
-                            File levelMap = new File(toSelectOnImageActivity.getContext().getCacheDir(),  site.getID() + "/" + level.getID() + "map.jpg");
+                    //check if image has been saved
+                    File levelMap = new File(toSelectOnImageActivity.getContext().getCacheDir(),  site.getID() + "/" + level.getID() + "map.jpg");
 
-                            if(levelMap.exists()) {
-                                //Move to select on image activity
-                                Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
-                                selectActivityIntent.putExtra("level", level);
-                                selectActivityIntent.putExtra("rotation", rotation);
-                                startActivity(selectActivityIntent);
-                            }
-                            else
-                            {
-                                Toast.makeText(getApplicationContext(), "You must save your level before using this feature", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                        else
-                        {
-                            Toast.makeText(getApplicationContext(), "You must add a picture of your unit before using this feature", Toast.LENGTH_SHORT).show();
-                        }
+                    if(levelMap.exists()) {
+                        //Move to select on image activity
+                        Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
+                        selectActivityIntent.putExtra("level", level);
+                        selectActivityIntent.putExtra("rotation", rotation);
+                        startActivity(selectActivityIntent);
                     }
                     else
                     {
-                        Toast.makeText(getApplicationContext(), "You must save your level before mapping", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "You must save your level before using this feature", Toast.LENGTH_SHORT).show();
                     }
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "You must add a picture of your unit before using this feature", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else
+            {
+                Toast.makeText(getApplicationContext(), "You must save your level before mapping", Toast.LENGTH_SHORT).show();
+            }
               }
         });
 
@@ -268,28 +261,27 @@ public class LevelDocument extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
 
-                    Double bd = Double.parseDouble(begDepth.getText().toString());
-                    Double ed = Double.parseDouble(endDepth.getText().toString());
+                Double bd = Double.parseDouble(begDepth.getText().toString());
+                Double ed = Double.parseDouble(endDepth.getText().toString());
 
-                    //TODO: add date started input or remove
-                    //String date = dateTime.getText().toString();
-                    String em = excMeth.getText().toString();
-                    String n = notes.getText().toString();
+                //TODO: add date started input or remove
+                //String date = dateTime.getText().toString();
+                String em = excMeth.getText().toString();
+                String n = notes.getText().toString();
 
-                    level.setBegDepth(bd);
-                    level.setEndDepth(ed);
-                    level.setExcavationMethod(em);
-                    level.setNotes(n);
+                level.setBegDepth(bd);
+                level.setEndDepth(ed);
+                level.setExcavationMethod(em);
+                level.setNotes(n);
 
-                    fbh.createLevel(level);
+                fbh.createLevel(level);
 
-                    if (selectedImageUri != null) {
-                        fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
-                    }
-
-                    //TODO: should probably check that level was saved
-                    setResult(Activity.RESULT_OK);
-                    finish();
+                if (selectedImageUri != null) {
+                    fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
+                }
+                Toast.makeText(getApplicationContext(), "Level saved", Toast.LENGTH_SHORT).show();
+                setResult(Activity.RESULT_OK);
+                finish();
                 }
             });
         }
@@ -307,8 +299,8 @@ public class LevelDocument extends AppCompatActivity {
             cancelButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // Throws dialog asking if user wants to cancel without saving
-                    showCancelDialog();
+                // Throws dialog asking if user wants to cancel without saving
+                showCancelDialog();
                 }
             });
         }
@@ -324,6 +316,11 @@ public class LevelDocument extends AppCompatActivity {
                 switcher.showNext();
             }
         }
+    }
+
+    public String getLevelInfo()
+    {
+        return level != null ? level.getID() : "";
     }
 
     /**Displays cancel dialog ("Are you sure you want to go back? You will lose your progress")
@@ -350,7 +347,14 @@ public class LevelDocument extends AppCompatActivity {
              if (switcher.getNextView().equals(findViewById(R.id.pictures))) {
                  switcher.showNext();
              }
-             selectedImageUri = data.getData();
+
+             if(data != null) {
+                 selectedImageUri = data.getData();
+             }
+             else
+             {
+                 selectedImageUri = Uri.fromFile(localFile);
+             }
              unitImage.setImageURI(selectedImageUri);
              rotation = 0;
          }
@@ -383,17 +387,17 @@ public class LevelDocument extends AppCompatActivity {
         alert.setTitle("Cancel?");
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                alert=null;
-                Intent intent = new Intent();
-                setResult(Activity.RESULT_CANCELED, intent);
-                finish();
+            alert=null;
+            Intent intent = new Intent();
+            setResult(Activity.RESULT_CANCELED, intent);
+            finish();
             }
 
         });
         alert.setNegativeButton("Nevermind", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                //Go back
-                alert=null;
+            //Go back
+            alert=null;
             }
         });
         alert.setView(cancelLayout);
@@ -414,15 +418,15 @@ public class LevelDocument extends AppCompatActivity {
         ImageButton findPic = (ImageButton) chooserLayout.findViewById(R.id.goToGallery);
         findPic.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                //Get Picture
-                Intent pictureIntent = new Intent();
-                pictureIntent.setType("image/*");
-                pictureIntent.setAction(Intent.ACTION_OPEN_DOCUMENT);
-                pictureIntent.addCategory(Intent.CATEGORY_OPENABLE);
-                pictureIntent.setType("image/*");
-                startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
-                alert1=null;
-                dialog.cancel();
+            //Get Picture
+            Intent pictureIntent = new Intent();
+            pictureIntent.setType("image/*");
+            pictureIntent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+            pictureIntent.addCategory(Intent.CATEGORY_OPENABLE);
+            pictureIntent.setType("image/*");
+            startActivityForResult(Intent.createChooser(pictureIntent, "Select an aerial view of your unit"), SELECT_PICTURE);
+            alert1=null;
+            dialog.cancel();
             }
 
         });
@@ -430,12 +434,19 @@ public class LevelDocument extends AppCompatActivity {
         ImageButton takePic = (ImageButton) chooserLayout.findViewById(R.id.takeNewPicture);
         takePic.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
+
+            try {
+                localFile = File.createTempFile(level.getID(), ".jpg");
                 //Take picture from camera
                 Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                cameraIntent.putExtra(MediaStore.EXTRA_SCREEN_ORIENTATION, ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(LevelDocument.this, "com.mycompany.sip.fileprovider", localFile));
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
-                alert1=null;
-                dialog.cancel();
+            } catch (IOException e) {
+            }
+
+
+            alert1=null;
+            dialog.cancel();
             }
         });
     }
@@ -447,12 +458,10 @@ public class LevelDocument extends AppCompatActivity {
         matrix.setRotate(orientation);
 
         try {
-            System.out.println("rotating!");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             return bmRotated;
         }
         catch (OutOfMemoryError e) {
-            e.printStackTrace();
             return null;
         }
     }
@@ -465,7 +474,6 @@ public class LevelDocument extends AppCompatActivity {
         if (cursor == null) { // Source is Dropbox or other similar local file path
             result = contentURI.getPath();
         } else {
-            System.out.println("Cursor: " + cursor);
             int idx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
             result = cursor.getString(idx);

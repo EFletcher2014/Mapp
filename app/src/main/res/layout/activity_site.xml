@@ -13,11 +13,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:textSize="@dimen/textSize"
         android:id="@+id/siteActivityName"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:textSize="@dimen/textSize"
         android:id="@+id/siteDatum"/>
     <LinearLayout
         android:layout_width="match_parent"
@@ -29,13 +31,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:text="Units"
+            android:text="@string/units"
             android:onClick="goToUnits"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="Features"
+            android:text="@string/features"
             android:onClick="goToFeatures"/>
     </LinearLayout>
     <LinearLayout
@@ -53,7 +55,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            android:text="Crew"
+            android:text="@string/crew"
             android:onClick="goToCrew"/>
     </LinearLayout>
 </LinearLayout>

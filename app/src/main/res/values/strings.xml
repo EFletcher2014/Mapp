@@ -1,12 +1,83 @@
 <resources>
+    <!-- General Strings -->
     <string name="app_name">Mapp</string>
+    <string name="number_sign">#</string><string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="add">Add</string>
+    <string name="done">Done</string>
+    <string name="clear">Clear</string>
+    <string name="accept">Accept</string>
+    <string name="deny">Deny</string>
+    <string name="delete">Delete</string>
+    <string name="year_hint">YYYY</string>
+    <string name="month_hint">MM</string>
+    <string name="day_hint">DD</string>
+
+    <!-- Site Strings -->
+    <string name="sites">Sites</string>
     <string name="site_number">Site#</string>
+    <string name="site_number_heading">Site Number:</string>
+    <string name="site_name">Site Name:</string>
+    <string name="description_heading">Description:</string>
+    <string name="create_new_site">Create New Site</string>
+    <string name="crew">Crew</string>
+    <string name="location">Location:</string>
+    <string name="request_site_perm">Request Site Access</string>
+    <string name="see_requests">See Requests</string>
+    <string name="deny_request_confirmation">Are you sure you wish to delete this request?</string>
+    <string name="edit_level_confirmation">Are you sure you wish to edit this level? You may overwrite its current information.</string>
+    <string name="site_directors_heading">Directors:</string>
+    <string name="site_excavators_heading">Excavators:</string>
+
+    <!-- Unit Strings -->
+    <string name="units">Units</string>
     <string name="unit_number">Unit#</string>
+    <string name="create_new_unit">Create New Unit</string>
+    <string name="datum_coordinate_heading">Datum Coordinate:</string>
+    <string name="vertical">Vertical</string>
+    <string name="horizontal">Horizontal</string>
+    <string name="date_opened_heading">Date Opened:</string>
+    <string name="reason_heading">Reason For Opening:</string>
+    <string name="ns_dim_heading">North/South Dimension:</string>
+    <string name="ew_dim_heading">East/West Dimension:</string>
+
+    <!-- Level Strings -->
+    <string name="create_new_level">Create New Level</string>
     <string name="level_number">Level#</string>
-    <string name="button_hint">Click here to map artifacts/features on image</string>
+    <string name="level_depth_heading">Depth (cmbd):</string>
+    <string name="dash">-</string>
+    <string name="cmbd">cmbd</string>
+    <string name="excavation_techniques_heading">Excavation Techniques Used:</string>
+    <string name="excavation_techniques_hint">List all excavation techinques used</string>
+    <string name="level_notes_heading">Level Notes:</string>
+    <string name="level_notes_hint">Describe the level here. Include a description of soil texture and color, depth, and features and artifacts.</string>
+    <string name="add_level_image">Add Level Image</string>
+    <string name="map_button_hint">View Map</string>
+    <string name="photo_button_hint">Click here to select an image of the level</string>
+    <string name="level_artifacts">View Artifacts Discovered</string>
+    <string name="artifact_button_hint">See Artifacts</string>
+    <string name="no_draw_hint">Please return to previous screen and select an image of this level</string>
+    <string name="cancel_level_no_save">Are you sure you wish to cancel without saving? Any changes made will be lost.</string>
+
+    <!-- Map Strings -->
+    <string name="key">Key</string>
+    <string name="artifacts_heading">Artifacts:</string>
+    <string name="features_heading">Features:</string>
+    <string name="highlight_prompt">Highlight your artifact or feature on the image, then click done</string>
+
+    <!-- Artifact Strings -->
+    <string name="create_new_artifact">Create New Artifact</string>
+    <string name="accession_number_heading">Accession Number:</string>
+    <string name="accession_number_hint">##-#</string>
+    <string name="catalog_number_heading">Catalog Number:</string>
+    <string name="contents_heading">Contents:</string>
+    <string name="artifact_description_hint">Describe artifact here</string>
+    <string name="name_artifact_hint">Name artifact</string>
+    <string name="date_discovered_heading">Date Discovered:</string>
+
+    <!-- Feature Strings -->
+    <string name="features">Features</string>
+    <string name="create_new_feature">Create New Feature</string>
+
     <string name="title_activity_select">selectActivity</string>
-    <string name="savecontent">Click here to save your work</string>
-    <string name="photo_button_hint">Click here to select an image of your unit</string>
-    <string name="artifact_button_hint">Click here to add a new feature or artifact</string>
-    <string name="no_draw_hint">Please return to previous screen and select an image of your unit</string>
 </resources>

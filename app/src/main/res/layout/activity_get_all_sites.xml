@@ -4,23 +4,23 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-        <!-- Added by Emily Fletcher 8/28/17-->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Sites"
-            android:theme="@style/titleTheme"
-            android:gravity="center"/>
+    <!-- Added by Emily Fletcher 8/28/17-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sites"
+        android:theme="@style/titleTheme"
+        android:gravity="center"/>
 
-        <!-- Main ListView
-             Always give id value as list(@android:id/list)
-            TODO: is this gonna cause problems?
-        -->
-        <ListView
-            android:id="@android:id/list"
-            android:layout_width="match_parent"
-            android:layout_height="fill_parent"
-            android:layout_weight="1"/>
+    <!-- Main ListView
+         Always give id value as list(@android:id/list)
+        TODO: is this gonna cause problems?
+    -->
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -31,13 +31,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/newSiteBtn"
-            android:text="Create New Site"/>
+            android:text="@string/create_new_site"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/requestSiteBtn"
-            android:text="Request Site Access"
-            android:onClick="showRequestDialog"/>
+            android:text="@string/request_site_perm"
+            android:onClick="generateRequestDialog"/>
     </LinearLayout>
-
-    </LinearLayout>
+</LinearLayout>

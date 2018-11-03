@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/artifactsLabel"
-        android:textSize="32dp"
+        android:textSize="@dimen/titleSize"
         android:gravity="center"
         android:background="@color/colorPrimary"
         android:textColor="@color/colorText"/>
@@ -28,6 +28,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/newArtifactBtn"
-        android:text="Create New Artifact"/>
+        android:text="@string/create_new_artifact"/>
 
 </LinearLayout>
