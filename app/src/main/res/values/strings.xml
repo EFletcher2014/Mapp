@@ -44,8 +44,8 @@
     <!-- Level Strings -->
     <string name="create_new_level">Create New Level</string>
     <string name="level_number">Level#</string>
-    <string name="level_depth_heading">Depth:</string>
-    <string name="cmbd_dash">cmbd - </string>
+    <string name="level_depth_heading">Depth (cmbd):</string>
+    <string name="dash">-</string>
     <string name="cmbd">cmbd</string>
     <string name="excavation_techniques_heading">Excavation Techniques Used:</string>
     <string name="excavation_techniques_hint">List all excavation techinques used</string>

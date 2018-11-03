@@ -89,7 +89,7 @@
                         android:layout_gravity="end"
                         android:layout_weight="1"
                         android:textSize="@dimen/textSize"
-                        android:text="@string/cmbd_dash"/>
+                        android:text="@string/dash"/>
 
                     <EditText
                         android:id="@+id/enterEndDepth"
@@ -102,15 +102,6 @@
                         android:textSize="@dimen/textSize"
                         android:inputType="number"
                         android:digits="0123456789."/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:gravity="center|bottom"
-                        android:layout_gravity="end"
-                        android:layout_weight="1"
-                        android:text="@string/cmbd"
-                        android:textSize="@dimen/textSize"/>
             </LinearLayout>
 
             <!--an imageView which will show the selected image of the unit.-->

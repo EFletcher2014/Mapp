@@ -143,6 +143,7 @@
                 android:layout_marginBottom="15dip"
                 android:singleLine="true"
                 android:inputType="numberDecimal"
+                android:digits="1234567890-."
                 android:hint="latitude"
                 android:layout_weight="1"/>
             <!-- Input Longitude -->
@@ -153,6 +154,7 @@
                 android:layout_marginBottom="15dip"
                 android:singleLine="true"
                 android:inputType="numberDecimal"
+                android:digits="1234567890-."
                 android:hint="longitude"
                 android:layout_weight="1"/>
         </LinearLayout>
