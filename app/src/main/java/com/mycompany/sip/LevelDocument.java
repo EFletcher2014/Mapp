@@ -348,10 +348,11 @@ public class LevelDocument extends AppCompatActivity {
                  switcher.showNext();
              }
 
+             //data won't be null if the user selected an image
              if(data != null) {
                  selectedImageUri = data.getData();
              }
-             else
+             else //otherwise, get the uri from the localfile to which the capture image was saved
              {
                  selectedImageUri = Uri.fromFile(localFile);
              }
