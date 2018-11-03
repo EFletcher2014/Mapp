@@ -376,11 +376,6 @@ public class FirebaseHandler {
                         || (crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())) {
                     ArrayList<Unit> units = new ArrayList<Unit>();
 
-                    if (e != null) {
-                        Log.w(TAG, "Listen failed.", e);
-                        return;
-                    }
-
                     for (QueryDocumentSnapshot doc : snapshot) {
                         if (doc != null) {
                             Object tempNSC = doc.get("NSCoor");
@@ -421,12 +416,6 @@ public class FirebaseHandler {
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
             ArrayList<Level> levels = new ArrayList<Level>();
-
-
-            if (e != null) {
-                Log.w(TAG, "Listen failed.", e);
-                return;
-            }
 
             for (QueryDocumentSnapshot doc : snapshot) {
                 final Object tempUnitID = doc.get("UnitID");
@@ -470,11 +459,6 @@ public class FirebaseHandler {
 
             if((artifactBagsActivityRef != null && artifactBagsActivityRef != null && artifactBagsActivityRef.get().isActive())
                     || levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
-
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
 
                 for (QueryDocumentSnapshot doc : snapshot) {
                     if (doc != null && doc.get("LevelID") != null
@@ -531,11 +515,6 @@ public class FirebaseHandler {
 
             if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
 
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
-
                 for (QueryDocumentSnapshot doc : snapshot) {
                     if (doc != null) {
                         final Object tempID = doc.getId();
@@ -573,11 +552,6 @@ public class FirebaseHandler {
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
             final ArrayList<Feature> features = new ArrayList<Feature>();
-
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
 
                 for (QueryDocumentSnapshot doc : snapshot) {
                     if (doc != null) {
@@ -617,11 +591,6 @@ public class FirebaseHandler {
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
             final ArrayList<Feature> features = new ArrayList<Feature>();
-
-            if (e != null) {
-                Log.w(TAG, "Listen failed.", e);
-                return;
-            }
 
             for (QueryDocumentSnapshot doc : snapshot) {
                 if (doc != null) {

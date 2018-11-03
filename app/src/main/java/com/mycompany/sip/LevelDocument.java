@@ -94,7 +94,6 @@ public class LevelDocument extends AppCompatActivity {
 
         if(savedInstanceState!=null)
         {
-            System.out.println("SIS*** ");
             selectedImageUri=savedInstanceState.getParcelable("URI");
             if(selectedImageUri!=null)
             {
@@ -443,7 +442,6 @@ public class LevelDocument extends AppCompatActivity {
                 cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, FileProvider.getUriForFile(LevelDocument.this, "com.mycompany.sip.fileprovider", localFile));
                 startActivityForResult(cameraIntent, CAMERA_REQUEST);
             } catch (IOException e) {
-                System.out.println(e);
             }
 
 
@@ -460,12 +458,10 @@ public class LevelDocument extends AppCompatActivity {
         matrix.setRotate(orientation);
 
         try {
-            System.out.println("rotating!");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             return bmRotated;
         }
         catch (OutOfMemoryError e) {
-            e.printStackTrace();
             return null;
         }
     }
@@ -478,7 +474,6 @@ public class LevelDocument extends AppCompatActivity {
         if (cursor == null) { // Source is Dropbox or other similar local file path
             result = contentURI.getPath();
         } else {
-            System.out.println("Cursor: " + cursor);
             int idx = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
             cursor.moveToFirst();
             result = cursor.getString(idx);

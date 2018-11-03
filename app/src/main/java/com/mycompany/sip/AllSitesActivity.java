@@ -95,7 +95,6 @@ public class AllSitesActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         fbh.updateSiteActivity(this);
-        System.out.println("created");
 
             //This statement is true if the user has rotated the screen during this activity
             if(savedInstanceState!=null)

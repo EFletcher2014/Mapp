@@ -185,7 +185,6 @@ public class LevelMap extends AppCompatActivity {
                         imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = artifactsImages.get((int) id);
                     } catch (IOException e) {
-                        System.out.println(e);
                     }
                 }
                 else //if the file is displayed currently
@@ -198,7 +197,6 @@ public class LevelMap extends AppCompatActivity {
                         displayedImage = "";
                     } catch(IOException e)
                     {
-                        System.out.println(e);
                     }
                 }
                 //refresh the image
@@ -219,7 +217,6 @@ public class LevelMap extends AppCompatActivity {
                         imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(featuresLV.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
                         displayedImage = featuresImages.get((int) id);
                     } catch (IOException e) {
-                        System.out.println(e);
                     }
                 }
                 else // if that file is displayed right now
@@ -232,7 +229,6 @@ public class LevelMap extends AppCompatActivity {
                         displayedImage = "";
                     } catch(IOException e)
                     {
-                        System.out.println(e);
                     }
                 }
                 //refresh image
@@ -275,7 +271,6 @@ public class LevelMap extends AppCompatActivity {
                                     imageDraw.setCanvasBitmap(bitmap);
                                     displayedImage = "";
                                 } catch (IOException e) {
-                                    System.out.println(e);
                                 }
                                 switcher.showNext();
                                 switcher.showNext();
@@ -318,7 +313,6 @@ public class LevelMap extends AppCompatActivity {
                                     imageDraw.setCanvasBitmap(bitmap);
                                     displayedImage = "";
                                 } catch (IOException e) {
-                                    System.out.println(e);
                                 }
                                 switcher.showNext();
                                 switcher.showNext();
@@ -706,7 +700,6 @@ public class LevelMap extends AppCompatActivity {
                 fOut.flush(); // Not really required
                 fOut.close(); // do not forget to close the stream
             } catch (IOException e) {
-                System.out.println(e);
             }
 
             fbh.setImage(level.getSite().getID() + "/", newArtifacts.get(0).getID(), ".jpg", Uri.fromFile(localFile)); //uploads image to firebase
@@ -731,7 +724,6 @@ public class LevelMap extends AppCompatActivity {
                     fOut.flush(); // Not really required
                     fOut.close(); // do not forget to close the stream
                 } catch (IOException e) {
-                    System.out.println(e);
                 }
 
                 fbh.setImage(level.getSite().getID() + "/", level.getID() + "-" + newFeatures.get(0).getID(), ".jpg", Uri.fromFile(localFile)); //uploads file to Firebase
@@ -878,7 +870,6 @@ public class LevelMap extends AppCompatActivity {
         matrix.setRotate(orientation);
 
         try {
-            System.out.println("rotating!");
             Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             //bitmap.recycle();
             return bmRotated;
@@ -900,7 +891,6 @@ public class LevelMap extends AppCompatActivity {
                 imageDraw.setCanvasBitmap(bitmap);
                 displayedImage = "";
             } catch (IOException e) {
-                System.out.println(e);
             }
             switcher.showNext();
             switcher.showNext();
