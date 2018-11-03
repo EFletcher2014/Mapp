@@ -246,7 +246,7 @@ public class LevelMap extends AppCompatActivity {
         fbh.getArtifactsFromLevel(level);
         fbh.getArtifactBagsFromLevel(level);
         fbh.getFeaturesFromLevel(level);
-        fbh.getFeaturesFromSite();
+        fbh.getFeaturesFromSite(level.getSite());
 
         //the button to add a new artifact to the list
         final Button addArtifact = (Button) findViewById(R.id.addArtifactButton);

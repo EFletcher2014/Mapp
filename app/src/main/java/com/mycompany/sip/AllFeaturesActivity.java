@@ -9,9 +9,11 @@ import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +35,10 @@ public class AllFeaturesActivity extends ListActivity {
 
     EditText description;
     Site site;
+
+    Feature selectedFeature;
+
+    ListView lv;
 
     boolean isActive = true;
 
@@ -69,8 +75,9 @@ public class AllFeaturesActivity extends ListActivity {
 
         if(savedInstanceState!=null && savedInstanceState.getBoolean("alert"))
         {
-            final String desc = savedInstanceState.getString("description");
-            showDialog(new Feature("", desc, -1, site, new ArrayList<Level>()));
+            final String desc = savedInstanceState.getString("desc");
+            int num = savedInstanceState.getInt("num");
+            showDialog(new Feature("", desc, num, site, new ArrayList<Level>()));
         }
 
         //on clicking new feature button
@@ -83,6 +90,18 @@ public class AllFeaturesActivity extends ListActivity {
                 showDialog(null);
             }
 
+        });
+
+        fbh.getFeaturesFromSite(site);
+
+        lv = getListView();
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectedFeature = allFeatures.get(position);
+                showDialog(selectedFeature);
+            }
         });
     }
 
@@ -136,6 +155,7 @@ public class AllFeaturesActivity extends ListActivity {
 
     private void showDialog(final Feature feature)
     {
+        selectedFeature = feature;
         LayoutInflater inflater = getLayoutInflater();
         final View featureLayout = inflater.inflate(R.layout.new_feature_dialog, null);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -151,12 +171,30 @@ public class AllFeaturesActivity extends ListActivity {
         if(feature!=null)
         {
             description.setText(feature.getDescription());
+            if(feature.getNumber()>0) {
+                alert.setTitle("Edit Feature " + feature.getNumber());
+            }
+            else
+            {
+                alert.setTitle("Create A New Feature");
+            }
         }
-        alert.setTitle("Create A New Feature");
-        alert.setPositiveButton("Create Feature", new DialogInterface.OnClickListener() {
+        else {
+            alert.setTitle("Create A New Feature");
+        }
+        alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 
-                Feature feat = new Feature("", description.getText().toString(), -1, site, new ArrayList<Level>());
+                Feature feat;
+                if(feature == null)
+                {
+                    feat = new Feature("", description.getText().toString(), -1, site, new ArrayList<Level>());
+                }
+                else
+                {
+                    feature.setDescription(description.getText().toString());
+                    feat = feature;
+                }
 
                 if(!description.toString().equals("")) {
 
@@ -169,12 +207,14 @@ public class AllFeaturesActivity extends ListActivity {
                     Toast.makeText(featureLayout.getContext(), "You must fill out all fields before saving", Toast.LENGTH_SHORT).show();
                     showDialog(feat);
                 }
+                selectedFeature = null;
             }
         });
 
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //Go back
+                selectedFeature = null;
                 alert=null;
             }
         });
@@ -195,6 +235,7 @@ public class AllFeaturesActivity extends ListActivity {
             //TODO: replace these with feature parcelable?
             outState.putBoolean("alert", true);
             outState.putString("desc", description.getText().toString());
+            outState.putInt("num", selectedFeature.getNumber());
         }
         else
         {

@@ -589,7 +589,13 @@ public class FirebaseHandler {
 
                         Feature temp = new Feature (tempID.toString(), tempDesc.toString(), Integer.parseInt(tempNum.toString()), selectedSite, new ArrayList<Level>());
 
-                        siteFeatures.add(temp);
+                        if(!siteFeatures.contains(temp)) {
+                            siteFeatures.add(temp);
+                        }
+                        else
+                        {
+                            siteFeatures.set(siteFeatures.indexOf(temp), temp);
+                        }
                 }
 
                 //TODO: check if this is associated with the current level
@@ -886,7 +892,7 @@ public class FirebaseHandler {
         });
     }
 
-    public void getFeaturesFromSite()
+    public void getFeaturesFromSite(final Site site)
     {
         featuresRef.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
@@ -898,7 +904,7 @@ public class FirebaseHandler {
                     final Object tempDesc = doc.get("Description");
                     final Object tempNum = doc.get("Number");
 
-                    Feature temp = new Feature(tempID.toString(), tempDesc.toString(), Integer.parseInt(tempNum.toString()), levelMapActivityRef.get().getLevel().getSite(), new ArrayList<Level>());
+                    Feature temp = new Feature(tempID.toString(), tempDesc.toString(), Integer.parseInt(tempNum.toString()), site, new ArrayList<Level>());
 
                     features.add(temp);
                 }
@@ -1286,16 +1292,16 @@ public class FirebaseHandler {
 
             Map<String, Object> temp = new HashMap<>();
             temp.put("Description", newFeat.getDescription());
-            temp.put("Number", siteFeatures.size() + 1);
+            temp.put("Number", newFeat.getNumber() < 1 ? siteFeatures.size() + 1 : newFeat.getNumber());
 
             if(newFeat.getID() == null || newFeat.getID() == "") {
                 mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").add(temp).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                    if(e != null)
-                    {
-                        System.out.println(e);
-                    }
+                        if(e != null)
+                        {
+                            System.out.println(e);
+                        }
                     }
                 });
             }
