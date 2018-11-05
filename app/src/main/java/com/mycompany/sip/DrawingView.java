@@ -1,8 +1,10 @@
 package com.mycompany.sip;
 
 import android.content.Context;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.View;
 import android.graphics.Bitmap;
@@ -32,6 +34,11 @@ public class DrawingView extends View {
     private Bitmap canvasBitmap;
     private String whichTool = "";
     private Bitmap toUndo;
+
+    private int width;
+    private int height;
+
+    private Uri selectedImageUri;
 
     //Level map
     private static WeakReference<LevelMap> levelMapActivityRef;
@@ -105,8 +112,42 @@ public class DrawingView extends View {
 
     public void setCanvasBitmap(Bitmap im)
     {
-        canvasBitmap=im.copy(Bitmap.Config.ARGB_8888, true);
-        toUndo = im.copy(Bitmap.Config.ARGB_8888, true);
+        Bitmap newBitmap = Bitmap.createScaledBitmap(im, width, height, true);
+        canvasBitmap=newBitmap;
+        toUndo=newBitmap.copy(Bitmap.Config.ARGB_8888, true);
+    }
+
+    public void setCanvasBitmap()
+    {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(selectedImageUri.getPath(), options);
+
+        // Raw height and width of image
+        final int imageHeight = options.outHeight;
+        final int imageWidth = options.outWidth;
+
+        int inSampleSize = 1;
+
+        if (imageHeight > height || imageWidth > width) {
+
+            final int halfHeight = imageHeight / 2;
+            final int halfWidth = imageWidth / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= height
+                    && (halfWidth / inSampleSize) >= width) {
+                inSampleSize *= 2;
+            }
+        }
+
+        options.inJustDecodeBounds = false;
+        options.inSampleSize = inSampleSize/2;
+        options.inMutable = true;
+
+        canvasBitmap = BitmapFactory.decodeFile(selectedImageUri.getPath(), options);
+        toUndo=canvasBitmap.copy(Bitmap.Config.ARGB_8888, true);
     }
 
 
@@ -131,9 +172,6 @@ public class DrawingView extends View {
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
         int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-
-        int width;
-        int height;
 
         //Measure Width
         if (widthMode == MeasureSpec.EXACTLY) {
@@ -163,9 +201,11 @@ public class DrawingView extends View {
             //Be whatever you want
             height = desiredHeight;
         }
-        Bitmap newBitmap = Bitmap.createScaledBitmap(canvasBitmap, width, height, true);
-        canvasBitmap=newBitmap;
-        toUndo=newBitmap.copy(Bitmap.Config.ARGB_8888, true);
+
+        if(selectedImageUri != null)
+        {
+            setCanvasBitmap();
+        }
         //MUST CALL THIS
         setMeasuredDimension(width, height);
     }
@@ -201,5 +241,10 @@ public class DrawingView extends View {
     {
         toUndo=tempBm.copy(Bitmap.Config.ARGB_8888, true);
         canvasBitmap=tempBm.copy(Bitmap.Config.ARGB_8888, true);
+    }
+
+    public void setUri(Uri uri)
+    {
+        selectedImageUri = uri;
     }
 }

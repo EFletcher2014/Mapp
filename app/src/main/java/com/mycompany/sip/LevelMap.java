@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
@@ -134,39 +135,33 @@ public class LevelMap extends AppCompatActivity {
         //If an image was selected in the levelDocument activity
         if(selectedImageUri!=null)
         {
-            try {
-                imageDraw = (DrawingView) findViewById(R.id.draw);  //the canvas to draw on
-                Bitmap bm = MediaStore.Images.Media.getBitmap(this.getApplicationContext().getContentResolver(), selectedImageUri);
-                bitmap = rotateBitmap(bm, rotation); //if user rotated image in levelDocument activity, rotate it here TODO: how are rotated images saved to firebase
-                imageDraw.setCanvasBitmap(bitmap);
+            imageDraw = (DrawingView) findViewById(R.id.draw);  //the canvas to draw on
+            imageDraw.setUri(selectedImageUri);
 
-                LayoutInflater inflater = getLayoutInflater();
-                saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null); //the alert to save a new artifact
-                saveFeature = inflater.inflate(R.layout.link_feature_dialog, null); //the alert to save a new feature
+            LayoutInflater inflater = getLayoutInflater();
+            saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null); //the alert to save a new artifact
+            saveFeature = inflater.inflate(R.layout.link_feature_dialog, null); //the alert to save a new feature
 
-                aBagChoose = (Spinner) saveArtifact.findViewById(R.id.artifactBagSelect); //in the saveArtifact alert, this allows the user to link their artifact to an artifact bag
-                aBagChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                        Object item = parent.getItemAtPosition(pos);
-                        aBagID = ((HashMap<String, String>) item).get(TAG_PID);
-                    }
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-                name = (EditText) saveArtifact.findViewById(R.id.artifactName);
+            aBagChoose = (Spinner) saveArtifact.findViewById(R.id.artifactBagSelect); //in the saveArtifact alert, this allows the user to link their artifact to an artifact bag
+            aBagChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                    Object item = parent.getItemAtPosition(pos);
+                    aBagID = ((HashMap<String, String>) item).get(TAG_PID);
+                }
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
+            name = (EditText) saveArtifact.findViewById(R.id.artifactName);
 
-                featureChoose = (Spinner) saveFeature.findViewById(R.id.featureSelect); //in the saveFeature alert, this allows a user to choose from existing features
-                featureChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                    public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                        Object item = parent.getItemAtPosition(pos);
-                        featureID = ((HashMap<String, String>) item).get(TAG_PID);
-                    }
-                    public void onNothingSelected(AdapterView<?> parent) {
-                    }
-                });
-            } catch (IOException e) {
-                System.err.println("Error: image URI is null");
-            }
+            featureChoose = (Spinner) saveFeature.findViewById(R.id.featureSelect); //in the saveFeature alert, this allows a user to choose from existing features
+            featureChoose.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                    Object item = parent.getItemAtPosition(pos);
+                    featureID = ((HashMap<String, String>) item).get(TAG_PID);
+                }
+                public void onNothingSelected(AdapterView<?> parent) {
+                }
+            });
             switcher.showNext(); //if image not null, this switcher should show the image, not the warning to save an image first
         }
 
@@ -180,24 +175,16 @@ public class LevelMap extends AppCompatActivity {
                 if(!displayedImage.equals(artifactsImages.get((int) id)) && !artifactsImages.get((int) id).equals(selectedImageUri.toString())){ //if that file isn't displayed currently:
                     //get the file associated with this artifact
                     File selectedFile = new File(artifacts.getContext().getCacheDir(), artifactsImages.get((int) id));
-                    try {
-                        //display that file
-                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
-                        displayedImage = artifactsImages.get((int) id);
-                    } catch (IOException e) {
-                    }
+                    //display that file
+                    imageDraw.setUri(Uri.fromFile(selectedFile));
+                    imageDraw.setCanvasBitmap();
+                    displayedImage = artifactsImages.get((int) id);
                 }
                 else //if the file is displayed currently
                 {
-                    try {
-                        //display the level map
-                        Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
-                        bitmap = rotateBitmap(bm, rotation);
-                        imageDraw.setCanvasBitmap(bitmap);
-                        displayedImage = "";
-                    } catch(IOException e)
-                    {
-                    }
+                    imageDraw.setUri(selectedImageUri);
+                    imageDraw.setCanvasBitmap();
+                    displayedImage = "";
                 }
                 //refresh the image
                 switcher.showNext();
@@ -212,24 +199,16 @@ public class LevelMap extends AppCompatActivity {
                 if(!displayedImage.equals(featuresImages.get((int) id)) && !featuresImages.get((int) id).equals(selectedImageUri.toString())) { //if that file isn't displayed right now:
                     //get the file associated with this feature
                     File selectedFile = new File(featuresLV.getContext().getCacheDir(), featuresImages.get((int) id));
-                    try {
-                        //display it
-                        imageDraw.setCanvasBitmap(MediaStore.Images.Media.getBitmap(featuresLV.getContext().getContentResolver(), Uri.fromFile(selectedFile)));
-                        displayedImage = featuresImages.get((int) id);
-                    } catch (IOException e) {
-                    }
+                    imageDraw.setUri(Uri.fromFile(selectedFile));
+                    imageDraw.setCanvasBitmap();
+                    displayedImage = featuresImages.get((int) id);
                 }
                 else // if that file is displayed right now
                 {
-                    try {
-                        //display the level map
-                        Bitmap bm = MediaStore.Images.Media.getBitmap(artifacts.getContext().getContentResolver(), selectedImageUri);
-                        bitmap = rotateBitmap(bm, rotation);
-                        imageDraw.setCanvasBitmap(bitmap);
-                        displayedImage = "";
-                    } catch(IOException e)
-                    {
-                    }
+                    //display the level map
+                    imageDraw.setUri(selectedImageUri);
+                    imageDraw.setCanvasBitmap();
+                    displayedImage = "";
                 }
                 //refresh image
                 switcher.showNext();
