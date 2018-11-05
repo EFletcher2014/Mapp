@@ -78,8 +78,8 @@ public class CrewActivity extends AppCompatActivity {
 
         Intent openIntent = getIntent();
         site = openIntent.getParcelableExtra(TAG_SITENAME);
-        fbh.getCrew(site);
         fbh.getUnitsFromSite(site);
+        fbh.getCrew(site);
         code.setText(site.getID());
     }
 
@@ -98,7 +98,7 @@ public class CrewActivity extends AppCompatActivity {
             map.put(TAG_PID, users[i].toString());
             if(((ArrayList<String>) siteRoles.get(users[i].toString())).contains("excavator")) {
                 String unitID = ((ArrayList<String>) siteRoles.get(users[i].toString())).get(1);
-                Unit temp = new Unit(site, unitID, -1, -1, -1, -1, "", "");
+                Unit temp = units.get(units.indexOf(new Unit(site, unitID, -1, -1, -1, -1, "", "")));
                 map.put("unit", temp.toString());
                 excavatorsList.add(map);
             }
