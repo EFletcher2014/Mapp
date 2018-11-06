@@ -5,7 +5,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -243,14 +245,10 @@ public class LevelMap extends AppCompatActivity {
                         if(!allArtifactBags.isEmpty()) {
 
                             if (!displayedImage.equals("")) {
-                                try {
-                                    //display the level map
-                                    Bitmap bm = MediaStore.Images.Media.getBitmap(addArtifact.getContext().getContentResolver(), selectedImageUri);
-                                    bitmap = rotateBitmap(bm, rotation);
-                                    imageDraw.setCanvasBitmap(bitmap);
-                                    displayedImage = "";
-                                } catch (IOException e) {
-                                }
+                                //display the level map
+                                imageDraw.setUri(selectedImageUri);
+                                imageDraw.setCanvasBitmap();
+                                displayedImage = "";
                                 switcher.showNext();
                                 switcher.showNext();
                             }
@@ -285,14 +283,10 @@ public class LevelMap extends AppCompatActivity {
                     {
                         if(!allSiteFeatures.isEmpty()) {
                             if (!displayedImage.equals("")) {
-                                try {
-                                    //display the level map
-                                    Bitmap bm = MediaStore.Images.Media.getBitmap(addFeature.getContext().getContentResolver(), selectedImageUri);
-                                    bitmap = rotateBitmap(bm, rotation);
-                                    imageDraw.setCanvasBitmap(bitmap);
-                                    displayedImage = "";
-                                } catch (IOException e) {
-                                }
+                                //display the level map
+                                imageDraw.setUri(selectedImageUri);
+                                imageDraw.setCanvasBitmap();
+                                displayedImage = "";
                                 switcher.showNext();
                                 switcher.showNext();
                             }
@@ -397,6 +391,7 @@ public class LevelMap extends AppCompatActivity {
                 if(fbh.userIsExcavator(level.getUnit())) {
                     //Make user highlight this artifact on the canvas
                     imageDraw.highlight();
+                    imageDraw.setDrawingCacheEnabled(true);
                     drawType = "artifact";
 
                     TextView title = findViewById(R.id.drawAlertTitle);
@@ -510,6 +505,7 @@ public class LevelMap extends AppCompatActivity {
                 if(fbh.userIsExcavator(level.getUnit())) {
                     //make user highlight this feature
                     imageDraw.highlight();
+                    imageDraw.setDrawingCacheEnabled(true);
                     drawType = "feature";
 
                     TextView title = findViewById(R.id.drawAlertTitle);
@@ -659,7 +655,6 @@ public class LevelMap extends AppCompatActivity {
     public void saveImage(View view)
     {
         //create bitmap from canvas's drawing cache
-        imageDraw.setDrawingCacheEnabled(true);
         imageDraw.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
         Bitmap tempBitmap = Bitmap.createBitmap(imageDraw.getDrawingCache());
 
@@ -710,6 +705,7 @@ public class LevelMap extends AppCompatActivity {
             }
         }
         drawType = ""; //not highlighting anything
+        imageDraw.noDraw();
         imageDraw.undo(); //return to original map
         imageDraw.setDrawingCacheEnabled(false);
 
@@ -863,14 +859,10 @@ public class LevelMap extends AppCompatActivity {
     public void onBackPressed()
     {
         if (!displayedImage.equals("") && imageDraw != null) {
-            try {
-                //display the level map
-                Bitmap bm = MediaStore.Images.Media.getBitmap(imageDraw.getContext().getContentResolver(), selectedImageUri);
-                bitmap = rotateBitmap(bm, rotation);
-                imageDraw.setCanvasBitmap(bitmap);
-                displayedImage = "";
-            } catch (IOException e) {
-            }
+            //display the level map
+            imageDraw.setUri(selectedImageUri);
+            imageDraw.setCanvasBitmap();
+            displayedImage = "";
             switcher.showNext();
             switcher.showNext();
         }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.View;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 public class DrawingView extends View {
 
     //drawing path
+    private int dstWidth;
     private Path drawPath;
     //drawing and canvas paint
     private Paint drawPaint, canvasPaint;
@@ -74,7 +76,8 @@ public class DrawingView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
     //draw view
-        canvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
+        Rect rect = new Rect(0, 0, canvas.getWidth(), canvas.getHeight());
+        canvas.drawBitmap(canvasBitmap, null, rect, canvasPaint);
         if(this.whichTool.equals("highlight"))
         {
             drawPaint.setAlpha(100);
@@ -112,9 +115,8 @@ public class DrawingView extends View {
 
     public void setCanvasBitmap(Bitmap im)
     {
-        Bitmap newBitmap = Bitmap.createScaledBitmap(im, width, height, true);
-        canvasBitmap=newBitmap;
-        toUndo=newBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        canvasBitmap = im.copy(Bitmap.Config.ARGB_8888, true);
+        toUndo = im.copy(Bitmap.Config.ARGB_8888, true);
     }
 
     public void setCanvasBitmap()
@@ -123,27 +125,23 @@ public class DrawingView extends View {
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(selectedImageUri.getPath(), options);
 
-        // Raw height and width of image
-        final int imageHeight = options.outHeight;
-        final int imageWidth = options.outWidth;
+        int srcWidth = options.outWidth;
+        int srcHeight = options.outHeight;
 
-        int inSampleSize = 1;
+        dstWidth = srcWidth;
 
-        if (imageHeight > height || imageWidth > width) {
+        float scale = (float) srcWidth / srcHeight;
 
-            final int halfHeight = imageHeight / 2;
-            final int halfWidth = imageWidth / 2;
-
-            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
-            // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) >= height
-                    && (halfWidth / inSampleSize) >= width) {
-                inSampleSize *= 2;
-            }
+        if (srcWidth > srcHeight && srcWidth > width) {
+            dstWidth = width;
+        } else if (srcHeight > srcWidth && srcHeight > height) {
+            dstWidth = (int) (height * scale);
         }
 
         options.inJustDecodeBounds = false;
-        options.inSampleSize = inSampleSize/2;
+        options.inDensity = options.outWidth;
+        options.inTargetDensity = dstWidth;
+        options.inScaled = true;
         options.inMutable = true;
 
         canvasBitmap = BitmapFactory.decodeFile(selectedImageUri.getPath(), options);
@@ -163,8 +161,12 @@ public class DrawingView extends View {
         }
         else
         {
-            desiredWidth=100;
-            desiredHeight=100;
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(selectedImageUri.getPath(), options);
+
+            desiredWidth = options.outWidth;
+            desiredHeight = options.outHeight;
         }
         ratio= (float)desiredWidth/(float)desiredHeight;
 

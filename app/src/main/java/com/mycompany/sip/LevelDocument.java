@@ -156,9 +156,15 @@ public class LevelDocument extends AppCompatActivity {
                 public void onClick(View view) {
 
                 if (selectedImageUri == null) {
-                    showChooserDialog();
+                    if(level.getID() != null) {
+                        showChooserDialog();
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(), "You must save your level before uploading an image", Toast.LENGTH_SHORT).show();
+                    }
                 }
-                }
+            }
             });
         }
         else
