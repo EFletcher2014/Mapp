@@ -3,6 +3,7 @@ package com.mycompany.sip;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -35,7 +36,6 @@ public class DrawingView extends View {
     //canvas bitmap
     private Bitmap canvasBitmap;
     private String whichTool = "";
-    private Bitmap toUndo;
 
     private int width;
     private int height;
@@ -116,7 +116,6 @@ public class DrawingView extends View {
     public void setCanvasBitmap(Bitmap im)
     {
         canvasBitmap = im.copy(Bitmap.Config.ARGB_8888, true);
-        toUndo = im.copy(Bitmap.Config.ARGB_8888, true);
     }
 
     public void setCanvasBitmap()
@@ -145,7 +144,6 @@ public class DrawingView extends View {
         options.inMutable = true;
 
         canvasBitmap = BitmapFactory.decodeFile(selectedImageUri.getPath(), options);
-        toUndo=canvasBitmap.copy(Bitmap.Config.ARGB_8888, true);
     }
 
 
@@ -230,18 +228,17 @@ public class DrawingView extends View {
 
     public void undo()
     {
-        if(toUndo!=null) {
-            this.setCanvasBitmap(toUndo.copy(Bitmap.Config.ARGB_8888, true));
+        if(canvasBitmap!=null) {
+            this.setCanvasBitmap(canvasBitmap.copy(Bitmap.Config.ARGB_8888, true));
         }
         drawCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        drawCanvas.drawBitmap(toUndo, 0, 0, canvasPaint);
+        drawCanvas.drawBitmap(canvasBitmap, 0, 0, canvasPaint);
         drawPath.reset();
         invalidate();
     }
 
     public void save(Bitmap tempBm)
     {
-        toUndo=tempBm.copy(Bitmap.Config.ARGB_8888, true);
         canvasBitmap=tempBm.copy(Bitmap.Config.ARGB_8888, true);
     }
 

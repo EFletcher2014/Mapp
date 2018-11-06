@@ -232,7 +232,6 @@ public class LevelDocument extends AppCompatActivity {
                         //Move to select on image activity
                         Intent selectActivityIntent = new Intent(Intent.ACTION_ATTACH_DATA, selectedImageUri, view.getContext(), LevelMap.class);
                         selectActivityIntent.putExtra("level", level);
-                        selectActivityIntent.putExtra("rotation", rotation);
                         startActivity(selectActivityIntent);
                     }
                     else
@@ -283,6 +282,26 @@ public class LevelDocument extends AppCompatActivity {
                 fbh.createLevel(level);
 
                 if (selectedImageUri != null) {
+
+                    if(rotation != 0)
+                    {
+                        File tempF = new File(LevelDocument.this.getCacheDir(), site.getID());
+                        if(!tempF.exists()) {
+                            tempF.mkdirs();
+                        }
+                        final File localFile = new File(tempF, level.getID() + "map.jpg");
+
+                        try {
+                            //adds bitmap to that file
+                            FileOutputStream fOut = new FileOutputStream(localFile);
+
+                            ((BitmapDrawable) unitImage.getDrawable()).getBitmap().compress(Bitmap.CompressFormat.JPEG, 100, fOut); // saving the Bitmap to a file compressed as a JPEG with 85% compression rate
+                            fOut.flush(); // Not really required
+                            fOut.close(); // do not forget to close the stream
+                            selectedImageUri = Uri.fromFile(localFile);
+                        } catch (IOException e) {
+                        }
+                    }
                     fbh.setImage(site.getID() + "/" + level.getID(), "map", ".jpg", selectedImageUri);
                 }
                 Toast.makeText(getApplicationContext(), "Level saved", Toast.LENGTH_SHORT).show();

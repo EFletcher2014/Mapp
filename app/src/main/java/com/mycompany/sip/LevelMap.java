@@ -50,7 +50,6 @@ public class LevelMap extends AppCompatActivity {
     public static Bitmap bitmap;
     private static ViewSwitcher switcher;
     private static ViewSwitcher keySwitcher;
-    private int rotation;
     private AlertDialog.Builder artifactAlert;
     private AlertDialog.Builder featureAlert;
     private ArrayList<Artifact> allArtifacts = new ArrayList<>();
@@ -116,7 +115,6 @@ public class LevelMap extends AppCompatActivity {
         selectedImageUri = openIntent.getData();
         level = openIntent.getParcelableExtra("level");
         unit = level.getUnit();
-        rotation = openIntent.getIntExtra("rotation", 0);
         cache = this.getCacheDir();
 
         keySwitcher = findViewById(R.id.keySwitcher); //switcher view which will alternate between showing the key and an alert that the user might highlight something
@@ -139,6 +137,7 @@ public class LevelMap extends AppCompatActivity {
         {
             imageDraw = (DrawingView) findViewById(R.id.draw);  //the canvas to draw on
             imageDraw.setUri(selectedImageUri);
+            imageDraw.setCanvasBitmap();
 
             LayoutInflater inflater = getLayoutInflater();
             saveArtifact = inflater.inflate(R.layout.new_artifact_dialog, null); //the alert to save a new artifact
@@ -835,24 +834,6 @@ public class LevelMap extends AppCompatActivity {
         dimensions[1]=EW;
 
         return dimensions;
-    }
-
-    //From https://stackoverflow.com/questions/31781150/auto-image-rotated-from-portrait-to-landscape
-    //ensures that the image is rotated as it was on the MapHome activity
-    public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
-
-        Matrix matrix = new Matrix();
-        matrix.setRotate(orientation);
-
-        try {
-            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-            //bitmap.recycle();
-            return bmRotated;
-        }
-        catch (OutOfMemoryError e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     @Override
