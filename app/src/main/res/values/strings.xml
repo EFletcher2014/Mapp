@@ -54,7 +54,7 @@
     <string name="add_level_image">Add Level Image</string>
     <string name="map_button_hint">View Map</string>
     <string name="photo_button_hint">Click here to select an image of the level</string>
-    <string name="level_artifacts">View Artifacts Discovered</string>
+    <string name="level_artifacts">View Artifact Bags</string>
     <string name="artifact_button_hint">See Artifacts</string>
     <string name="no_draw_hint">Please return to previous screen and select an image of this level</string>
     <string name="cancel_level_no_save">Are you sure you wish to cancel without saving? Any changes made will be lost.</string>
@@ -66,7 +66,7 @@
     <string name="highlight_prompt">Highlight your artifact or feature on the image, then click done</string>
 
     <!-- Artifact Strings -->
-    <string name="create_new_artifact">Create New Artifact</string>
+    <string name="create_new_artifact">Create New Artifact Bag</string>
     <string name="accession_number_heading">Accession Number:</string>
     <string name="accession_number_hint">##-#</string>
     <string name="catalog_number_heading">Catalog Number:</string>

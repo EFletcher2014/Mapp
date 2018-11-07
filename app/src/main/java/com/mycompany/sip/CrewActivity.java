@@ -45,22 +45,21 @@ public class CrewActivity extends AppCompatActivity {
 
     private Site site;
 
+    String crewUid, crewName;
+
     @Override
-    public void onStart()
-    {
+    public void onStart() {
         super.onStart();
         isActive = true;
     }
 
     @Override
-    public void onStop()
-    {
+    public void onStop() {
         super.onStop();
         isActive = false;
     }
 
-    public boolean isActive()
-    {
+    public boolean isActive() {
         return isActive;
     }
 
@@ -81,31 +80,34 @@ public class CrewActivity extends AppCompatActivity {
         fbh.getUnitsFromSite(site);
         fbh.getCrew(site);
         code.setText(site.getID());
+
+        if(savedInstanceState != null && savedInstanceState.getBoolean("Alert"))
+        {
+            String u = savedInstanceState.getString("Uid");
+            String n = savedInstanceState.getString("Name");
+
+            showDeleteDialog(u, n);
+        }
     }
 
-    public void listCrew()
-    {
+    public void listCrew() {
         ArrayList<HashMap<String, String>> excavatorsList = new ArrayList<>();
         ArrayList<HashMap<String, String>> directorsList = new ArrayList<>();
         Bundle siteRoles = site.getRoles();
         Bundle siteCrew = site.getCrew();
         Object[] users = siteRoles.keySet().toArray();
-        for(int i = 0; i<users.length; i++)
-        {
+        for (int i = 0; i < users.length; i++) {
             HashMap<String, String> map = new HashMap<>();
 
-            map.put("role", siteCrew.get(users[i].toString()+"NAME").toString());
+            map.put("role", siteCrew.get(users[i].toString() + "NAME").toString());
             map.put(TAG_PID, users[i].toString());
-            if(((ArrayList<String>) siteRoles.get(users[i].toString())).contains("excavator")) {
+            if (((ArrayList<String>) siteRoles.get(users[i].toString())).contains("excavator")) {
                 String unitID = ((ArrayList<String>) siteRoles.get(users[i].toString())).get(1);
                 Unit temp = units.get(units.indexOf(new Unit(site, unitID, -1, -1, -1, -1, "", "")));
                 map.put("unit", temp.toString());
                 excavatorsList.add(map);
-            }
-            else
-            {
-                if(((ArrayList<String>) siteRoles.get(users[i].toString())).contains("director"))
-                {
+            } else {
+                if (((ArrayList<String>) siteRoles.get(users[i].toString())).contains("director")) {
                     directorsList.add(map);
                 }
             }
@@ -113,18 +115,18 @@ public class CrewActivity extends AppCompatActivity {
 
         ListAdapter excavatorAdapter = new SimpleAdapter(
                 CrewActivity.this, excavatorsList,
-                R.layout.list_item_two, new String[] { TAG_PID,
+                R.layout.list_item_two, new String[]{TAG_PID,
                 "role", "unit"},
-                new int[] { R.id.pid, R.id.name, R.id.unit }); //listview entries will contain unit's id and name
+                new int[]{R.id.pid, R.id.name, R.id.unit}); //listview entries will contain unit's id and name
 
         // updating listview
         excavatorsLV.setAdapter(excavatorAdapter);
 
         ListAdapter directorAdapter = new SimpleAdapter(
                 CrewActivity.this, directorsList,
-                R.layout.list_item_with_delete, new String[] { TAG_PID,
+                R.layout.list_item_with_delete, new String[]{TAG_PID,
                 "role"},
-                new int[] { R.id.pid, R.id.name }); //listview entries will contain unit's id and name
+                new int[]{R.id.pid, R.id.name}); //listview entries will contain unit's id and name
 
         // updating listview
         directorsLV.setAdapter(directorAdapter);
@@ -133,10 +135,8 @@ public class CrewActivity extends AppCompatActivity {
         ((BaseAdapter) excavatorAdapter).notifyDataSetChanged();
     }
 
-    public void addCrewMembers(ArrayList<String[]> c)
-    {
-        for(int i = 0; i<c.size(); i++)
-        {
+    public void addCrewMembers(ArrayList<String[]> c) {
+        for (int i = 0; i < c.size(); i++) {
             String[] info = c.get(i);
             site.addCrewMember(info[0], info[1], info[2]);
         }
@@ -145,13 +145,10 @@ public class CrewActivity extends AppCompatActivity {
 
     }
 
-    public void updateRoles(HashMap<String, ArrayList> roles)
-    {
+    public void updateRoles(HashMap<String, ArrayList> roles) {
         Object[] rolesKeys = roles.keySet().toArray();
-        for(int i = 0; i<roles.size(); i++)
-        {
-            if(!site.getRoles().containsKey(rolesKeys[i].toString()))
-            {
+        for (int i = 0; i < roles.size(); i++) {
+            if (!site.getRoles().containsKey(rolesKeys[i].toString())) {
                 HashMap<String, ArrayList> temp = new HashMap<>();
                 temp.put(rolesKeys[i].toString(), roles.get(rolesKeys[i].toString()));
                 site.addRoles(temp);
@@ -159,24 +156,18 @@ public class CrewActivity extends AppCompatActivity {
         }
     }
 
-    public void loadUnits(ArrayList<Unit> u)
-    {
-        for(int i = 0; i<u.size(); i++)
-        {
-            if(!units.contains(u.get(i)))
-            {
+    public void loadUnits(ArrayList<Unit> u) {
+        for (int i = 0; i < u.size(); i++) {
+            if (!units.contains(u.get(i))) {
                 units.add(u.get(i));
-            }
-            else
-            {
+            } else {
                 units.set(units.indexOf(u.get(i)), u.get(i));
             }
 
         }
     }
 
-    public void goToRequests(View view)
-    {
+    public void goToRequests(View view) {
         Intent requestsIntent = new Intent(view.getContext(), CrewRequestActivity.class);
         requestsIntent.putExtra(TAG_SITENAME, site);
         startActivityForResult(requestsIntent, 226);
@@ -195,15 +186,25 @@ public class CrewActivity extends AppCompatActivity {
         }
     }
 
-    public void deleteCrewMember(View view)
+    public void deleteCrewMember(View view) {
+        String uidToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.pid)).getText().toString();
+        String nameToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.name)).getText().toString();
+
+        crewUid = uidToDelete;
+        crewName = nameToDelete;
+
+        showDeleteDialog(uidToDelete, nameToDelete);
+    }
+
+    public void showDeleteDialog(final String uid, String name)
     {
-        final String uidToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.pid)).getText().toString();
+        crewUid = uid;
+        crewName = name;
 
         ArrayList<String> director = new ArrayList<>();
         director.add("director");
 
-        if(!uidToDelete.equals(fbA.getCurrentUser().getUid())) {
-            String nameToDelete = ((TextView) ((View) view.getParent()).findViewById(R.id.name)).getText().toString();
+        if(!uid.equals(fbA.getCurrentUser().getUid())) {
 
             LayoutInflater inflater = getLayoutInflater();
             final View editLevelLayout = inflater.inflate(R.layout.edit_level_dialog, null);
@@ -214,21 +215,25 @@ public class CrewActivity extends AppCompatActivity {
             }
             TextView message = editLevelLayout.findViewById(R.id.alertMessage);
             message.setTextSize(24);
-            message.setText("Are you sure you want to remove " + nameToDelete + " from the site?");
+            message.setText("Are you sure you want to remove " + name + " from the site?");
 
             alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
-                Bundle roles = site.getRoles();
-                roles.remove(uidToDelete);
+                    Bundle roles = site.getRoles();
+                    roles.remove(uid);
 
-                fbh.updateRoles(uidToDelete, roles);
-                listCrew();
+                    fbh.updateRoles(uid, roles);
+                    listCrew();
+                    crewUid = "";
+                    crewName = "";
                 }
             });
 
             alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     alert = null;
+                    crewUid = "";
+                    crewName = "";
                     //Go back
                 }
             });
@@ -239,6 +244,22 @@ public class CrewActivity extends AppCompatActivity {
         else
         {
             Toast.makeText(getApplicationContext(), "You cannot delete yourself from this site", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+
+        if(alert != null) {
+            outState.putBoolean("Alert", true);
+            outState.putString("Uid", crewUid);
+            outState.putString("Name", crewName);
+        }
+        else
+        {
+            outState.putBoolean("Alert", false);
         }
     }
 }

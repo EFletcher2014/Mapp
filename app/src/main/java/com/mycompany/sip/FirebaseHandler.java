@@ -457,7 +457,7 @@ public class FirebaseHandler {
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
 
-            if((artifactBagsActivityRef != null && artifactBagsActivityRef != null && artifactBagsActivityRef.get().isActive())
+            if((artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive())
                     || levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
 
                 for (QueryDocumentSnapshot doc : snapshot) {
@@ -1283,10 +1283,10 @@ public class FirebaseHandler {
                 mappDB.collection("sites").document(newFeat.getSite().getID()).collection("features").add(temp).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        if(e != null)
-                        {
-                            System.out.println(e);
-                        }
+                    if(e != null)
+                    {
+                        System.out.println(e);
+                    }
                     }
                 });
             }
