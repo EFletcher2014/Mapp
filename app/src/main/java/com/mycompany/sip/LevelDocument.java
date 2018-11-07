@@ -438,7 +438,6 @@ public class LevelDocument extends AppCompatActivity {
         alert1 = new AlertDialog.Builder(LevelDocument.this);
         alert1.setView(chooserLayout);
         alert1.setTitle("Add A Picture:");
-        alert1.setIcon(R.drawable.ic_add_a_photo_white_24dp);
         final AlertDialog dialog = alert1.create();
         dialog.show();
         ImageButton findPic = (ImageButton) chooserLayout.findViewById(R.id.goToGallery);
