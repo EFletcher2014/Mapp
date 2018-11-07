@@ -4,7 +4,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <!-- Added by Emily Flether 8/29/17-->
+    <!-- Added by Emily Fletcher 8/29/17-->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

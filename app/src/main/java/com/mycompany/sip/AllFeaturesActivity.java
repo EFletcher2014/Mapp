@@ -77,7 +77,8 @@ public class AllFeaturesActivity extends ListActivity {
         {
             final String desc = savedInstanceState.getString("desc");
             int num = savedInstanceState.getInt("num");
-            showDialog(new Feature("", desc, num, site, new ArrayList<Level>()));
+            String id = savedInstanceState.getString("ID");
+            showDialog(new Feature(id, desc, num, site, new ArrayList<Level>()));
         }
 
         //on clicking new feature button
@@ -86,8 +87,7 @@ public class AllFeaturesActivity extends ListActivity {
         newFeature.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                showDialog(null);
+            showDialog(null);
             }
 
         });
@@ -235,7 +235,8 @@ public class AllFeaturesActivity extends ListActivity {
             //TODO: replace these with feature parcelable?
             outState.putBoolean("alert", true);
             outState.putString("desc", description.getText().toString());
-            outState.putInt("num", selectedFeature.getNumber());
+            outState.putInt("num", selectedFeature == null ? -1 : selectedFeature.getNumber());
+            outState.putString("ID", selectedFeature == null ? "" : selectedFeature.getID());
         }
         else
         {

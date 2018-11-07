@@ -82,7 +82,7 @@ public class AllArtifactBagsActivity extends ListActivity {
         unit = openIntent.getParcelableExtra("datum");
         level = openIntent.getParcelableExtra("depth");
         TextView titleText = (TextView) findViewById(R.id.artifactsLabel);
-        String title = site.getName() + " " + unit.getDatum() + " Level " + level.getNumber() + " Artifacts";
+        String title = site.getName() + " " + unit.getDatum() + " Level " + level.getNumber() + " Artifact Bags";
         titleText.setText(title);
 
         fbh.getArtifactBagsFromLevel(level);
@@ -262,8 +262,17 @@ public class AllArtifactBagsActivity extends ListActivity {
                 catNum.setText(cnum);
             }
             contents.setText(art.getContents());
+            if(art.getID()== "") {
+                alert.setTitle("Create New Artifact Bag");
+            }
+            else
+            {
+                alert.setTitle("Edit Artifact Bag");
+            }
         }
-        alert.setTitle("Edit ArtifactBag");
+        else {
+            alert.setTitle("Create New Artifact Bag");
+        }
         alert.setPositiveButton("Save", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
 

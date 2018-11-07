@@ -49,6 +49,8 @@ public class CrewRequestActivity extends ListActivity {
 
     Site site;
 
+    String requestName, requestEmail, requestUid, unit = "", role = "";
+
     @Override
     public void onStart()
     {
@@ -77,6 +79,25 @@ public class CrewRequestActivity extends ListActivity {
         Intent openIntent = getIntent();
         site = openIntent.getParcelableExtra(TAG_SITENAME);
         fbh.getRequests(site);
+
+        if(savedInstanceState != null && savedInstanceState.getBoolean("Alert"))
+        {
+            if(savedInstanceState.getString("Name") != null && !savedInstanceState.getString("Name").equals("")){
+                String n = savedInstanceState.getString("Name");
+                String e = savedInstanceState.getString("Email");
+                String u = savedInstanceState.getString("Uid");
+                String un = savedInstanceState.getString("Unit");
+                String r = savedInstanceState.getString("Role");
+
+                showAcceptDialog(n, e, u, r, un);
+            }
+            else
+            {
+                String u = savedInstanceState.getString("Uid");
+                showDenyDialog(u);
+            }
+
+        }
     }
 
     public boolean isActive()
@@ -116,21 +137,26 @@ public class CrewRequestActivity extends ListActivity {
         });
     }
 
-    public void showDialog(View view)
-    {
+    public void showDialog(View view) {
         TextView name = ((View) view.getParent()).findViewById(R.id.name);
         TextView uid = ((View) view.getParent()).findViewById(R.id.su);
         TextView email = ((View) view.getParent()).findViewById(R.id.email);
 
-        final String requestName = name.getText().toString();
-        final String requestEmail = email.getText().toString();
-        final String requestUid = uid.getText().toString();
+        requestName = name.getText().toString();
+        requestEmail = email.getText().toString();
+        requestUid = uid.getText().toString();
 
+        showAcceptDialog(requestName, requestEmail, requestUid, "", "");
+    }
+
+    public void showAcceptDialog(final String name, final String email, final String uid, String r, String un)
+    {
+        requestName = name;
+        requestEmail = email;
+        requestUid = uid;
         LayoutInflater inflater = getLayoutInflater();
         final View acceptRequest = inflater.inflate(R.layout.accept_request_dialog, null);
 
-        TextView approveTitle = acceptRequest.findViewById(R.id.acceptRequestTitle);
-        approveTitle.setText("Assign " + requestName + " a permission on site " + site + " ?");
 
         final Spinner choosePermission = acceptRequest.findViewById(R.id.permissionChoose);
         final ArrayList<String> permissions = new ArrayList<>();
@@ -142,7 +168,24 @@ public class CrewRequestActivity extends ListActivity {
                         permissions); //selected item will look like a spinner set from XML
         choosePermission.setAdapter(spinnerArrayAdapter);
 
+        if(r.equals("excavator"))
+        {
+            choosePermission.setSelection(0);
+        }
+
+        if(r.equals("director"))
+        {
+            choosePermission.setSelection(1);
+        }
+
         availableUnits = acceptRequest.findViewById(R.id.unitChoose);
+
+        if(!un.equals(""))
+        {
+            Unit u = new Unit(site, un, -1, -1, -1, 01, "", "");
+
+            availableUnits.setSelection(units.indexOf(u));
+        }
 
         choosePermission.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -156,11 +199,25 @@ public class CrewRequestActivity extends ListActivity {
                 {
                     availableUnits.setVisibility(View.INVISIBLE);
                 }
+                role = permissions.get(position);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
                 availableUnits.setVisibility(View.INVISIBLE);
+                role = "";
+            }
+        });
+
+        availableUnits.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                unit = units.get(position).getID();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                unit = "";
             }
         });
 
@@ -173,10 +230,17 @@ public class CrewRequestActivity extends ListActivity {
             alert = new AlertDialog.Builder(CrewRequestActivity.this);
         }
 
+        alert.setTitle("Choose role for " + name + ":");
+
         alert.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                fbh.addPermission(requestUid, availableUnits.getVisibility() == View.VISIBLE && availableUnits.getSelectedItem() != null ? ((HashMap<String, String>) availableUnits.getSelectedItem()).get("UnitID") : "", requestName, requestEmail);
+                fbh.addPermission(uid, availableUnits.getVisibility() == View.VISIBLE && availableUnits.getSelectedItem() != null ? ((HashMap<String, String>) availableUnits.getSelectedItem()).get("UnitID") : "", name, email);
+                requestName = "";
+                requestEmail = "";
+                requestUid = "";
+                unit = "";
+                role = "";
             }
         });
 
@@ -184,6 +248,11 @@ public class CrewRequestActivity extends ListActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 alert = null;
+                requestName = "";
+                requestEmail = "";
+                requestUid = "";
+                unit = "";
+                role = "";
             }
         });
 
@@ -193,11 +262,16 @@ public class CrewRequestActivity extends ListActivity {
     }
     //create pop up to accept or deny a request
 
-    public void denyRequest(View view)
-    {
+    public void denyRequest(View view) {
         TextView uid = findViewById(R.id.su);
-        final String requestUid = uid.getText().toString();
+        requestUid = uid.getText().toString();
 
+        showDenyDialog(requestUid);
+    }
+
+    public void showDenyDialog(final String uid)
+    {
+        requestUid = uid;
         LayoutInflater inflater = getLayoutInflater();
         final View cancelLayout = inflater.inflate(R.layout.deny_request_dialog, null);
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
@@ -211,8 +285,9 @@ public class CrewRequestActivity extends ListActivity {
         alert.setTitle("Deny Request?");
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                deleteRequest(requestUid);
+                deleteRequest(uid);
                 alert=null;
+                requestUid = "";
             }
 
         });
@@ -220,6 +295,7 @@ public class CrewRequestActivity extends ListActivity {
             public void onClick(DialogInterface dialog, int id) {
                 //Go back
                 alert=null;
+                requestUid = "";
             }
         });
         alert.setView(cancelLayout);
@@ -299,5 +375,32 @@ public class CrewRequestActivity extends ListActivity {
     {
         setResult(RESULT_OK);
         finish();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState)
+    {
+        super.onSaveInstanceState(outState);
+
+        if(alert != null && requestName != null && !requestName.equals(""))
+        {
+            outState.putBoolean("Alert", true);
+            outState.putString("Name", requestName);
+            outState.putString("Email", requestEmail);
+            outState.putString("Uid", requestUid);
+            outState.putString("Role", role);
+            outState.putString("Unit", unit);
+        }
+        else
+        {
+            if(alert != null) {
+                outState.putBoolean("Alert", true);
+                outState.putString("Uid", requestUid);
+            }
+            else
+            {
+                outState.putBoolean("Alert", false);
+            }
+        }
     }
 }
