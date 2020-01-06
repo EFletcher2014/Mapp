@@ -4,8 +4,6 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.sql.Timestamp;
-
 /**
  * Created by Emily Fletcher on 8/30/2017.
  * Model Object for levels made parcelable 9/2/17
@@ -20,6 +18,7 @@ public class Level implements Parcelable {
     private String dateStarted;
     private String excavationMethod;
     private String notes="";
+    private String imageUri;
 
     public Level (Site s, Unit u, String i, int n, double bD, double eD, String exMeth, String notes, Uri p)
     {
@@ -44,6 +43,7 @@ public class Level implements Parcelable {
         this.dateStarted=in.readString();
         this.excavationMethod=in.readString();
         this.notes=in.readString();
+        this.imageUri=in.readString();
     }
 
     public String getID() { return ID; }
@@ -93,6 +93,8 @@ public class Level implements Parcelable {
         return notes;
     }
 
+    public String getImageUri() { return imageUri; }
+
     @Override
     public String toString()
     {
@@ -124,6 +126,8 @@ public class Level implements Parcelable {
         notes=no;
     }
 
+    public void setImageUri(String uri) { imageUri = uri;}
+
 
     @Override
     public void writeToParcel(Parcel dest, int flags)
@@ -137,6 +141,7 @@ public class Level implements Parcelable {
         dest.writeString(dateStarted);
         dest.writeString(excavationMethod);
         dest.writeString(notes);
+        dest.writeString(imageUri);
     }
 
     @Override
@@ -165,6 +170,10 @@ public class Level implements Parcelable {
         {
             return false;
         }
+    }
+
+    public String[] tabulatedInfo() {
+        return new String[]{unit.toString(), number + "", begDepth + "", endDepth + "", dateStarted, excavationMethod, notes};
     }
 
 }

@@ -81,6 +81,8 @@ public class Feature {
         return "Feature " + this.number;
     }
 
+    public String[] tabulatedInfo() { return new String[]{this.number + "", this.description};}
+
     @Override
     public boolean equals(Object o)
     {

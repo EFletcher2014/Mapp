@@ -114,6 +114,8 @@ public class Unit implements Parcelable {
         return datum;
     }
 
+    public String[] tabulatedInfo() { return new String[]{getDatum(), getNSDim()+"", getEWDim()+"", getDateOpened(), reasonForOpening};}
+
     public void setDatum(String d)
     {
         datum=d;

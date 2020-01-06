@@ -94,7 +94,7 @@ public class AllSitesActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        fbh.updateSiteActivity(this);
+        fbh.updateAllSitesActivity(this);
 
             //This statement is true if the user has rotated the screen during this activity
             if(savedInstanceState!=null)
