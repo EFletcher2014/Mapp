@@ -65,7 +65,10 @@ public class FirebaseHandler {
     StorageReference storageRef = storage.getReference();
 
     //Sites
-    private static WeakReference<AllSitesActivity> siteActivityRef;
+    private static WeakReference<AllSitesActivity> allSitesActivityRef;
+
+    //Single Site Info Activity
+    private static WeakReference<SiteActivity> siteActivityRef;
 
     //Crew
     private static WeakReference<CrewActivity> crewActivityRef;
@@ -89,11 +92,23 @@ public class FirebaseHandler {
     //Features
     private static WeakReference<AllFeaturesActivity> featureActivityRef;
 
+    //Feature links list
+    private static ArrayList<String[]> siteFeatureLinks = new ArrayList<>();
+
     //Features list
     private static ArrayList<Feature> siteFeatures = new ArrayList<>();
 
     //Sites list
     private static ArrayList<Site> userSites = new ArrayList<>();
+
+    //Units list
+    private static ArrayList<Unit> AllUnits = new ArrayList<>();
+
+    //Levels list
+    private static ArrayList<Level> AllLevels = new ArrayList<>();
+
+    //ArtifactBags list
+    private static ArrayList<ArtifactBag> AllArtifactBags = new ArrayList<>();
 
     public static FirebaseHandler getInstance()
     {
@@ -104,12 +119,16 @@ public class FirebaseHandler {
         return instance;
     }
 
-    public static void updateSiteActivity(AllSitesActivity activity) {
-        siteActivityRef = new WeakReference<AllSitesActivity>(activity);
+    public static void updateAllSitesActivity(AllSitesActivity activity) {
+        allSitesActivityRef = new WeakReference<AllSitesActivity>(activity);
     }
 
     public static void updateUnitActivity(AllUnitsActivity activity) {
         unitActivityRef = new WeakReference<AllUnitsActivity>(activity);
+    }
+
+    public static void updateSiteActivity(SiteActivity activity) {
+        siteActivityRef = new WeakReference<SiteActivity>(activity);
     }
 
     public static void updateCrewActivity(CrewActivity activity) {
@@ -154,7 +173,7 @@ public class FirebaseHandler {
 
             if(queryDocumentSnapshots != null) {
                 for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                    if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive() && doc != null) {
+                    if (allSitesActivityRef != null && allSitesActivityRef.get() != null && allSitesActivityRef.get().isActive() && doc != null) {
 
                         Object tempName = doc.get("Name");
                         Object tempNum = doc.get("Number");
@@ -176,7 +195,7 @@ public class FirebaseHandler {
                             userSites.add(temp);
                         }
 
-                        siteActivityRef.get().loadSites(userSites);
+                        allSitesActivityRef.get().loadSites(userSites);
                     }
                 }
             }
@@ -193,7 +212,7 @@ public class FirebaseHandler {
             }
             if(queryDocumentSnapshots != null) {
                 for (DocumentSnapshot doc : queryDocumentSnapshots) {
-                    if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive() && doc != null) {
+                    if (allSitesActivityRef != null && allSitesActivityRef.get() != null && allSitesActivityRef.get().isActive() && doc != null) {
 
                         Object tempName = doc.get("Name");
                         Object tempNum = doc.get("Number");
@@ -215,7 +234,7 @@ public class FirebaseHandler {
                             userSites.add(temp);
                         }
 
-                        siteActivityRef.get().loadSites(userSites);
+                        allSitesActivityRef.get().loadSites(userSites);
                     }
                 }
             }
@@ -373,7 +392,8 @@ public class FirebaseHandler {
                                 @Nullable FirebaseFirestoreException e) {
                 if ((unitActivityRef != null && unitActivityRef.get() != null && unitActivityRef.get().isActive())
                         || (crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
-                        || (crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())) {
+                        || (crewActivityRef != null && crewActivityRef.get() != null && crewActivityRef.get().isActive())
+                        || (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive())) {
                     ArrayList<Unit> units = new ArrayList<Unit>();
 
                     for (QueryDocumentSnapshot doc : snapshot) {
@@ -402,9 +422,14 @@ public class FirebaseHandler {
                     {
                         crewActivityRef.get().loadUnits(units);
                     }
-                    else
+                    else if(crewRequestActivityRef != null && crewRequestActivityRef.get() != null && crewRequestActivityRef.get().isActive())
                     {
                         crewRequestActivityRef.get().loadUnits(units);
+                    }
+                    else if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive())
+                    {
+                        siteActivityRef.get().loadUnits(units);
+                        AllUnits = units;
                     }
                 }
             }
@@ -419,10 +444,12 @@ public class FirebaseHandler {
 
             for (QueryDocumentSnapshot doc : snapshot) {
                 final Object tempUnitID = doc.get("UnitID");
-                getImage(selectedSite.getID() + "/", doc.getId() + "map", siteActivityRef.get().getCacheDir(), "");
+                final String image = getImage(selectedSite.getID() + "/", doc.getId() + "map", allSitesActivityRef.get().getCacheDir(), "");
 
-                if (levelActivityRef != null && levelActivityRef.get() != null && levelActivityRef.get().isActive() &&
-                        tempUnitID.toString().equals(levelActivityRef.get().getUnit().getID())) {
+                if ((levelActivityRef != null && levelActivityRef.get() != null && levelActivityRef.get().isActive() &&
+                        tempUnitID.toString().equals(levelActivityRef.get().getUnit().getID()))
+                        || (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive())) {
+
                     final Object tempID = doc.getId();
                     final Object tempNum = doc.get("Number");
                     final Object tempbD = doc.get("BegDepth");
@@ -430,8 +457,21 @@ public class FirebaseHandler {
                     final Object tempexM = doc.get("ExcavationMethod");
                     final Object tempNotes = doc.get("Notes");
 
+                    Unit tempU = new Unit(null, null, -1, -1, -1, -1, null, null);
 
-                    Level temp = new Level(selectedSite, levelActivityRef.get().getUnit(),
+                    if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
+                        for (Unit u: AllUnits) {
+                            if (u.getID() == tempUnitID.toString()) {
+                                tempU = u;
+                                break;
+                            }
+                        }
+                    }
+
+
+                    Level temp = new Level(selectedSite,
+                            (levelActivityRef != null && levelActivityRef.get() != null && levelActivityRef.get().isActive())
+                                    ? levelActivityRef.get().getUnit() : tempU,
                             tempID.toString(),
                             Integer.parseInt(tempNum.toString()),
                             Double.parseDouble(tempbD.toString()),
@@ -439,13 +479,17 @@ public class FirebaseHandler {
                             tempexM.toString(),
                             tempNotes.toString(),
                             null);
+                    temp.setImageUri(image);
 
                     levels.add(temp);
+                    AllLevels = levels;
                 }
             }
 
             if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive() && !levels.isEmpty()) {
                 levelActivityRef.get().loadLevels(levels);
+            } else if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive() && !levels.isEmpty()) {
+                siteActivityRef.get().loadLevels(levels);
             }
             }
         });
@@ -458,49 +502,57 @@ public class FirebaseHandler {
                                 @Nullable FirebaseFirestoreException e) {
 
             if((artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive())
-                    || levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+                    || levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()
+                    || siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
 
                 for (QueryDocumentSnapshot doc : snapshot) {
                     if (doc != null && doc.get("LevelID") != null
-                            && ((artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID()))
-                            || (levelMapActivityRef != null && levelMapActivityRef.get() != null && doc.get("LevelID").toString().equals(levelMapActivityRef.get().getLevel().getID())))) {
+                            && ((artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive() && doc.get("LevelID").toString().equals(artifactBagsActivityRef.get().getLevel().getID()))
+                            || (levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive() && doc.get("LevelID").toString().equals(levelMapActivityRef.get().getLevel().getID())))
+                            || (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive())) {
                         final Object tempID = doc.getId();
                         final Object tempANum = doc.get("AccessionNumber");
                         final Object tempCNum = doc.get("CatalogNumber");
                         final Object tempCon = doc.get("Contents");
+                        final Object tempLevelID = doc.get("LevelID");
+
+                        Level tempL = new Level(selectedSite, null, tempLevelID.toString(), -1, -1, -1, "", "", null);
 
                         ArtifactBag temp = null;
 
-                        if(artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null) {
+                        if(artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
                             temp = new ArtifactBag(selectedSite, artifactBagsActivityRef.get().getLevel().getUnit(), artifactBagsActivityRef.get().getLevel(),
                                     tempID.toString(),
                                     tempANum.toString(),
                                     Integer.parseInt(tempCNum.toString()),
                                     tempCon.toString());
                         }
-                        else
-                        {
-                            if(levelMapActivityRef != null && levelMapActivityRef.get() != null)
-                            {
+                        else if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
                                 temp = new ArtifactBag(selectedSite, levelMapActivityRef.get().getLevel().getUnit(), levelMapActivityRef.get().getLevel(),
                                         tempID.toString(),
                                         tempANum.toString(),
                                         Integer.parseInt(tempCNum.toString()),
                                         tempCon.toString());
-                            }
+                        } else if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
+                                temp = new ArtifactBag(selectedSite, null, tempL,
+                                        tempID.toString(),
+                                        tempANum.toString(),
+                                        Integer.parseInt(tempCNum.toString()),
+                                        tempCon.toString());
                         }
 
                         if(temp != null) {
                             artifactBags.add(temp);
+                            AllArtifactBags.add(temp);
                         }
                     }
                 }
                 if (artifactBagsActivityRef != null && artifactBagsActivityRef.get() != null && artifactBagsActivityRef.get().isActive()) {
                     artifactBagsActivityRef.get().loadArtifactBags(artifactBags);
-                } else {
-                    if (levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+                } else if (levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
                         levelMapActivityRef.get().loadArtifactBags(artifactBags);
-                    }
+                } else if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
+                    siteActivityRef.get().loadArtifactBags(artifactBags);
                 }
             }
             }
@@ -513,7 +565,8 @@ public class FirebaseHandler {
                                 @Nullable FirebaseFirestoreException e) {
             final ArrayList<Artifact> artifacts = new ArrayList<Artifact>();
 
-            if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
+            if((levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive())
+            || (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive())) {
 
                 for (QueryDocumentSnapshot doc : snapshot) {
                     if (doc != null) {
@@ -521,22 +574,51 @@ public class FirebaseHandler {
                         final Object tempDesc = doc.get("Name");
 
                         getImage(selectedSite.getID() + "/",
-                                tempID.toString(), siteActivityRef.get().getCacheDir(), "a");
+                                tempID.toString(), allSitesActivityRef.get().getCacheDir(), "a");
                         doc.getDocumentReference("ArtifactBag").get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                             @Override
                             public void onSuccess(DocumentSnapshot documentSnapshot) {
                                final Object tempLevelID = documentSnapshot.get("LevelID");
+                                final Object tempABagID = documentSnapshot.getId();
 
-                               if(tempLevelID != null && tempLevelID.toString().equals(levelMapActivityRef.get().getLevel().getID()))
-                               {
-                                   final Object tempABagID = documentSnapshot.getId();
+                               Level tempL = new Level(selectedSite, null, "", -1, -1, -1, "", "", null);
+
+                                if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
+                                    for (Level l: AllLevels) {
+                                        if (l.getID().equals(tempLevelID.toString())) {
+                                            tempL = l;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                ArtifactBag tempAB = new ArtifactBag(null, null, null, tempABagID.toString(), "", -1, "");
+
+                                for(ArtifactBag ab : AllArtifactBags) {
+                                    if(ab.equals(tempAB))
+                                    {
+                                        tempAB = ab;
+                                        break;
+                                    }
+                                }
+
+
+                                if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive() && tempLevelID != null && tempLevelID.toString().equals(levelMapActivityRef.get().getLevel().getID())) {
                                    Artifact temp = new Artifact(selectedSite, levelMapActivityRef.get().getLevel().getUnit(), levelMapActivityRef.get().getLevel(),
-                                           new ArtifactBag(null, null, null, tempABagID.toString(), "", -1, ""),
+                                           tempAB,
                                            tempID.toString(),
                                            tempDesc.toString());
 
                                    artifacts.add(temp);
                                    levelMapActivityRef.get().addArtifacts(artifacts);
+                               } else {
+                                   Artifact temp = new Artifact(selectedSite, tempL.getUnit(), tempL,
+                                           tempAB,
+                                           tempID.toString(),
+                                           tempDesc.toString());
+
+                                   artifacts.add(temp);
+                                   siteActivityRef.get().loadArtifacts(artifacts);
                                }
                             }
                         });
@@ -575,11 +657,10 @@ public class FirebaseHandler {
                 //TODO: check if this is associated with the current level
                 if(levelMapActivityRef != null && levelMapActivityRef.get() != null && levelMapActivityRef.get().isActive()) {
                     levelMapActivityRef.get().loadAllSiteFeatures(siteFeatures);
-                }
-                else {
-                    if (featureActivityRef != null && featureActivityRef.get() != null && featureActivityRef.get().isActive()) {
+                } else if (featureActivityRef != null && featureActivityRef.get() != null && featureActivityRef.get().isActive()) {
                         featureActivityRef.get().loadFeatures(siteFeatures);
-                    }
+                } else if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
+                    siteActivityRef.get().loadFeatures(siteFeatures);
                 }
             }
             }
@@ -590,7 +671,6 @@ public class FirebaseHandler {
             @Override
             public void onEvent(@Nullable QuerySnapshot snapshot,
                                 @Nullable FirebaseFirestoreException e) {
-            final ArrayList<Feature> features = new ArrayList<Feature>();
 
             for (QueryDocumentSnapshot doc : snapshot) {
                 if (doc != null) {
@@ -600,12 +680,16 @@ public class FirebaseHandler {
                     Level temp = new Level(null, null, levID.toString(), -1, 0.0, 0.0, "", "", null);
                     Feature tempF = new Feature(featID.toString(), "", -1, null, new ArrayList<Level>());
 
-                    getImage(selectedSite.getID() + "/", levID.toString()+ "-" + featID.toString(), siteActivityRef.get().getCacheDir(), "f");
+                    siteFeatureLinks.add(new String[]{featID.toString(), levID.toString()});
+
+                    getImage(selectedSite.getID() + "/", levID.toString()+ "-" + featID.toString(), allSitesActivityRef.get().getCacheDir(), "f");
                     if (levelMapActivityRef != null && levelMapActivityRef.get() != null
                             && levelMapActivityRef.get().getLevel().equals(temp)
                             && siteFeatures.contains(tempF))
                     {
                         levelMapActivityRef.get().linkFeature(siteFeatures.get(siteFeatures.indexOf(tempF)), temp);
+                    } else if (siteActivityRef != null && siteActivityRef.get() != null && siteActivityRef.get().isActive()) {
+                        siteActivityRef.get().updateFeatureLinks(siteFeatureLinks);
                     }
                 }
             }
@@ -748,6 +832,8 @@ public class FirebaseHandler {
             ArrayList<Level> levels = new ArrayList<Level>();
             for(QueryDocumentSnapshot doc : queryDocumentSnapshots)
             {
+                final String image = getImage(selectedUnit.getSite().getID() + "/", doc.getId() + "map", levelActivityRef.get().getCacheDir(), "");
+
                 if (doc != null) {
                     final Object tempID = doc.getId();
                     final Object tempNum = doc.get("Number");
@@ -765,6 +851,7 @@ public class FirebaseHandler {
                             tempNotes.toString(),
                             null);
 
+                    temp.setImageUri(image);
                     levels.add(temp);
                 }
             }
@@ -1359,7 +1446,7 @@ public class FirebaseHandler {
         UploadTask uploadTask = imageRef.putFile(u);
     }
 
-    public void getImage(String path, String name, File f, String method)
+    public String getImage(String path, String name, File f, String method)
     {
         boolean imageExists;
         File localFile = new File(f, path + name + ".jpg");
@@ -1369,16 +1456,20 @@ public class FirebaseHandler {
         if(!imageExists) {
             DownloadImage dl = new DownloadImage(path, name, f, method);
             dl.execute();
+            return "";
         }
         else
         {
             Uri tempPath = Uri.fromFile(localFile);
 
             Uri localImageUri = tempPath;
+
             if(levelDocActivityRef != null && levelDocActivityRef.get() != null && levelDocActivityRef.get().isActive() && (levelDocActivityRef.get().getLevelInfo() + "map").equals(name))
             {
                 levelDocActivityRef.get().setURI(localImageUri);
             }
+
+            return localImageUri.toString();
         }
     }
 

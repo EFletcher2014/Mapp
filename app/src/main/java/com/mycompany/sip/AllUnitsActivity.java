@@ -3,7 +3,6 @@ package com.mycompany.sip;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.json.JSONArray;
 
@@ -12,7 +11,6 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
@@ -27,7 +25,6 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.google.firebase.firestore.FirebaseFirestore;
 import static com.mycompany.sip.Global.TAG_PID;
 import static com.mycompany.sip.Global.TAG_SITENAME;
 import static com.mycompany.sip.Global.TAG_UNITNAME;

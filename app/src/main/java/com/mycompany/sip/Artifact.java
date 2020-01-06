@@ -67,6 +67,11 @@ public class Artifact {
         return this.description;
     }
 
+    public String[] tabulatedInfo() { return new String[]{this.getUnit().toString(),
+            this.getLevel().toString(),
+            this.getArtifactBag().getAccessionNumber() + "-" + this.getArtifactBag().getCatalogNumber(),
+            this.getDescription()};}
+
     @Override
     public boolean equals(Object o)
     {

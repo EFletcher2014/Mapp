@@ -58,4 +58,10 @@
             android:text="@string/crew"
             android:onClick="goToCrew"/>
     </LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Save Report"
+        android:onClick="saveReport"/>
 </LinearLayout>
