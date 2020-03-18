@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <!-- Added by Emily Fletcher 8/27/17-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/crew"
+        android:theme="@style/titleTheme"
+        android:gravity="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/code"
+        android:textSize="@dimen/titleSize"
+        android:textIsSelectable="true"
+        android:gravity="center"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/requestButton"
+        android:gravity="center"
+        android:text="@string/see_requests"
+        android:onClick="goToRequests"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/site_directors_heading"
+        android:textSize="@dimen/textSize"
+        android:gravity="left"/>
+
+    <ListView
+        android:id="@+id/directorList"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/site_excavators_heading"
+        android:textSize="@dimen/textSize"
+        android:gravity="left"/>
+    <!-- Main ListView
+         Always give id value as list(@android:id/list)
+        TODO: is this gonna cause problems?
+    -->
+    <ListView
+        android:id="@+id/excavatorList"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_weight="1"/>
+
+</LinearLayout>

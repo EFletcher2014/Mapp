@@ -1,41 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mycompany.sip" >
+    package="com.mycompany.sip">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MANAGE_DOCUMENTS" />
-    <uses-permission android:name="android.permission.READ_USER_DICTIONARY"/>
-    <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY"/>
+    <uses-permission android:name="android.permission.READ_USER_DICTIONARY" />
+    <uses-permission android:name="android.permission.WRITE_USER_DICTIONARY" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/mapp"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
-        <activity android:name=".MapHome"
-            android:windowSoftInputMode="stateHidden"
-            android:configChanges="orientation">
-        </activity>
-        <activity android:name=".selectActivity"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".LevelDocument"
+            android:configChanges="orientation"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name=".LevelMap"
             android:label="@string/title_activity_select"
             android:screenOrientation="landscape"
-            android:windowSoftInputMode="stateHidden" >
-        </activity>
-        <activity android:name=".AllSitesActivity" >
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".AllSitesActivity" />
+        <activity android:name=".AllUnitsActivity" />
+        <activity android:name=".AllLevelsActivity" />
+        <activity android:name=".AllArtifactBagsActivity" />
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="mappdocumentation.page.link"
+                    android:pathPattern="/join-as-excavator"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="mappdocumentation.page.link"
+                    android:scheme="https\" />
+            </intent-filter>
         </activity>
-        <activity android:name=".AllUnitsActivity" >
-        </activity>
-        <activity android:name=".AllLevelsActivity" >
-        </activity>
-        <activity android:name=".AllArtifactsBagsActivity" >
-        </activity>
+        <activity android:name=".SiteActivity" />
+        <activity android:name=".CrewActivity" />
+        <activity android:name=".AllFeaturesActivity" />
+        <activity android:name=".SiteNotesActivity" />
+        <activity android:name=".CrewRequestActivity"/>
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.mycompany.sip.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"></meta-data>
+        </provider>
     </application>
 
 </manifest>

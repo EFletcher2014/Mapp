@@ -15,48 +15,65 @@
         <!-- Coordinates Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Datum Coordinate"
+            android:text="@string/datum_coordinate_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input Coordinates -->
-        <EditText android:id="@+id/inputCoords"
-            android:layout_width="fill_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="5dip"
-            android:layout_marginBottom="15dip"
-            android:singleLine="true"/>
+            android:orientation="horizontal">
+            <EditText android:id="@+id/inputVertCoord"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:singleLine="true"
+                android:hint="@string/vertical"
+                android:inputType="number"
+                android:digits="1234567890-"
+                android:textSize="@dimen/textSize"/>
+            <EditText android:id="@+id/inputHorCoords"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dip"
+                android:layout_marginBottom="15dip"
+                android:singleLine="true"
+                android:hint="@string/horizontal"
+                android:inputType="number"
+                android:digits="1234567890-"
+                android:textSize="@dimen/textSize"/>
+        </LinearLayout>
 
         <!-- Excavators Label -->
-        <TextView android:layout_width="fill_parent"
+        <!--<TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="Excavators"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="17dip"/>-->
 
         <!-- Input excavators -->
-        <EditText android:id="@+id/inputExcs"
+        <!--<EditText android:id="@+id/inputExcs"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
             android:lines="4"
-            android:gravity="top"/>
-
-
+            android:gravity="top"/>-->
 
         <!-- DateOpened Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Date opened"
+            android:text="@string/date_discovered_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/headingSize"/>
 
         <!-- Input DateOpened -->
         <LinearLayout
@@ -68,25 +85,31 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="YYYY"
+                android:hint="@string/year_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="4"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputMonth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="MM"
+                android:hint="@string/month_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
             <EditText android:id="@+id/inputDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dip"
                 android:layout_marginBottom="15dip"
-                android:hint="DD"
+                android:hint="@string/day_hint"
                 android:inputType="number"
-                android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+                android:digits="0123456789"
+                android:maxLength="2"
+                android:textSize="@dimen/textSize"/>
         </LinearLayout>
 
 
@@ -94,11 +117,11 @@
         <!-- Reasoning Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Reason for opening"
+            android:text="@string/reason_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input Reason -->
         <EditText android:id="@+id/inputReas"
@@ -111,13 +134,11 @@
         <!-- NS Dimension Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="North/South Dimension:"
+            android:text="@string/ns_dim_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"
-            android:inputType="number"
-            android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input NSDimensions -->
         <EditText android:id="@+id/inputNSDims"
@@ -126,16 +147,16 @@
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
             android:inputType="number"
-            android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+            android:digits="0123456789"/>
 
         <!-- EW Dimension Label -->
         <TextView android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="East/West Dimension:"
+            android:text="@string/ew_dim_heading"
             android:paddingLeft="10dip"
             android:paddingRight="10dip"
             android:paddingTop="10dip"
-            android:textSize="17dip"/>
+            android:textSize="@dimen/textSize"/>
 
         <!-- Input EWDimensions -->
         <EditText android:id="@+id/inputEWDims"
@@ -144,7 +165,7 @@
             android:layout_margin="5dip"
             android:layout_marginBottom="15dip"
             android:inputType="number"
-            android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+            android:digits="0123456789"/>
 
     </LinearLayout>
 </ScrollView>

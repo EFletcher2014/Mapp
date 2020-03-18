@@ -5,34 +5,39 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Accession number:"/>
+        android:text="@string/accession_number_heading"
+        android:textSize="@dimen/headingSize"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/accNum"
-        android:hint="##-#"
-        android:inputType="number"
-        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -"/>
+        android:hint="@string/accession_number_hint"
+        android:textSize="@dimen/textSize"
+        android:digits="0123456789-"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Catalog number:"/>
+        android:text="@string/catalog_number_heading"
+        android:textSize="@dimen/headingSize"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/catNum"
-        android:hint="#"
+        android:hint="@string/number_sign"
+        android:textSize="@dimen/textSize"
         android:inputType="number"
-        android:digits="0, 1, 2, 3, 4, 5, 6, 7, 8, 9"/>
+        android:digits="0123456789"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Contents:"/>
+        android:text="@string/contents_heading"
+        android:textSize="@dimen/headingSize"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:inputType="textMultiLine"
-        android:hint="Describe bag contents here"
+        android:hint="@string/artifact_description_hint"
+        android:textSize="@dimen/textSize"
         android:id="@+id/contents"/>
-    <!--should add something to add a picture of the artifactBag too and maybe save coordinates-->
+    <!--should add something to add a picture of the artifact too and maybe save coordinates-->
 </LinearLayout>

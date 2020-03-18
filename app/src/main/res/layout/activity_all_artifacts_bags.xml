@@ -4,12 +4,12 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <!-- Added by Emily Flether 8/29/17-->
+    <!-- Added by Emily Fletcher 8/29/17-->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/artifactsLabel"
-        android:textSize="32dp"
+        android:textSize="@dimen/titleSize"
         android:gravity="center"
         android:background="@color/colorPrimary"
         android:textColor="@color/colorText"/>
@@ -28,6 +28,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/newArtifactBagBtn"
-        android:text="Create New Artifact Bag"/>
+        android:text="@string/create_new_artifact"/>
 
 </LinearLayout>

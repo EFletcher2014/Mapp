@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Emily Fletcher on 8/30/2017.
@@ -13,53 +15,52 @@ public class Unit implements Parcelable {
 
     private String datum;
     private String dateOpened;
-    private String nsDimension;
-    private String ewDimension;
+    private int NSCoor;
+    private int EWCoor;
+    private int NSDim;
+    private int EWDim;
     private Site site;
     private String excavators;
     private String reasonForOpening;
-    private int pk;
-    private int remotePK;
-    private Timestamp firstCreated;
-    private Timestamp lastUpdated;
+    private String ID;
 
-    public Unit(String dat, String nsDim, String ewDim, Site st, int p, Timestamp created)
+    public Unit(Site s, String i, int nsc, int ewc, int nsd, int ewd, String date, String r)
     {
-        this.datum=dat;
-        this.nsDimension=nsDim;
-        this.ewDimension=ewDim;
-        this.site=st;
-        this.pk=p;
-        this.firstCreated=created;
-    }
-    public Unit(String dat, String date, String nsDim, String ewDim, Site st, String exc, String reas, int p, int rpk, Timestamp created, Timestamp updated)
-    {
-        this.datum=dat;
-        this.dateOpened=date;
-        this.nsDimension=nsDim;
-        this.ewDimension=ewDim;
-        this.site=st;
-        this.excavators=exc;
-        this.reasonForOpening=reas;
-        this.pk=p;
-        this.remotePK=rpk;
-        this.firstCreated=created;
-        this.lastUpdated=updated;
+        this.site = s;
+        this.ID = i;
+        this.NSCoor = nsc;
+        this.EWCoor = ewc;
+        this.NSDim = nsd;
+        this.EWDim = ewd;
+        this.dateOpened = date;
+        this.reasonForOpening = r;
+        this.datum = toDatum(nsc, ewc);
     }
 
     public Unit(Parcel in)
     {
+        this.ID = in.readString();
+        this.NSCoor = in.readInt();
+        this.EWCoor = in.readInt();
+        this.NSDim = in.readInt();
+        this.EWDim = in.readInt();
         this.datum=in.readString();
         this.dateOpened=in.readString();
-        this.nsDimension=in.readString();
-        this.ewDimension=in.readString();
         this.site=in.readParcelable(Site.class.getClassLoader());
         this.excavators=in.readString();
         this.reasonForOpening=in.readString();
-        this.pk=in.readInt();
-        this.remotePK=in.readInt();
-        this.firstCreated=new Timestamp(in.readLong()); //TODO: Will this work?
-        this.lastUpdated=new Timestamp(in.readLong()); //TODO: same
+    }
+
+    public String toDatum(int n, int e)
+    {
+        String temp = (n < 0) ? "S" : "N";
+        int tempNSC = Math.abs(n);
+        temp += (tempNSC > 9) ? tempNSC : "0" + tempNSC;
+        temp += (e < 0) ? "W" : "E";
+        int tempEWC = Math.abs(e);
+        temp += (tempEWC > 9) ? tempEWC : "0" + tempEWC;
+
+        return temp;
     }
 
     public String getDatum()
@@ -67,19 +68,29 @@ public class Unit implements Parcelable {
         return datum;
     }
 
+    public String getID() { return ID; }
+
+    public int getNSCoor() { return NSCoor; }
+
+    public int getEWCoor() { return EWCoor; }
+
+    public int getNSDim() { return NSDim; }
+
+    public int getEWDim() { return EWDim; }
+
     public String getDateOpened()
     {
         return dateOpened;
     }
 
-    public String getNsDimension()
+    public int getNsDimension()
     {
-        return nsDimension;
+        return NSDim;
     }
 
-    public String getEwDimension()
+    public int getEwDimension()
     {
-        return ewDimension;
+        return EWDim;
     }
 
     public Site getSite()
@@ -97,19 +108,13 @@ public class Unit implements Parcelable {
         return reasonForOpening;
     }
 
-    public int getPk() { return pk; }
-
-    public int getRemotePK() { return remotePK; }
-
-    public Timestamp getFirstCreated() { return firstCreated; }
-
-    public Timestamp getLastUpdated() { return lastUpdated; }
-
     @Override
     public String toString()
     {
         return datum;
     }
+
+    public String[] tabulatedInfo() { return new String[]{getDatum(), getNSDim()+"", getEWDim()+"", getDateOpened(), reasonForOpening};}
 
     public void setDatum(String d)
     {
@@ -121,14 +126,14 @@ public class Unit implements Parcelable {
         dateOpened=d;
     }
 
-    public void setNsDimension(String ns)
+    public void setNsDimension(int ns)
     {
-        nsDimension=ns;
+        NSDim=ns;
     }
 
-    public void setEwDimension(String ew)
+    public void setEwDimension(int ew)
     {
-        ewDimension=ew;
+        EWDim=ew;
     }
 
     public void setExcavators(String ex)
@@ -141,24 +146,19 @@ public class Unit implements Parcelable {
         reasonForOpening=r;
     }
 
-    public void setLastUpdated(Timestamp t) { lastUpdated=t; }
-
-    public void setRemotePK(int pk) { remotePK = pk; }
-
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
+        dest.writeString(ID);
+        dest.writeInt(NSCoor);
+        dest.writeInt(EWCoor);
+        dest.writeInt(NSDim);
+        dest.writeInt(EWDim);
         dest.writeString(datum);
         dest.writeString(dateOpened);
-        dest.writeString(nsDimension);
-        dest.writeString(ewDimension);
         dest.writeParcelable(site, flags);
         dest.writeString(excavators);
         dest.writeString(reasonForOpening);
-        dest.writeInt(pk);
-        dest.writeInt(remotePK);
-        dest.writeLong((firstCreated!=null ? firstCreated.getTime() : 0));
-        dest.writeLong((lastUpdated!=null ? lastUpdated.getTime() : 0));
     }
 
     @Override
@@ -181,9 +181,11 @@ public class Unit implements Parcelable {
     public boolean equals(Object o)
     {
         try {
-            String site = ((Unit) o).getSite().getNumber();
-            String num = ((Unit) o).getDatum();
-            return (this.getSite().getNumber().equals(site) && this.getDatum().equals(num));
+            //String site = ((Unit) o).getSite().getNumber();
+            //String num = ((Unit) o).getDatum();
+            //return (this.getSite().getNumber().equals(site) && this.getDatum().equals(num));
+            String id = ((Unit) o).getID();
+            return this.ID.equals(id);
         }catch(Exception e)
         {
             return false;

@@ -1,15 +1,15 @@
 package com.mycompany.sip;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import java.sql.Timestamp;
 
 /**
  * Created by Emily Fletcher on 8/30/2017.
  * Model Object for levels made parcelable 9/2/17
  */
 public class Level implements Parcelable {
+    private String ID;
     private int number;
     private double begDepth;
     private double endDepth;
@@ -18,43 +18,23 @@ public class Level implements Parcelable {
     private String dateStarted;
     private String excavationMethod;
     private String notes="";
-    private int pk=-1;
-    private int remotePK;
-    private String imagePath = "";
-    private Timestamp firstCreated;
-    private Timestamp lastUpdated;
+    private String imageUri;
 
-    public Level (int n, double bD, Site s, Unit u, int p, Timestamp created)
+    public Level (Site s, Unit u, String i, int n, double bD, double eD, String exMeth, String notes, Uri p)
     {
-        this.number=n;
-        this.begDepth=bD;
-        this.site=s;
-        this.unit=u;
-        this.pk=p;
-        this.firstCreated=created;
-    }
-
-    public Level (int n, double bD, double eD, Site s, Unit u, String date, String excM, String no, String imPath, int p, int rpk, Timestamp created, Timestamp updated)
-    {
-        this.number=n;
-        this.begDepth=bD;
-        this.endDepth=eD;
-        this.site=s;
-        this.unit=u;
-        this.dateStarted=date;
-        this.excavationMethod=excM;
-        this.notes=no;
-        this.imagePath=imPath;
-        System.out.println("notes" + notes);
-        this.pk=p;
-        this.remotePK=rpk;
-        this.firstCreated=created;
-        this.lastUpdated=updated;
+        this.site = s;
+        this.unit = u;
+        this.ID = i;
+        this.number = n;
+        this.begDepth = bD;
+        this.endDepth = eD;
+        this.excavationMethod = exMeth;
+        this.notes = notes;
     }
 
     public Level(Parcel in)
     {
-        System.out.println("Parcel received:" + in);
+        this.ID = in.readString();
         this.number=in.readInt();
         this.begDepth=in.readDouble();
         this.endDepth=in.readDouble();
@@ -63,18 +43,10 @@ public class Level implements Parcelable {
         this.dateStarted=in.readString();
         this.excavationMethod=in.readString();
         this.notes=in.readString();
-        this.imagePath=in.readString();
-        this.pk=in.readInt();
-        this.remotePK=in.readInt();
-        this.firstCreated=new Timestamp(in.readLong()); //TODO: Will this work?
-        this.lastUpdated=new Timestamp(in.readLong()); //TODO: same
+        this.imageUri=in.readString();
     }
 
-    public int getPk() { return pk; }
-
-    public int getRemotePK() { return remotePK; }
-
-    public void setRemotePK(int pk) { remotePK = pk; }
+    public String getID() { return ID; }
 
     public int getNumber()
     {
@@ -121,9 +93,7 @@ public class Level implements Parcelable {
         return notes;
     }
 
-    public Timestamp getFirstCreated() { return firstCreated; }
-
-    public Timestamp getLastUpdated() { return lastUpdated; }
+    public String getImageUri() { return imageUri; }
 
     @Override
     public String toString()
@@ -156,12 +126,13 @@ public class Level implements Parcelable {
         notes=no;
     }
 
-    public void setLastUpdated(java.sql.Timestamp t) { lastUpdated=t; }
+    public void setImageUri(String uri) { imageUri = uri;}
 
 
     @Override
     public void writeToParcel(Parcel dest, int flags)
     {
+        dest.writeString(ID);
         dest.writeInt(number);
         dest.writeDouble(begDepth);
         dest.writeDouble(endDepth);
@@ -170,11 +141,7 @@ public class Level implements Parcelable {
         dest.writeString(dateStarted);
         dest.writeString(excavationMethod);
         dest.writeString(notes);
-        dest.writeString(imagePath);
-        dest.writeInt(pk);
-        dest.writeInt(remotePK);
-        dest.writeLong((firstCreated!=null ? firstCreated.getTime() : 0));
-        dest.writeLong((lastUpdated!=null ? lastUpdated.getTime() : 0));
+        dest.writeString(imageUri);
     }
 
     @Override
@@ -193,26 +160,20 @@ public class Level implements Parcelable {
         }
     };
 
-    public void setImagePath(String path)
-    {
-        this.imagePath=path;
-    }
-
-    public String getImagePath()
-    {
-        return this.imagePath;
-    }
-
     @Override
     public boolean equals(Object o)
     {
         try {
-            int num = ((Level) o).getNumber();
-            return (this.getNumber()==num && this.getUnit().equals(((Level) o).getUnit()));
+            String id = ((Level) o).getID();
+            return this.getID().equals(id);
         }catch(Exception e)
         {
             return false;
         }
+    }
+
+    public String[] tabulatedInfo() {
+        return new String[]{unit.toString(), number + "", begDepth + "", endDepth + "", dateStarted, excavationMethod, notes};
     }
 
 }

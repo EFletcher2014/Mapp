@@ -1,22 +1,16 @@
 //All from androidhive 7/30/17
 package com.mycompany.sip;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,45 +21,52 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import static com.mycompany.sip.Global.*;
 
 public class AllLevelsActivity extends ListActivity {
+
+    public static boolean isActive;
+
     // Progress Dialog
     private ProgressDialog pDialog;
 
-    LocalDatabaseHandler ldb = new LocalDatabaseHandler(this);
-    RemoteDatabaseHandler rdb = new RemoteDatabaseHandler(this);
-
-    // Creating JSON Parser object
-    JSONParser jParser = new JSONParser();
+    //Firebase
+    FirebaseHandler fbh = FirebaseHandler.getInstance();
 
     ArrayList<HashMap<String, String>> levelsList;
 
     private static Site site;
     private static Unit unit;
     private static Level level;
-    private static int levelNumber;
-    private static int foreignKey;
-    private static int primaryKey;
 
     private AlertDialog.Builder alert;
     ArrayList<Level> allLevels = new ArrayList<>();
 
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        isActive = true;
+    }
 
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        isActive = false;
+    }
 
-    boolean test=false;
-    Level[] testLevels = {new Level(1, 10.0, 15.0, site, unit, "11/03/1996", "shovel skimmed", "we did things", "", 1, 1, null, null),
-            new Level(2, 15.0, 20.0, site, unit, "07/22/17", "troweling", "more things", "", 2, 2, null, null),
-            new Level(3, 20.0, 25.0, site, unit, "08/2/17", "backhoe", "more things", "", 3, 3, null, null)};
-
-    // levels JSONArray
-    JSONArray levels = null;
+    public boolean isActive()
+    {
+        return isActive;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_levels);
+        fbh.updateLevelActivity(this);
 
         if(savedInstanceState!=null)
         {
@@ -80,43 +81,13 @@ public class AllLevelsActivity extends ListActivity {
 
         //added by Emily Fletcher 8/27/17
         Intent openIntent = getIntent();
-        foreignKey = openIntent.getIntExtra("PrimaryKey", -1);
-        site = openIntent.getParcelableExtra("siteName");
-        unit = openIntent.getParcelableExtra("datum");
+        site = openIntent.getParcelableExtra(TAG_SITENAME);
+        unit = openIntent.getParcelableExtra(TAG_UNITNAME);
         TextView titleText = (TextView) findViewById(R.id.siteNameUnitNumber);
         String title = site.getName() + " " + unit.getDatum() + " Levels";
         titleText.setText(title);
 
-        if(!test) {
-            // Loading sites in Background Thread
-            new LoadAllLevels().execute();
-        }
-        else
-        {
-            // looping through All levels
-            for (int i = 0; i < 3; i++) {
-
-                String depth = testLevels[i].getDepth();
-
-                // creating new HashMap
-                HashMap<String, String> testMap = new HashMap<String, String>();
-
-                // adding each child node to HashMap key => value
-                testMap.put(TAG_PID, i + "");
-                testMap.put("name", depth);
-
-                // adding HashList to ArrayList
-                levelsList.add(testMap);
-                System.out.println(levelsList);
-            }
-            ListAdapter adapter = new SimpleAdapter(
-                    AllLevelsActivity.this, levelsList,
-                    R.layout.list_item, new String[] { TAG_PID,
-                    "name"},
-                    new int[] { R.id.pid, R.id.name });
-            // updating listview
-            setListAdapter(adapter);
-        }
+        fbh.getLevelsFromUnit(unit);
 
         // Get listview
         ListView lv = getListView();
@@ -129,68 +100,125 @@ public class AllLevelsActivity extends ListActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, final View view,
                                     int position, long id) {
-                String su = ((TextView) view.findViewById(R.id.su)).getText()
+                String pid = ((TextView) view.findViewById(R.id.pid)).getText()
                         .toString();
-                levelNumber=Integer.parseInt(su);
-                if(test) {
-                    level = testLevels[levelNumber];
-                }
-                else
-                {
-                    level = allLevels.get(levelNumber);
-                }
-                primaryKey = Integer.parseInt(((TextView) view.findViewById(R.id.pid)).getText().toString());
-                System.out.println(level.toString() + " " + level.getImagePath());
 
-                showDialog(level);
+                level = allLevels.get(allLevels.indexOf(new Level(site, unit, pid, 0, 0.0, 0.0, "", "", null)));
+
+                if(!fbh.userIsExcavator(unit))
+                {
+                    Intent in = new Intent(AllLevelsActivity.this,
+                            LevelDocument.class);
+                    in.putExtra("depth", level);
+
+                    // starting new activity and expecting some response back
+                    startActivityForResult(in, 100);
+                }
+                else {
+                    showDialog(level);
+                }
             }
         });
 
         //on clicking new Level button
         //launching new level activity
         Button newLevel = (Button) findViewById(R.id.newLevelBtn);
-        newLevel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Launch Add New product Activity
-                Intent i = new Intent(view.getContext(),
-                        MapHome.class);
-                i.putExtra("depth", new Level(allLevels.size()+1, -1, -1, site, unit, "", "", "", "", -1, -1, null, null)); //levelnum for new level should be size + 1
-                //i.putExtra("ForeignKey", foreignKey);
-                //i.putExtra("lvlNum", allLevels.size()+1);
-                //i.putExtra("siteName", site);
-                //i.putExtra("unitNumber", unit);
-                // Closing all previous activities
-                i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivityForResult(i, 333);
-            }
-        });
+
+        if(!fbh.userIsExcavator(unit))
+        {
+            newLevel.setVisibility(View.INVISIBLE);
+        }
+        else
+        {
+            newLevel.setVisibility(View.VISIBLE);
+
+            newLevel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // Launch Add New product Activity
+                    Intent i = new Intent(view.getContext(),
+                            LevelDocument.class);
+                    i.putExtra("depth", new Level(site, unit, null, allLevels.size()+1, 0.0, 0.0, "", "", null));
+
+                    // Closing all previous activities
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivityForResult(i, 333);
+                }
+            });
+        }
 
     }
 
-    // Response from Edit Product Activity
+    public Unit getUnit()
+    {
+        return unit;
+    }
+
+
+    //Method called from FirebaseHandler to populate listview
+    public void loadLevels(ArrayList<Level> newLevels)
+    {
+        //adding new levels from Firebase
+        for(int i = 0; i < newLevels.size(); i++)
+        {
+            Level temp = newLevels.get(i);
+            int index = allLevels.indexOf(temp);
+            if (index < 0) {
+                allLevels.add(temp);
+            } else {
+                allLevels.set(index, temp);
+            }
+        }
+
+        //populating listview with ID and name of all levels
+        levelsList = new ArrayList<HashMap<String, String>>();
+        for(int i = 0; i<allLevels.size(); i++)
+        {
+            Level temp = allLevels.get(i);
+
+            // creating new HashMap
+            HashMap<String, String> map = new HashMap<String, String>();
+            map.put(TAG_PID, temp.getID());
+            map.put(TAG_LVLNUM, temp.toString());
+
+            // adding HashList to ArrayList
+            levelsList.add(map);
+        }
+
+        //actually populating the listview
+        runOnUiThread(new Runnable() {
+            public void run() {
+                /**
+                 * Updating parsed JSON data into ListView
+                 * */
+                ListAdapter adapter = new SimpleAdapter(
+                        AllLevelsActivity.this, levelsList,
+                        R.layout.list_item, new String[] { TAG_PID,
+                        TAG_LVLNUM},
+                        new int[] { R.id.pid, R.id.name }); //listview entries will contain unit's pk and name
+
+                // updating listview
+                setListAdapter(adapter);
+            }
+        });
+    }
+
+
+    // Response from LevelDocument Activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        /*if(requestCode == 333)
-        {
-            if(resultCode == RESULT_OK)
-            {
-                new LoadAllLevels().execute();
-                //finish();
-                //startActivity(getIntent());
-            }
-        }*/
+
         // if result code 100
         if (resultCode == RESULT_OK) {
             // if result code 100 is received
             // means user edited/deleted level
             // reload this screen again
-            //Intent intent = getIntent();
-            //finish();
-            //startActivity(intent);
-            System.out.println("MapHome worked");
-            new LoadAllLevels().execute();
+
+            //Gets all levels from Firebase
+            //TODO: is this necessary? Shouldn't it update on its own?
+            allLevels = new ArrayList<Level>();
+            fbh.getLevelsFromUnit(unit);
         }
 
         if(resultCode == RESULT_CANCELED)//if user canceled without saving a new level
@@ -200,92 +228,6 @@ public class AllLevelsActivity extends ListActivity {
 
     }
 
-    /**
-     * Background Async Task to Load all product by making HTTP Request
-     * */
-    class LoadAllLevels extends AsyncTask<String, String, String> {
-
-        /**
-         * Before starting background thread Show Progress Dialog
-         * */
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pDialog = new ProgressDialog(AllLevelsActivity.this);
-            pDialog.setMessage("Loading levels. Please wait...");
-            pDialog.setIndeterminate(false);
-            pDialog.setCancelable(false);
-            pDialog.show();
-            //new UpdateDBs(getApplicationContext()).execute();
-        }
-
-        /**
-         * getting All levels from url
-         * */
-        protected String doInBackground(String... args) {
-            System.out.println("Asking rdb to load levels from unit: " + unit + " " + unit.getPk());
-            allLevels = rdb.loadAllLevels(unit, null);
-            levelsList = new ArrayList<HashMap<String, String>>();
-
-            for(int i=0; i<allLevels.size(); i++)
-            {
-                Level temp = allLevels.get(i);
-
-                // creating new HashMap
-                HashMap<String, String> map = new HashMap<String, String>();
-
-                // adding each child node to HashMap key => value
-                map.put(TAG_PID, temp.getPk() + "");
-                map.put("name", temp.toString());
-                map.put("Unit Level", i + "");
-
-                // adding HashList to ArrayList
-                levelsList.add(map);
-            }
-            return null;
-        }
-
-        /**
-         * After completing background task Dismiss the progress dialog
-         * **/
-        protected void onPostExecute(String file_url) {
-            // dismiss the dialog after getting all sites
-            pDialog.dismiss();
-            // updating UI from Background Thread
-            runOnUiThread(new Runnable() {
-                public void run() {
-                    /**
-                     * Updating parsed JSON data into ListView
-                     * */
-                    if(levelsList.size()!=0) {
-                        ListAdapter adapter = new SimpleAdapter(
-                                AllLevelsActivity.this, levelsList,
-                                R.layout.list_item, new String[]{TAG_PID,
-                                "name", "Unit Level"},
-                                new int[]{R.id.pid, R.id.name, R.id.su});
-                        // updating listview
-                        setListAdapter(adapter);
-                    }
-                    else
-                    {
-                            Intent i = new Intent(findViewById(R.id.newLevelBtn).getContext(),
-                                    MapHome.class);
-                            i.putExtra("depth", new Level(allLevels.size()+1, -1, -1, site, unit, "", "", "", "", -1, -1, null, null));
-                            //i.putExtra("ForeignKey", foreignKey);
-                            //i.putExtra("lvlNum", 1);
-                            //i.putExtra("siteName", site);
-                            //i.putExtra("unitNumber", unit);
-                            // Closing all previous activities
-                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivityForResult(i, 333);
-                            Toast.makeText(getApplicationContext(), "No levels have been created for this unit yet. You can create one here.", Toast.LENGTH_LONG).show();
-                    }
-                }
-            });
-
-        }
-
-    }
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         // Make sure to call the super method so that the states of our views are saved
@@ -317,7 +259,7 @@ public class AllLevelsActivity extends ListActivity {
             alert = new AlertDialog.Builder(AllLevelsActivity.this);
         }
         alert.setTitle("Level " + lvl.toString());
-        System.out.println("You should have a dialog");
+
         alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //Pass intent
@@ -327,18 +269,8 @@ public class AllLevelsActivity extends ListActivity {
                 //TODO: Will have to add call to server to pick the correct level sheet to edit
                 //TODO: is this the right context?
                 Intent in = new Intent(editLevelLayout.getContext(),
-                        MapHome.class);
-                System.out.println(in);
-                System.out.println(level.getPk());
-                // sending pid to next activity
-                //in.putExtra("ForeignKey", foreignKey);
-                //in.putExtra("PrimaryKey", primaryKey);
-                //in.putExtra("lvlNum", level.getNumber());
-                //in.putExtra("siteName", site);
-                //in.putExtra("unitNumber", unit);
+                        LevelDocument.class);
                 in.putExtra("depth", level);
-                //System.out.println(site + " " + unit + " " + level);
-                System.out.println(in.getExtras());
 
                 // starting new activity and expecting some response back
                 startActivityForResult(in, 100);
