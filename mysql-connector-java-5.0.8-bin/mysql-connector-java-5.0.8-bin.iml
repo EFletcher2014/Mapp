@@ -23,6 +23,5 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="Gradle: mysql-connector-java-5.0.8-bin.mysql-connector-java-5.0.8-bin" level="project" />
   </component>
 </module>

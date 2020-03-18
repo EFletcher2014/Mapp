@@ -91,6 +91,32 @@ public class ReportHandler {
      * @param allUnits
      */
     public void siteReport(Site site, ArrayList<Unit> allUnits) {
+        //Create a CSV with the datum
+        // Create file
+        File temp = new File(directory_path + site.getNumber() + "_SiteDatum.csv");
+
+        try {
+            // create FileWriter object with file as parameter
+            FileWriter outputfile = new FileWriter(temp);
+
+            // create CSVWriter object filewriter object as parameter
+            csvWriter = new CSVWriter(outputfile);
+
+            // adding header to csv
+            String[] header = { "Latitude", "Longitude", "Point Type"};
+            csvWriter.writeNext(header);
+
+            // add data to csv
+            csvWriter.writeNext(new String[] {site.getDatum().latitude + "", site.getDatum().longitude + "", "Site Datum"});
+
+            // closing writer connection
+            csvWriter.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
 
         //Create a new document with portrait orientation
         document = new PdfDocument();
