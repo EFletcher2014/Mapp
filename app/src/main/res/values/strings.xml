@@ -1,7 +1,8 @@
 <resources>
     <!-- General Strings -->
     <string name="app_name">Mapp</string>
-    <string name="number_sign">#</string><string name="cancel">Cancel</string>
+    <string name="number_sign">#</string>
+    <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="add">Add</string>
     <string name="done">Done</string>
@@ -28,6 +29,7 @@
     <string name="edit_level_confirmation">Are you sure you wish to edit this level? You may overwrite its current information.</string>
     <string name="site_directors_heading">Directors:</string>
     <string name="site_excavators_heading">Excavators:</string>
+    <string name="site_map">View Map</string>
 
     <!-- Unit Strings -->
     <string name="units">Units</string>
@@ -80,4 +82,5 @@
     <string name="create_new_feature">Create New Feature</string>
 
     <string name="title_activity_select">selectActivity</string>
+    <string name="title_activity_full_site_map">Map</string>
 </resources>

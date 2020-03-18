@@ -1,0 +1,30 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mycompany.sip.LevelMapFragment">
+
+    <ViewSwitcher
+        android:id="@+id/switchDrawView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:layout_gravity="start">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/errorTextDraw"
+            android:text="@string/no_draw_hint"
+            android:textSize="32dp"
+            android:textColor="@color/colorPrimaryText"
+            android:gravity="center"
+            android:layout_gravity="center_vertical|center_horizontal"/>
+        <com.mycompany.sip.DrawingView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/draw"
+            android:layout_gravity="center_vertical|center_horizontal"
+            />
+    </ViewSwitcher>
+
+</FrameLayout>
