@@ -27,12 +27,7 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-<<<<<<< HEAD:app/src/main/res/layout/activity_all_artifacts_bags.xml
-        android:id="@+id/newArtifactBagBtn"
-        android:text="Create New Artifact Bag"/>
-=======
         android:id="@+id/newArtifactBtn"
         android:text="@string/create_new_artifact"/>
->>>>>>> a0c9edfbb9a9f520ab1000e5de5456215be2feaa:app/src/main/res/layout/activity_all_artifacts.xml
 
 </LinearLayout>
