@@ -4,14 +4,27 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <!-- Added by Emily Fletcher 8/28/17-->
-    <TextView
+    <FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/sites"
-        android:theme="@style/titleTheme"
-        android:gravity="center"/>
-
+        >
+    <!-- Added by Emily Fletcher 8/28/17-->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sites"
+            android:theme="@style/titleTheme"
+            android:gravity="center"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/logout"
+            android:text="@string/logout"
+            android:onClick="logout"
+            android:gravity="center"
+            android:layout_gravity="right|center_vertical"/>
+    </FrameLayout>
     <!-- Main ListView
          Always give id value as list(@android:id/list)
         TODO: is this gonna cause problems?
