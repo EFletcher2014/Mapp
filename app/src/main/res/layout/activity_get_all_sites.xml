@@ -45,5 +45,11 @@
             android:layout_height="wrap_content"
             android:id="@+id/newSiteBtn"
             android:text="@string/create_new_site"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/requestSiteBtn"
+            android:text="@string/request_site_perm"
+            android:onClick="generateRequestDialog"/>
     </LinearLayout>
 </LinearLayout>
