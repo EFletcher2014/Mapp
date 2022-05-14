@@ -28,6 +28,9 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+
 import static com.mycompany.sip.Global.*;
 
 public class AllSitesActivity extends ListActivity {
@@ -180,6 +183,14 @@ public class AllSitesActivity extends ListActivity {
                 }
         });
 
+    }
+
+    public void logout(View view)
+    {
+        FirebaseAuth.getInstance().signOut();
+
+        Intent in = new Intent(AllSitesActivity.this, LoginActivity.class);
+        startActivity(in);
     }
 
     //Called by FirebaseHandler to update sites list
